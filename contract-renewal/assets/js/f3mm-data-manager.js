@@ -36,6 +36,30 @@ var DataManager = (function () {
         });
     };
     /**
+     * Description of method DataManager
+     * @param parameter
+     */
+    DataManager.prototype.getItems = function (params, callback) {
+        try {
+            var suiteletUrl = this.getServerUrl();
+            var options = {
+                'action': 'get_items'
+            };
+            var filters = {
+                'params': JSON.stringify(params)
+            };
+            $.extend(options, filters);
+            jQuery.get(suiteletUrl, options, function (result) {
+                console.log('getCustomers(); // jquery complete: ', arguments);
+                callback && callback(result);
+            });
+        }
+        catch (e) {
+            console.error('ERROR', 'Error during main DataManager.getCustomers()', e.toString());
+            callback && callback(null);
+        }
+    };
+    /**
      * Get Partners from server
      * @param callback {function} the callback function to invoke when data is fetched
      * @returns {obj[]} returns an array of object of partner

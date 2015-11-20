@@ -55,6 +55,23 @@ var CommonDAL = (function (_super) {
     /**
      * Get all partners from db
      */
+    CommonDAL.prototype.getItems = function (options) {
+        var filters = [];
+        var cols = [];
+        cols.push(new nlobjSearchColumn('name').setSort());
+        if (!!options) {
+            var query = options.query;
+            if (F3.Util.Utility.isBlankOrNull(query) == false) {
+                filters.push(new nlobjSearchFilter('name', null, 'startswith', query));
+            }
+        }
+        // load data from db
+        var result = this.getAll(filters, cols, 'item');
+        return result;
+    };
+    /**
+     * Get all partners from db
+     */
     CommonDAL.prototype.getVendors = function (options) {
         var filters = [];
         var cols = [];

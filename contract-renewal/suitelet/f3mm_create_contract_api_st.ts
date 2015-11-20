@@ -91,6 +91,13 @@ class CreateContractAPISuitelet {
                 result.status = 'OK';
                 result.message = 'success';
             }
+            else if (action === 'get_items') {
+                var items = commonDAL.getItems(params);
+                result.data = items;
+                result.status_code = 200;
+                result.status = 'OK';
+                result.message = 'success';
+            }
             else if (action === 'submit') {
 
                 var data = params;

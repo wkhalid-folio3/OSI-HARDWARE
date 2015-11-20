@@ -13,7 +13,6 @@ $(document).ready(function () {
 
 
 
-
 class CreateContractUIManager {
 
     private _dataManager: DataManager;
@@ -24,8 +23,129 @@ class CreateContractUIManager {
         this.bindDropdown();
 
         this.bindItemsGrid();
+    }
+
+
+    /**
+     * itemsPickerSource - fetch data from server based on provided query
+     * @param query {string} the keyword which user has typed
+     * @param sync {function} the callback method to invoke synchronously
+     * @param async {function} the callback method to invoke asynchronously
+     */
+    private itemsPickerSource(query, sync, async) {
+
+        console.log(this);
+
+        setTimeout(() => {
+
+            this._dataManager.getItems({query: query}, function (items) {
+
+                try {
+                    async(items.data);
+                } catch (e) {
+                    console.error('ERROR', 'Error during async binding.', e.toString());
+                }
+
+            });
+
+        }, 10);
 
     }
+
+
+
+    /**
+     * bindItemPicker - Bind item picker control with typeahead autocomplete
+     */
+    private bindItemPicker($el) {
+        //var $el = $(this);
+
+        if (!$el.data('itempicker_created')) {
+
+            console.log('bind item picker control.', $el);
+
+            var options = {
+                hint: false,
+                minLength: 3,
+                highlight: true
+            };
+
+            var dataSet = {
+                name: 'Items',
+                limit: 500,
+                display: function (obj) {
+                    return obj.name;
+                },
+                source: (q,s,a)=> {
+                    this.itemsPickerSource(q, s, a);
+                },
+                templates: {
+                    empty: [
+                        '<div class="empty-message">',
+                        'unable to find any items that match the current query',
+                        '</div>'
+                    ].join('\n')
+                    //   , suggestion: function (context) {
+                    //        var isPerson = context.isperson == 'T';
+                    //        var name = isPerson ? (context.firstname + ' ' + context.lastname) : context.companyname;
+                    //        return $('<div />').html(name);
+                    //    }
+                }
+
+            };
+
+            $el.typeahead(options, dataSet);
+            $el.bind('typeahead:change', function () {
+                console.log('typeahead:change: ', arguments);
+                return;
+                var $this = $(this);
+
+                var selectedId = $this.attr('data-selected-id');
+                var selectedText = $this.attr('data-selected-text');
+                var val = $this.val();
+                var isMatched = selectedText == val;
+
+                console.log('selectedText: ', selectedText);
+                console.log('val: ', val);
+                console.log('selectedText == val: ', selectedText == val);
+
+                // if it does not match,
+                // then remove the last selected value.
+                if (isMatched == false) {
+                    $this.typeahead('val', selectedText);
+                    alert('Selected item does not exist.');
+                }
+
+            }).bind('typeahead:select', function (ev, suggestion, extra) {
+                console.log('typeahead:select: ', arguments);
+
+                var $this = $(this);
+                var $tr = $this.parents('tr:first');
+
+                $this.attr('data-selected-id', suggestion.id);
+                $this.attr('data-selected-text', suggestion.name);
+
+                // only set modified class in case of item pickers inside grid
+                if ($this.is ('.item-picker') === true) {
+                    var origValue = $this.attr('data-orig-value');
+                    if (origValue === suggestion.name) {
+                        $tr.removeClass('modified-item');
+                    }
+                    else {
+                        $tr.addClass('modified-item');
+                    }
+                }
+
+
+            });
+
+            $el.data('itempicker_created', true);
+
+            $el.focus();
+        }
+    }
+
+
 
 
     bindItemsGrid() {
@@ -42,29 +162,41 @@ class CreateContractUIManager {
         ];
         var clients = [
             {
-                "Name": "Otto Clay",
-                "Age": 61,
+                "Item": "Otto Clay",
+                "Description": "Otto Clay",
+                "Quantity": 2,
+                "Price": 200,
+                "Amount": 400,
                 "Country": 6,
                 "Address": "Ap #897-1459 Quam Avenue",
                 "Married": false
             },
             {
-                "Name": "Connor Johnston",
-                "Age": 73,
+                "Item": "Connor Johnston",
+                "Description": "Otto Clay",
+                "Quantity": 4,
+                "Price": 200,
+                "Amount": 800,
                 "Country": 7,
                 "Address": "Ap #370-4647 Dis Av.",
                 "Married": false
             },
             {
-                "Name": "Lacey Hess",
-                "Age": 29,
+                "Item": "Lacey Hess",
+                "Description": "Otto Clay",
+                "Quantity": 10,
+                "Price": 200,
+                "Amount": 2000,
                 "Country": 7,
                 "Address": "Ap #365-8835 Integer St.",
                 "Married": false
             },
             {
-                "Name": "Timothy Henson",
-                "Age": 78,
+                "Item": "Timothy Henson",
+                "Description": "Otto Clay",
+                "Quantity": 25,
+                "Price": 200,
+                "Amount": 5000,
                 "Country": 1,
                 "Address": "911-5143 Luctus Ave",
                 "Married": false
@@ -105,12 +237,22 @@ class CreateContractUIManager {
         };
 
 
-        window.db = db;
+        // $("#jsGrid").jsGrid("refresh");
 
-        $("#jsGrid").jsGrid({
+
+        //$("#jsGrid").jsGrid("updateItem", clients[1], { Item: "hello" }).done(function() {
+        //    console.log("update completed");
+        //});
+
+        window.db = db;
+        window.clients = clients;
+
+        var $grid = $("#jsGrid");
+        $grid.jsGrid({
             height: "400px",
             width: "100%",
 
+            inserting: true,
             filtering: false,
             editing: true,
             sorting: false,
@@ -123,15 +265,19 @@ class CreateContractUIManager {
             controller: db,
 
             fields: [
-                {name: "Name", type: "text", width: 150},
-                {name: "Age", type: "number", width: 50},
-                {name: "Address", type: "text", width: 200},
-                {name: "Country", type: "select", items: countries, valueField: "Id", textField: "Name"},
-                {name: "Married", type: "checkbox", title: "Is Married", sorting: false},
+                {name: "Item", type: "text", width: 150},
+                {name: "Description", type: "textarea", width: 150},
+                {name: "Quantity", type: "number", width: 50},
+                {name: "Price", type: "number", width: 50},
+                {name: "Amount", type: "number", width: 50},
                 {type: "control", modeSwitchButton: false, editButton: false}
             ]
         });
 
+
+        $grid.on('focusin', '.jsgrid-insert-row input:first', (ev)=> {
+            this.bindItemPicker($(ev.target));
+        });
 
     }
 
