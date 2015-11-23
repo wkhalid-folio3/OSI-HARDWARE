@@ -40,6 +40,7 @@ var CreateContractAPISuitelet = (function () {
         var params = request.getParameter('params');
         var callback = request.getParameter('callback');
         var commonDAL = new CommonDAL();
+        var contractDAL = new ContractDAL();
         if (!!params) {
             params = JSON.parse(params);
         }
@@ -91,6 +92,7 @@ var CreateContractAPISuitelet = (function () {
             else if (action === 'submit') {
                 var data = params;
                 //var salesorderData = data.salesorders;
+                contractDAL.create(data);
                 //this.submitSelectedRecords(data.checkbox, salesorderData);
                 result.data = true;
                 result.status_code = 200;

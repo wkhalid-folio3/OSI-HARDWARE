@@ -5,6 +5,50 @@
  * Created by zshaikh on 11/18/2015.
  */
 
+
+// Reference: https://github.com/hongymagic/jQuery.serializeObject
+// Use internal $.serializeArray to get list of form elements which is
+// consistent with $.serialize
+//
+// From version 2.0.0, $.serializeObject will stop converting [name] values
+// to camelCase format. This is *consistent* with other serialize methods:
+//
+//   - $.serialize
+//   - $.serializeArray
+//
+// If you require camel casing, you can either download version 1.0.4 or map
+// them yourself.
+//
+(function($){
+    $.fn.serializeObject = function () {
+        "use strict";
+
+        var result = {};
+        var extend = function (i, element) {
+            console.log('extend: ' , element);
+            //// CUSTOM HANDLING: added data-key handling to preserve names
+            var name = element.name; // element.getAttribute('data-key') ||
+            var node = result[name];
+
+            // If node with same name exists already, need to convert it to an array as it
+            // is a multi-value field (i.e., checkboxes)
+            if ('undefined' !== typeof node && node !== null) {
+                if ($.isArray(node)) {
+                    node.push(element.value);
+                } else {
+                    result[name] = [node, element.value];
+                }
+            } else {
+                result[name] = element.value;
+            }
+        };
+
+        $.each(this.serializeArray(), extend);
+        return result;
+    };
+})(window.jQuery);
+
+
 $(document).ready(function () {
 
     var x = new CreateContractUIManager();
@@ -23,128 +67,113 @@ class CreateContractUIManager {
         this.bindDropdown();
 
         this.bindItemsGrid();
-    }
 
 
-    /**
-     * itemsPickerSource - fetch data from server based on provided query
-     * @param query {string} the keyword which user has typed
-     * @param sync {function} the callback method to invoke synchronously
-     * @param async {function} the callback method to invoke asynchronously
-     */
-    private itemsPickerSource(query, sync, async) {
-
-        console.log(this);
-
-        setTimeout(() => {
-
-            this._dataManager.getItems({query: query}, function (items) {
-
-                try {
-                    async(items.data);
-                } catch (e) {
-                    console.error('ERROR', 'Error during async binding.', e.toString());
-                }
-
-            });
-
-        }, 10);
-
+        $('.btn-submit').on('click', ()=>{
+            this.submit();
+        })
     }
 
 
 
+
+
     /**
-     * bindItemPicker - Bind item picker control with typeahead autocomplete
+     * validateFilters - validate selected customer id
      */
-    private bindItemPicker($el) {
-        //var $el = $(this);
+    private validateFields() : any {
 
-        if (!$el.data('itempicker_created')) {
 
-            console.log('bind item picker control.', $el);
 
-            var options = {
-                hint: false,
-                minLength: 3,
-                highlight: true
-            };
+        var $customerDropdown = $('.customer-dropdown');
+        var customerText = $customerDropdown.val();
+        var customerId = $customerDropdown.attr('data-selected-id');
 
-            var dataSet = {
-                name: 'Items',
-                limit: 500,
-                display: function (obj) {
-                    return obj.name;
-                },
-                source: (q,s,a)=> {
-                    this.itemsPickerSource(q, s, a);
-                },
-                templates: {
-                    empty: [
-                        '<div class="empty-message">',
-                        'unable to find any items that match the current query',
-                        '</div>'
-                    ].join('\n')
-                    //   , suggestion: function (context) {
-                    //        var isPerson = context.isperson == 'T';
-                    //        var name = isPerson ? (context.firstname + ' ' + context.lastname) : context.companyname;
-                    //        return $('<div />').html(name);
-                    //    }
-                }
+        var $primaryContactDropdown = $('.primary-contact-dropdown');
+        var primaryContactText = $primaryContactDropdown.val();
+        var primaryContactId = $primaryContactDropdown.attr('data-selected-id');
 
-            };
+        // validate customer
+        if (!customerId && customerText != "") {
+            alert('Selected customer is not valid!');
+            $customerDropdown.focus();
+            return false;
+        }
 
-            $el.typeahead(options, dataSet);
-            $el.bind('typeahead:change', function () {
-                console.log('typeahead:change: ', arguments);
+        // validate customer
+        if (!primaryContactId && primaryContactText != "") {
+            alert('Selected customer is not valid!');
+            $primaryContactDropdown.focus();
+            return false;
+        }
+
+        return {
+            customerId: customerId,
+            primaryContactId: primaryContactId
+        };
+    }
+
+    submit(){
+        try {
+
+            $('#load_jqGrid').html('Submitting Changes...');
+            //showLoading();
+
+            var validated = this.validateFields();
+
+            // if not valid then return
+            if (validated === false) {
                 return;
-                var $this = $(this);
+            }
 
-                var selectedId = $this.attr('data-selected-id');
-                var selectedText = $this.attr('data-selected-text');
-                var val = $this.val();
-                var isMatched = selectedText == val;
+            var serializedData = $('.form-horizontal :input').serializeObject();
 
-                console.log('selectedText: ', selectedText);
-                console.log('val: ', val);
-                console.log('selectedText == val: ', selectedText == val);
-
-                // if it does not match,
-                // then remove the last selected value.
-                if (isMatched == false) {
-                    $this.typeahead('val', selectedText);
-                    alert('Selected item does not exist.');
-                }
-
-            }).bind('typeahead:select', function (ev, suggestion, extra) {
-                console.log('typeahead:select: ', arguments);
-
-                var $this = $(this);
-                var $tr = $this.parents('tr:first');
-
-                $this.attr('data-selected-id', suggestion.id);
-                $this.attr('data-selected-text', suggestion.name);
-
-                // only set modified class in case of item pickers inside grid
-                if ($this.is ('.item-picker') === true) {
-                    var origValue = $this.attr('data-orig-value');
-                    if (origValue === suggestion.name) {
-                        $tr.removeClass('modified-item');
-                    }
-                    else {
-                        $tr.addClass('modified-item');
-                    }
-                }
+            if (!!validated.customerId) {
+                serializedData.customer = validated.customerId;
+            }
 
 
+            if (!!validated.primaryContactId) {
+                serializedData.primary_contact = validated.primaryContactId;
+            }
+
+            serializedData.items = [];
+            var items = $('#jsGrid').data().JSGrid.data;
+            $.each(items, function(index, item){
+                serializedData.items.push({
+                    itemId: item.id,
+                    amount: item.amount,
+                    price: item.price,
+                    quantity: item.quantity
+                });
             });
 
-            $el.data('itempicker_created', true);
 
-            $el.focus();
+            console.log('serializedData: ', serializedData);
+
+            this._dataManager.submit(serializedData, (result) => {
+
+                $('#load_jqGrid').html('Loading...');
+                //hideLoading();
+
+                console.log('submit success:' , result);
+
+                //_stateManager.clearState();
+
+                //$('#submitChangesSuccessModal').modal('show');
+
+                // rebind grid with cleared state
+                //this.fetchGridData({page: 1});
+                alert('success');
+                var url = nlapiResolveURL('RECORD', 'customrecord_f3mm_contract', 583);
+                //window.location.href = url;
+            });
+
+
+        } catch (e) {
+            console.error('ERROR', 'Error during main onSubmit', e.toString());
         }
     }
-
 
 
 
@@ -258,27 +287,205 @@ class CreateContractUIManager {
             sorting: false,
             paging: false,
             autoload: true,
-
             pageSize: 15,
             pageButtonCount: 5,
 
             controller: db,
 
             fields: [
-                {name: "Item", type: "text", width: 150},
-                {name: "Description", type: "textarea", width: 150},
-                {name: "Quantity", type: "number", width: 50},
-                {name: "Price", type: "number", width: 50},
-                {name: "Amount", type: "number", width: 50},
+                {name: "Item", type: "text", width: 150,css: "item"},
+                {
+                    name: "Description", type: "textarea", width: 150,
+                    css: "description",
+                    editing: false
+                    //,
+                    //editTemplate: function(value, item) {
+                    //    return value;
+                    //},
+                    //editValue: function(){
+                    //
+                    //}
+                },
+                {name: "Quantity", type: "number", width: 50, css: "quantity"},
+                {name: "Price", type: "number", width: 50, css: "price"},
+                {
+                    name: "Amount", type: "number", width: 50, css: "amount",
+                    editing: false
+                    //,
+                    //editTemplate: function(value, item) {
+                    //    return value;
+                    //},
+                    //editValue: function(){
+                    //
+                    //}
+                },
                 {type: "control", modeSwitchButton: false, editButton: false}
             ]
         });
 
 
+
+
+        $grid.on('focusin', '.jsgrid-edit-row input:first', (ev)=> {
+            this.bindItemPicker($(ev.target));
+        });
+
         $grid.on('focusin', '.jsgrid-insert-row input:first', (ev)=> {
             this.bindItemPicker($(ev.target));
         });
 
+
+        $grid.on('blur', '.jsgrid-insert-row .quantity input', (ev)=> {
+            var $input = $(ev.target);
+            var $tr = $input.parents('tr:first');
+            var suggestion = $tr.data('data-selected-suggestion');
+            if(!!suggestion) {
+                var quantity = parseInt($input.val());
+                var price = parseFloat(suggestion.baseprice);
+                var totalPrice = price * quantity;
+                $tr.find('.amount input').val(totalPrice);
+            }
+        });
+
+    }
+
+
+
+
+
+
+
+    /**
+     * itemsPickerSource - fetch data from server based on provided query
+     * @param query {string} the keyword which user has typed
+     * @param sync {function} the callback method to invoke synchronously
+     * @param async {function} the callback method to invoke asynchronously
+     */
+    private itemsPickerSource(query, sync, async) {
+
+        console.log(this);
+
+        setTimeout(() => {
+
+            this._dataManager.getItems({query: query}, function (items) {
+
+                try {
+                    async(items.data);
+                } catch (e) {
+                    console.error('ERROR', 'Error during async binding.', e.toString());
+                }
+
+            });
+
+        }, 10);
+
+    }
+
+
+
+    /**
+     * bindItemPicker - Bind item picker control with typeahead autocomplete
+     */
+    private bindItemPicker($el) {
+        //var $el = $(this);
+
+        if (!$el.data('itempicker_created')) {
+
+            console.log('bind item picker control.', $el);
+
+            var options = {
+                hint: false,
+                minLength: 3,
+                highlight: true
+            };
+
+            var dataSet = {
+                name: 'Items',
+                limit: 500,
+                display: function (obj) {
+                    return obj.name;
+                },
+                source: (q,s,a)=> {
+                    this.itemsPickerSource(q, s, a);
+                },
+                templates: {
+                    empty: [
+                        '<div class="empty-message">',
+                        'unable to find any items that match the current query',
+                        '</div>'
+                    ].join('\n')
+                    //   , suggestion: function (context) {
+                    //        var isPerson = context.isperson == 'T';
+                    //        var name = isPerson ? (context.firstname + ' ' + context.lastname) : context.companyname;
+                    //        return $('<div />').html(name);
+                    //    }
+                }
+
+            };
+
+            $el.typeahead(options, dataSet);
+            $el.bind('typeahead:change', function () {
+                console.log('typeahead:change: ', arguments);
+                return;
+                var $this = $(this);
+
+                var selectedId = $this.attr('data-selected-id');
+                var selectedText = $this.attr('data-selected-text');
+                var val = $this.val();
+                var isMatched = selectedText == val;
+
+                console.log('selectedText: ', selectedText);
+                console.log('val: ', val);
+                console.log('selectedText == val: ', selectedText == val);
+
+                // if it does not match,
+                // then remove the last selected value.
+                if (isMatched == false) {
+                    $this.typeahead('val', selectedText);
+                    alert('Selected item does not exist.');
+                }
+
+            }).bind('typeahead:select', function (ev, suggestion, extra) {
+
+
+                var $this = $(this);
+                var $tr = $this.parents('tr:first');
+
+
+                console.log('typeahead:select: ', arguments, $this);
+
+                $this.attr('data-selected-id', suggestion.id);
+                $this.attr('data-selected-text', suggestion.name);
+
+                // only set modified class in case of item pickers inside grid
+                //if ($this.is ('.item-picker') === true) {
+                    var origValue = $this.attr('data-orig-value');
+                    if (origValue === suggestion.name) {
+                        $tr.removeClass('modified-item');
+                    }
+                    else {
+                        $tr.addClass('modified-item');
+                    }
+                //}
+
+
+                var quantity = 1;
+                var price = parseFloat(suggestion.baseprice);
+                $tr.find('.description textarea').val(suggestion.salesdescription);
+                $tr.find('.quantity input').val(quantity);
+                $tr.find('.price input').val(price);
+
+                var totalPrice = price * quantity;
+                $tr.find('.amount input').val(totalPrice);
+
+                $tr.data('data-selected-suggestion', suggestion);
+
+            });
+
+            $el.data('itempicker_created', true);
+
+            $el.focus();
+        }
     }
 
 
@@ -297,7 +504,7 @@ class CreateContractUIManager {
             limit: 500,
             display: function (obj) {
                 var name = obj.firstname + ' ' + obj.lastname;
-                return obj.id + ' - ' + name;
+                return name;
             },
             source: function (query, sync, async) {
 
@@ -332,7 +539,7 @@ class CreateContractUIManager {
             var selectedId = $this.attr('data-selected-id');
             var selectedText = $this.attr('data-selected-text');
             var selectedEntityId = $this.attr('data-selected-entityid');
-            var text = selectedEntityId + ' ' + selectedText;
+            var text = selectedText;
             var isMatched = text == val;
 
             console.log('text: ', text);
@@ -350,9 +557,7 @@ class CreateContractUIManager {
         }).bind('typeahead:select', function (ev, suggestion) {
             console.log('typeahead:select: ', arguments);
 
-            var name = suggestion.isperson == 'T'
-                ? (suggestion.firstname + ' ' + suggestion.lastname)
-                : suggestion.companyname;
+            var name = suggestion.firstname + ' ' + suggestion.lastname;
 
             var $this = $(this);
             $this.attr('data-selected-id', suggestion.id);
@@ -377,7 +582,7 @@ class CreateContractUIManager {
             display: function (obj) {
                 var isPerson = obj.isperson === 'T';
                 var name = isPerson ? (obj.firstname + ' ' + obj.lastname) : obj.companyname;
-                return obj.id + ' - ' + name;
+                return name;
             },
             source: function (query, sync, async) {
 
@@ -412,7 +617,7 @@ class CreateContractUIManager {
             var selectedId = $this.attr('data-selected-id');
             var selectedText = $this.attr('data-selected-text');
             var selectedEntityId = $this.attr('data-selected-entityid');
-            var text = selectedEntityId + ' ' + selectedText;
+            var text = selectedText;
             var isMatched = text == val;
 
             console.log('text: ', text);

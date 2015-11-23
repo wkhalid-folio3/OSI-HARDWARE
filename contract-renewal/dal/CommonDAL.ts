@@ -53,7 +53,7 @@ class CommonDAL extends BaseTypeDAL {
         cols.push(new nlobjSearchColumn('firstname'));
         cols.push(new nlobjSearchColumn('lastname'));
 
-        //filters.push(new nlobjSearchFilter('companyname', null, 'isnotempty'));
+        //filters.push(new nlobjSearchFilter('issalesrep', null, 'is', 'T'));
 
         var result = this.getAll(filters, cols, 'employee');
 
@@ -70,6 +70,8 @@ class CommonDAL extends BaseTypeDAL {
         var cols = [];
 
         cols.push(new nlobjSearchColumn('name').setSort());
+        cols.push(new nlobjSearchColumn('baseprice'));
+        cols.push(new nlobjSearchColumn('salesdescription'));
 
         if (!!options) {
             var query = options.query;
@@ -113,7 +115,7 @@ class CommonDAL extends BaseTypeDAL {
         var filters = [];
         var cols = [];
 
-        cols.push(new nlobjSearchColumn('name').setSort(false));
+        cols.push(new nlobjSearchColumn('name').setSort(true));
 
         filters.push(new nlobjSearchFilter('isinactive', null, 'isnot', 'F'));
 

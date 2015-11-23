@@ -178,7 +178,24 @@ tr.modified-item {
 
 
 
+.form-actions .btn {
+    min-width: 70px;
+}
+
+
+#jsGrid .tt-menu {
+    left: 20px;
+}
+
+
+.jsgrid-edit-row .description {
+    text-align: left;
+}
+
+.jsgrid-edit-row .amount {
+    text-align: right;
+}
+
 /*.jsgrid-grid-header {*/
-    /*overflow-x: visible;*/
-    /*overflow-y: visible;*/
+    /*overflow: visible;*/
 /*}*/

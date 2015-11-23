@@ -46,6 +46,7 @@ class CreateContractAPISuitelet {
         var params = request.getParameter('params');
         var callback = request.getParameter('callback');
         var commonDAL = new CommonDAL();
+        var contractDAL = new ContractDAL();
 
         if (!!params) {
             params = JSON.parse(params);
@@ -102,7 +103,7 @@ class CreateContractAPISuitelet {
 
                 var data = params;
                 //var salesorderData = data.salesorders;
-
+                contractDAL.create(data);
                 //this.submitSelectedRecords(data.checkbox, salesorderData);
 
                 result.data = true;

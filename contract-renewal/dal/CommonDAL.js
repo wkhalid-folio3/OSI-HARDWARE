@@ -48,7 +48,7 @@ var CommonDAL = (function (_super) {
         var cols = [];
         cols.push(new nlobjSearchColumn('firstname'));
         cols.push(new nlobjSearchColumn('lastname'));
-        //filters.push(new nlobjSearchFilter('companyname', null, 'isnotempty'));
+        //filters.push(new nlobjSearchFilter('issalesrep', null, 'is', 'T'));
         var result = this.getAll(filters, cols, 'employee');
         return result;
     };
@@ -59,6 +59,8 @@ var CommonDAL = (function (_super) {
         var filters = [];
         var cols = [];
         cols.push(new nlobjSearchColumn('name').setSort());
+        cols.push(new nlobjSearchColumn('baseprice'));
+        cols.push(new nlobjSearchColumn('salesdescription'));
         if (!!options) {
             var query = options.query;
             if (F3.Util.Utility.isBlankOrNull(query) == false) {
@@ -89,7 +91,7 @@ var CommonDAL = (function (_super) {
     CommonDAL.prototype.getDepartments = function (options) {
         var filters = [];
         var cols = [];
-        cols.push(new nlobjSearchColumn('name').setSort(false));
+        cols.push(new nlobjSearchColumn('name').setSort(true));
         filters.push(new nlobjSearchFilter('isinactive', null, 'isnot', 'F'));
         var result = this.getAll(filters, cols, 'department');
         return result;

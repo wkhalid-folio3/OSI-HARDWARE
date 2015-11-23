@@ -50,7 +50,7 @@ var DataManager = (function () {
             };
             $.extend(options, filters);
             jQuery.get(suiteletUrl, options, function (result) {
-                console.log('getCustomers(); // jquery complete: ', arguments);
+                console.log('getItems(); // jquery complete: ', arguments);
                 callback && callback(result);
             });
         }
@@ -160,6 +160,17 @@ var DataManager = (function () {
             console.error('ERROR', 'Error during main DataManager.getCustomers()', e.toString());
             callback && callback(null);
         }
+    };
+    DataManager.prototype.submit = function (data, callback) {
+        var suiteletUrl = this.getServerUrl();
+        var options = {
+            'action': 'submit'
+        };
+        $.extend(options, { 'params': JSON.stringify(data) });
+        jQuery.post(suiteletUrl, options, function (result) {
+            console.log('submit(); // jquery complete: ', arguments);
+            callback && callback(result);
+        });
     };
     return DataManager;
 })();

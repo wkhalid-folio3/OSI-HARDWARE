@@ -85,6 +85,32 @@ var BaseTypeDAL = (function () {
         }
         return cols;
     };
+    /**
+     * Either inserts or updates data. Upsert = Up[date] + [In]sert
+     * @param item
+     * @returns {*}
+     */
+    BaseTypeDAL.prototype.upsert = function (item) {
+        var id = null;
+        var rec = null;
+        if (item) {
+            try {
+                rec = F3.Util.Utility.isBlankOrNull(item.id) ? nlapiCreateRecord(this.internalId) : nlapiLoadRecord(this.internalId, item.id);
+                delete item.id;
+                for (var key in item) {
+                    if (!F3.Util.Utility.isBlankOrNull(key)) {
+                        rec.setFieldValue(key, item[key]);
+                    }
+                }
+                id = nlapiSubmitRecord(rec, true);
+            }
+            catch (e) {
+                F3.Util.Utility.logException('F3.Storage.BaseDao.upsert', e);
+                throw e;
+            }
+        }
+        return id;
+    };
     return BaseTypeDAL;
 })();
 //# sourceMappingURL=BaseTypeDAL.js.map
