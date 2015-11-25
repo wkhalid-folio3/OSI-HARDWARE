@@ -16,6 +16,7 @@ class CommonDAL extends BaseTypeDAL {
         cols.push(new nlobjSearchColumn('firstname').setSort());
         cols.push(new nlobjSearchColumn('lastname'));
         cols.push(new nlobjSearchColumn('entityid'));
+        cols.push(new nlobjSearchColumn('email'));
 
         if (!!options) {
             var query = options.query;
@@ -32,9 +33,15 @@ class CommonDAL extends BaseTypeDAL {
             }
         }
 
+        var x = [];
+        x.push(['isinactive', 'is', 'F']);
+        x.push('and');
+        x.push(filters);
+
+
         // serialize data
         var jsonConverterTimer = F3.Util.StopWatch.start('Convert objects to json manually.');
-        var result = this.getAll(filters, cols, 'contact');
+        var result = this.getAll(x, cols, 'contact');
         jsonConverterTimer.stop();
 
         return result;
@@ -52,8 +59,10 @@ class CommonDAL extends BaseTypeDAL {
 
         cols.push(new nlobjSearchColumn('firstname'));
         cols.push(new nlobjSearchColumn('lastname'));
+        cols.push(new nlobjSearchColumn('email'));
 
-        //filters.push(new nlobjSearchFilter('issalesrep', null, 'is', 'T'));
+        filters.push(new nlobjSearchFilter('salesrep', null, 'is', 'T'));
+        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
 
         var result = this.getAll(filters, cols, 'employee');
 
@@ -69,16 +78,18 @@ class CommonDAL extends BaseTypeDAL {
         var filters = [];
         var cols = [];
 
-        cols.push(new nlobjSearchColumn('name').setSort());
+        cols.push(new nlobjSearchColumn('displayname').setSort());
         cols.push(new nlobjSearchColumn('baseprice'));
         cols.push(new nlobjSearchColumn('salesdescription'));
 
         if (!!options) {
             var query = options.query;
             if (F3.Util.Utility.isBlankOrNull(query) == false) {
-                filters.push(new nlobjSearchFilter('name', null, 'startswith', query));
+                filters.push(new nlobjSearchFilter('displayname', null, 'startswith', query));
             }
         }
+
+        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
 
         // load data from db
         var result = this.getAll(filters, cols, 'item');
@@ -100,6 +111,7 @@ class CommonDAL extends BaseTypeDAL {
         cols.push(new nlobjSearchColumn('companyname'));
         cols.push(new nlobjSearchColumn('isperson'));
 
+        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
         //filters.push(new nlobjSearchFilter('companyname', null, 'isnotempty'));
 
         var result = this.getAll(filters, cols, 'vendor');
@@ -115,9 +127,9 @@ class CommonDAL extends BaseTypeDAL {
         var filters = [];
         var cols = [];
 
-        cols.push(new nlobjSearchColumn('name').setSort(true));
+        cols.push(new nlobjSearchColumn('name').setSort());
 
-        filters.push(new nlobjSearchFilter('isinactive', null, 'isnot', 'F'));
+        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
 
         var result = this.getAll(filters, cols, 'department');
 
@@ -151,9 +163,14 @@ class CommonDAL extends BaseTypeDAL {
             }
         }
 
+        var x = [];
+        x.push(['isinactive', 'is', 'F']);
+        x.push('and');
+        x.push(filters);
+
         // serialize data
         var jsonConverterTimer = F3.Util.StopWatch.start('Convert objects to json manually.');
-        var result = this.getAll(filters, cols, 'customer');
+        var result = this.getAll(x, cols, 'customer');
         jsonConverterTimer.stop();
 
         return result;

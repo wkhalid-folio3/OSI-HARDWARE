@@ -26,6 +26,7 @@ var FoldersDAL = (function (_super) {
         }
         cols.push(new nlobjSearchColumn('name', 'file'));
         cols.push(new nlobjSearchColumn('url', 'file'));
+        cols.push(new nlobjSearchColumn('internalid', 'file'));
         cols.push(new nlobjSearchColumn('filetype', 'file'));
         cols.push(new nlobjSearchColumn('parent'));
         var result = this.getAll(filters, cols);

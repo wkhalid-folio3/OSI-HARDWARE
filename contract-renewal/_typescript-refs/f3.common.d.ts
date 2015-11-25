@@ -14,7 +14,7 @@ declare module F3.Util {
         stop();
     }
 
-    module StopWatch {
-        function start(title:string):IStopWatch;
+    interface StopWatch {
+        start(title:string):IStopWatch;
     }
 }

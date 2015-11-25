@@ -4,6 +4,11 @@
 var BaseTypeDAL = (function () {
     function BaseTypeDAL() {
     }
+    BaseTypeDAL.prototype.get = function (id) {
+        var record = nlapiLoadRecord(this.internalId, id);
+        var json = this.getRecordJson(record);
+        return json;
+    };
     BaseTypeDAL.prototype.getAll = function (filters, columns, internalId) {
         var recs = null;
         var arr = [];
@@ -85,27 +90,107 @@ var BaseTypeDAL = (function () {
         }
         return cols;
     };
+    BaseTypeDAL.prototype.getRecordJson = function (row) {
+        var obj = null;
+        if (!!row) {
+            obj = { id: row.getId(), recordType: row.getRecordType() };
+            var nm = null, item, val, text;
+            F3.Util.Utility.logDebug('BaseTypeDAL.getRecordJson() // row.fields: ', JSON.stringify(row.getAllFields()));
+            var allFields = row.getAllFields();
+            for (var index in allFields) {
+                var field = allFields[index];
+                var nm = field;
+                var val = row.getFieldValue(field);
+                var text = row.getFieldText(field);
+                if (!!text && val != text) {
+                    obj[nm] = { text: text, value: val };
+                }
+                else {
+                    obj[nm] = val;
+                }
+            }
+            obj.sublists = {};
+            F3.Util.Utility.logDebug('BaseTypeDAL.getRecordJson() // row.linefields: ', JSON.stringify(row.linefields));
+            var lineItemGroups = row.getAllLineItems();
+            F3.Util.Utility.logDebug('BaseTypeDAL.getRecordJson() // lineItemGroups: ', JSON.stringify(lineItemGroups));
+            for (var h in lineItemGroups) {
+                var key = lineItemGroups[h];
+                var lineItemCount = row.getLineItemCount(key);
+                obj.sublists[key] = [];
+                for (var i = 1; i <= lineItemCount; i++) {
+                    var lineItem = {};
+                    var fields = row.getAllLineItemFields(key);
+                    for (var j in fields) {
+                        var field = fields[j];
+                        var nm = field;
+                        var val = row.getLineItemValue(key, field, i);
+                        var text = row.getLineItemText(key, field, i);
+                        if (!!text && val != text) {
+                            lineItem[nm] = { text: text, value: val };
+                        }
+                        else {
+                            lineItem[nm] = val;
+                        }
+                    }
+                    obj.sublists[key].push(lineItem);
+                }
+            }
+        }
+        return obj;
+    };
     /**
      * Either inserts or updates data. Upsert = Up[date] + [In]sert
-     * @param item
+     * @param record
      * @returns {*}
      */
-    BaseTypeDAL.prototype.upsert = function (item) {
+    BaseTypeDAL.prototype.upsert = function (record, removeExistingLineItems) {
+        F3.Util.Utility.logDebug('BaseTypeDAL.upsert(); // item = ', JSON.stringify(record));
         var id = null;
         var rec = null;
-        if (item) {
+        if (record) {
             try {
-                rec = F3.Util.Utility.isBlankOrNull(item.id) ? nlapiCreateRecord(this.internalId) : nlapiLoadRecord(this.internalId, item.id);
-                delete item.id;
-                for (var key in item) {
+                rec = F3.Util.Utility.isBlankOrNull(record.id) ? nlapiCreateRecord(this.internalId) : nlapiLoadRecord(this.internalId, record.id);
+                delete record.id;
+                for (var key in record) {
                     if (!F3.Util.Utility.isBlankOrNull(key)) {
-                        rec.setFieldValue(key, item[key]);
+                        var itemData = record[key];
+                        if (key == 'sublists' && !!itemData) {
+                            F3.Util.Utility.logDebug('BaseTypeDAL.upsert(); // sublists = ', JSON.stringify(itemData));
+                            itemData.forEach(function (sublist) {
+                                F3.Util.Utility.logDebug('BaseTypeDAL.upsert(); // sublist = ', JSON.stringify(sublist));
+                                if (removeExistingLineItems === true) {
+                                    var existingItemsCount = rec.getLineItemCount(sublist.internalId);
+                                    for (var j = 1; j <= existingItemsCount; j++) {
+                                        rec.removeLineItem(sublist.internalId, '1');
+                                    }
+                                }
+                                sublist.lineitems.forEach(function (lineitem, index) {
+                                    F3.Util.Utility.logDebug('BaseTypeDAL.upsert(); // lineitem = ', JSON.stringify(lineitem));
+                                    var linenum = rec.findLineItemValue(sublist.internalId, sublist.keyField, lineitem[sublist.keyField]);
+                                    if (linenum > -1) {
+                                        rec.selectLineItem(sublist.internalId, linenum);
+                                    }
+                                    else {
+                                        rec.selectNewLineItem(sublist.internalId);
+                                    }
+                                    F3.Util.Utility.logDebug('BaseTypeDAL.upsert(); // linenum = ', linenum);
+                                    for (var i in lineitem) {
+                                        rec.setCurrentLineItemValue(sublist.internalId, i, lineitem[i]);
+                                    }
+                                    rec.commitLineItem(sublist.internalId);
+                                });
+                            });
+                        }
+                        else {
+                            rec.setFieldValue(key, itemData);
+                        }
                     }
                 }
                 id = nlapiSubmitRecord(rec, true);
+                F3.Util.Utility.logDebug('BaseTypeDAL.upsert(); // id = ', id);
             }
             catch (e) {
-                F3.Util.Utility.logException('F3.Storage.BaseDao.upsert', e);
+                F3.Util.Utility.logException('F3.Storage.BaseDao.upsert', e.toString());
                 throw e;
             }
         }

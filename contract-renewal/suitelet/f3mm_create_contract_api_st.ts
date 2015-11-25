@@ -102,11 +102,12 @@ class CreateContractAPISuitelet {
             else if (action === 'submit') {
 
                 var data = params;
-                //var salesorderData = data.salesorders;
-                contractDAL.create(data);
-                //this.submitSelectedRecords(data.checkbox, salesorderData);
 
-                result.data = true;
+                var createdId = contractDAL.create(data);
+
+                result.data = {
+                    id: createdId
+                };
                 result.status_code = 200;
                 result.status = 'OK';
                 result.message = 'success';

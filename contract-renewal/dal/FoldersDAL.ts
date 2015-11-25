@@ -23,6 +23,7 @@ class FoldersDAL extends BaseTypeDAL {
 
         cols.push(new nlobjSearchColumn('name', 'file'));
         cols.push(new nlobjSearchColumn('url', 'file'));
+        cols.push(new nlobjSearchColumn('internalid', 'file'));
         cols.push(new nlobjSearchColumn('filetype', 'file'));
         cols.push(new nlobjSearchColumn('parent'));
 

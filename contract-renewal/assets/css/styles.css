@@ -11,8 +11,11 @@
 
 
 
-.f3mm-contract-renewal { font-size: 13px; }
-.alert { font-size: 13px; }
+.f3mm-contract-renewal {
+    font-size: 12px;
+    font-family: Arial,Helvetica,sans-serif;
+}
+.alert { font-size: 12px; }
 
 .page-standalone .f3mm-contract-renewal {margin-top: 20px;}
 
@@ -38,7 +41,7 @@ td[aria-describedby="jqGrid_item.text"] {
 tr.modified-ship-date,
 tr.modified-cancel-date,
 tr.modified-item {
-    border-left: 12px solid #f90;
+    border-left: 4px solid #f90;
 }
 
 .ui-th-column { font-weight: 700; }
@@ -167,24 +170,20 @@ tr.modified-item {
     cursor: default;
 }
 
-.form-group .status-dropdown {
-    height: 108px;
-}
-
-.form-group .team-dropdown,
-.form-group .league-dropdown{
-    height: 88px;
-}
-
-
-
 .form-actions .btn {
     min-width: 70px;
 }
 
+#jsGrid .tt-menu {
+    left: 25px !important;
+}
+
+#jsGrid span.twitter-typeahead {
+    position: initial !important;
+}
 
 #jsGrid .tt-menu {
-    left: 20px;
+    top: initial !important;
 }
 
 
@@ -199,3 +198,75 @@ tr.modified-item {
 /*.jsgrid-grid-header {*/
     /*overflow: visible;*/
 /*}*/
+
+
+
+#jsGrid .jsgrid-header-row th{
+    text-transform: uppercase;
+    font-size: 11px;
+    color: #666 !important;
+}
+
+
+label.control-label {
+    text-transform: uppercase;
+    font-weight: 300;
+    color: #6f6f6f !important;
+}
+
+
+.form-group {
+    margin-bottom: 5px;
+}
+
+
+.btn {
+    padding: 2px 12px;
+}
+
+.panel-primary {
+    border-radius: 0;
+    margin-bottom: 10px;
+}
+
+.panel-primary>.panel-heading {
+    text-transform: uppercase;
+    padding: 4px 4px 2px 3px;
+    background-color: #607799;
+    line-height: 9px;
+}
+
+
+input[type="number"],
+input[type="text"],
+input[type="password"],
+select,
+textarea {
+    padding: 3px !important;
+}
+
+.form-control {
+    height: 24px !important;
+    line-height: 24px !important;
+    font-size: 12px;
+    border-radius: 0;
+}
+
+
+.input-group-addon {
+    padding: 3px 12px;
+}
+
+
+
+input[type="text"]:disabled,
+input[type="password"]:disabled,
+select:disabled,
+textarea:disabled,
+.dropdownDiv:disabled,
+.dropdownInput:disabled {
+    color: #757575 !important;
+    background: #F3F3F3 !important;
+}
+
+

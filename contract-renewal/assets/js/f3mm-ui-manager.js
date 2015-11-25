@@ -42,20 +42,92 @@
         $.each(this.serializeArray(), extend);
         return result;
     };
-})(window.jQuery);
-$(document).ready(function () {
+})(jQuery);
+$(function () {
     var x = new CreateContractUIManager();
 });
 var CreateContractUIManager = (function () {
     function CreateContractUIManager() {
         var _this = this;
-        this._dataManager = new DataManager(window.pageType);
+        this._viewType = window.pageType;
+        this._dataManager = new DataManager(this._viewType);
+        this._contractInfo = window.contractInfo;
+        this.setViewMode();
         this.bindDropdown();
         this.bindItemsGrid();
+        this.bindDatePicker();
         $('.btn-submit').on('click', function () {
             _this.submit();
         });
     }
+    CreateContractUIManager.prototype.setViewMode = function () {
+        console.log('this.setViewMode(); // this._viewType: ', this._viewType);
+        if (this._viewType == 'view') {
+            $('.form-horizontal :input, .input-group.date').attr('disabled', 'disabled');
+            //$('.input-group.date').datepicker('remove');
+            $('.form-actions').hide();
+            $('.view-contract-action-buttons').show();
+        }
+        else {
+            $('.form-actions').show();
+            $('.view-contract-action-buttons').hide();
+        }
+    };
+    CreateContractUIManager.prototype.loaded = function () {
+        console.log('this.loaded();');
+        var contract = this._contractInfo;
+        if (!contract) {
+            return;
+        }
+        $('.contract-number-text').val(contract.custrecord_f3mm_contract_number);
+        $('.po-number-text').val(contract.custrecord_f3mm_po_number);
+        $('.sales-rep-dropdown').val(contract.custrecord_f3mm_sales_rep.value);
+        $('.vendor-dropdown').val(contract.custrecord_f3mm_contract_vendor.value);
+        $('.status-dropdown').val(contract.custrecord_f3mm_status.value);
+        $('.total-quantity-seats-text').val(contract.custrecord_f3mm_total_qty_seats);
+        $('.department-dropdown').val(contract.custrecord_f3mm_department.value);
+        $('.memo-text').val(contract.custrecord_f3mm_memo);
+        if (!!contract.custrecord_f3mm_customer) {
+            $('.customer-dropdown')
+                .attr('data-selected-id', contract.custrecord_f3mm_customer.value)
+                .attr('data-selected-text', contract.custrecord_f3mm_customer.text)
+                .val(contract.custrecord_f3mm_customer.text);
+        }
+        if (!!contract.custrecord_f3mm_primary_contact) {
+            $('.primary-contact-dropdown')
+                .attr('data-selected-id', contract.custrecord_f3mm_primary_contact.value)
+                .attr('data-selected-text', contract.custrecord_f3mm_primary_contact.text)
+                .val(contract.custrecord_f3mm_primary_contact.text);
+            if (!!contract.custrecord_f3mm_primary_contact_email) {
+                $('.primary-contact-email-text').val(contract.custrecord_f3mm_primary_contact_email);
+            }
+        }
+        if (this._viewType == 'view') {
+            if (!!contract.custrecord_f3mm_start_date) {
+                $('.start-date-text').val(contract.custrecord_f3mm_start_date);
+            }
+            if (!!contract.custrecord_f3mm_end_date) {
+                $('.end-date-text').val(contract.custrecord_f3mm_end_date);
+            }
+        }
+        else {
+            if (!!contract.custrecord_f3mm_start_date) {
+                $('.start-date-text').parent().datepicker('setDate', contract.custrecord_f3mm_start_date);
+            }
+            if (!!contract.custrecord_f3mm_end_date) {
+                $('.end-date-text').parent().datepicker('setDate', contract.custrecord_f3mm_end_date);
+            }
+        }
+    };
+    CreateContractUIManager.prototype.bindDatePicker = function () {
+        if (this._viewType !== 'view') {
+            $('.input-group.date').not('[disabled]').datepicker({
+                format: "m/d/yyyy",
+                clearBtn: true,
+                autoclose: true
+            });
+        }
+    };
     /**
      * validateFilters - validate selected customer id
      */
@@ -74,7 +146,7 @@ var CreateContractUIManager = (function () {
         }
         // validate customer
         if (!primaryContactId && primaryContactText != "") {
-            alert('Selected customer is not valid!');
+            alert('Selected End User is not valid!');
             $primaryContactDropdown.focus();
             return false;
         }
@@ -93,6 +165,9 @@ var CreateContractUIManager = (function () {
                 return;
             }
             var serializedData = $('.form-horizontal :input').serializeObject();
+            if (!!this._contractInfo) {
+                serializedData.id = this._contractInfo.id;
+            }
             if (!!validated.customerId) {
                 serializedData.customer = validated.customerId;
             }
@@ -103,7 +178,7 @@ var CreateContractUIManager = (function () {
             var items = $('#jsGrid').data().JSGrid.data;
             $.each(items, function (index, item) {
                 serializedData.items.push({
-                    itemId: item.id,
+                    item_id: item.itemid,
                     amount: item.amount,
                     price: item.price,
                     quantity: item.quantity
@@ -118,126 +193,134 @@ var CreateContractUIManager = (function () {
                 //$('#submitChangesSuccessModal').modal('show');
                 // rebind grid with cleared state
                 //this.fetchGridData({page: 1});
-                alert('success');
-                var url = nlapiResolveURL('RECORD', 'customrecord_f3mm_contract', 583);
-                //window.location.href = url;
+                alert('Record has been submitted successfully');
+                var uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
+                var uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
+                var uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
+                uiSuiteletUrl = uiSuiteletUrl + '&cid=' + result.data.id;
+                window.location.href = uiSuiteletUrl;
             });
         }
         catch (e) {
+            alert('Error during record submission.');
             console.error('ERROR', 'Error during main onSubmit', e.toString());
         }
     };
     CreateContractUIManager.prototype.bindItemsGrid = function () {
         var _this = this;
-        var countries = [
-            { Name: "", Id: 0 },
-            { Name: "United States", Id: 1 },
-            { Name: "Canada", Id: 2 },
-            { Name: "United Kingdom", Id: 3 },
-            { Name: "France", Id: 4 },
-            { Name: "Brazil", Id: 5 },
-            { Name: "China", Id: 6 },
-            { Name: "Russia", Id: 7 }
-        ];
-        var clients = [
-            {
-                "Item": "Otto Clay",
-                "Description": "Otto Clay",
-                "Quantity": 2,
-                "Price": 200,
-                "Amount": 400,
-                "Country": 6,
-                "Address": "Ap #897-1459 Quam Avenue",
-                "Married": false
-            },
-            {
-                "Item": "Connor Johnston",
-                "Description": "Otto Clay",
-                "Quantity": 4,
-                "Price": 200,
-                "Amount": 800,
-                "Country": 7,
-                "Address": "Ap #370-4647 Dis Av.",
-                "Married": false
-            },
-            {
-                "Item": "Lacey Hess",
-                "Description": "Otto Clay",
-                "Quantity": 10,
-                "Price": 200,
-                "Amount": 2000,
-                "Country": 7,
-                "Address": "Ap #365-8835 Integer St.",
-                "Married": false
-            },
-            {
-                "Item": "Timothy Henson",
-                "Description": "Otto Clay",
-                "Quantity": 25,
-                "Price": 200,
-                "Amount": 5000,
-                "Country": 1,
-                "Address": "911-5143 Luctus Ave",
-                "Married": false
-            }
-        ];
-        var db = {
-            loadData: function (filter) {
-                console.log('clients:', clients);
-                var found = $.grep(clients, function (client) {
-                    return (!filter.Name || client.Name.indexOf(filter.Name) > -1)
-                        && (!filter.Age || client.Age === filter.Age)
-                        && (!filter.Address || client.Address.indexOf(filter.Address) > -1)
-                        && (!filter.Country || client.Country === filter.Country)
-                        && (filter.Married === undefined || client.Married === filter.Married);
+        var contactItems = [];
+        if (!!this._contractInfo && !!this._contractInfo.sublists) {
+            var contractItemsInfo = this._contractInfo.sublists.recmachcustrecord_f3mm_ci_contract;
+            if (!!contractItemsInfo) {
+                contractItemsInfo.forEach(function (contractItem) {
+                    contactItems.push({
+                        item: contractItem.custrecord_f3mm_ci_item.text,
+                        itemid: contractItem.custrecord_f3mm_ci_item.value,
+                        quantity: contractItem.custrecord_f3mm_ci_quantity,
+                        price: contractItem.custrecord_f3mm_ci_price,
+                        amount: contractItem.custrecord_f3mm_ci_amount
+                    });
                 });
-                console.log('found:', found);
-                return found;
+            }
+        }
+        var gridController = {
+            loadData: function (filter) {
+                console.log('contactItems:', contactItems);
+                return contactItems;
             },
             insertItem: function (insertingClient) {
-                clients.push(insertingClient);
+                //clients.push(insertingClient);
             },
             updateItem: function (updatingClient) {
             },
             deleteItem: function (deletingClient) {
-                var clientIndex = $.inArray(deletingClient, clients);
-                clients.splice(clientIndex, 1);
+                //var clientIndex = $.inArray(deletingClient, contactItems);
+                //contactItems.splice(clientIndex, 1);
             }
         };
         // $("#jsGrid").jsGrid("refresh");
         //$("#jsGrid").jsGrid("updateItem", clients[1], { Item: "hello" }).done(function() {
         //    console.log("update completed");
         //});
-        window.db = db;
-        window.clients = clients;
+        //window.db = db;
+        //window.clients = contactItems;
+        var inserting = true;
+        var editing = true;
+        var gridFields = [
+            { title: "Item", name: "item", type: "text", width: 150, css: "item" },
+            {
+                title: "Description",
+                name: "description",
+                type: "textarea",
+                width: 150,
+                css: "description",
+                editing: false
+            },
+            { title: "Quantity", name: "quantity", type: "number", width: 50, css: "quantity" },
+            { title: "Price", name: "price", type: "number", width: 50, css: "price" },
+            { title: "Amount", name: "amount", type: "number", width: 50, css: "amount", editing: false }
+        ];
+        if (this._viewType == 'view') {
+            inserting = false;
+            editing = false;
+        }
+        else {
+            gridFields.push({ type: "control", modeSwitchButton: false, editButton: false });
+        }
         var $grid = $("#jsGrid");
         $grid.jsGrid({
             height: "400px",
             width: "100%",
-            inserting: true,
+            noDataContent: 'No items added.',
+            inserting: inserting,
             filtering: false,
-            editing: true,
+            editing: editing,
             sorting: false,
             paging: false,
             autoload: true,
             pageSize: 15,
             pageButtonCount: 5,
-            controller: db,
-            fields: [
-                { name: "Item", type: "text", width: 150, css: "item" },
-                {
-                    name: "Description", type: "textarea", width: 150,
-                    css: "description",
-                    editing: false
-                },
-                { name: "Quantity", type: "number", width: 50, css: "quantity" },
-                { name: "Price", type: "number", width: 50, css: "price" },
-                {
-                    name: "Amount", type: "number", width: 50, css: "amount",
-                    editing: false
-                },
-                { type: "control", modeSwitchButton: false, editButton: false }
-            ]
+            controller: gridController,
+            onDataLoaded: function (args) {
+                console.log('onDataLoaded:', args);
+                _this.loaded();
+            },
+            onItemUpdating: function (args) {
+                console.log('onItemUpdating: ', args);
+                var data = args.item;
+                data.amount = data.price * data.quantity;
+                // TODO : need to handle the case when user does not click on item picker and just edits and saves the record.
+                var suggestion = args.row.next().data('data-selected-suggestion');
+                console.log('suggestion: ', suggestion);
+                if (!!suggestion) {
+                    data.itemid = suggestion.id;
+                }
+            },
+            onItemInserting: function (args) {
+                // cancel insertion of the item with empty 'name' field
+                var $row = $('.jsgrid-insert-row');
+                var suggestion = $row.data('data-selected-suggestion');
+                if (!!suggestion) {
+                    args.item.item = suggestion.displayname;
+                    args.item.itemid = suggestion.id;
+                }
+                if (args.item.item === "") {
+                    args.cancel = true;
+                    alert("Please select an item");
+                }
+                var existingData = $('#jsGrid').data().JSGrid.data;
+                var found = false;
+                existingData.forEach(function (item) {
+                    if (item.itemid == args.item.itemid) {
+                        found = true;
+                    }
+                });
+                if (found === true) {
+                    args.cancel = true;
+                    alert("The selected item already exists. Please select another item.");
+                }
+            },
+            fields: gridFields
         });
         $grid.on('focusin', '.jsgrid-edit-row input:first', function (ev) {
             _this.bindItemPicker($(ev.target));
@@ -245,16 +328,28 @@ var CreateContractUIManager = (function () {
         $grid.on('focusin', '.jsgrid-insert-row input:first', function (ev) {
             _this.bindItemPicker($(ev.target));
         });
-        $grid.on('blur', '.jsgrid-insert-row .quantity input', function (ev) {
+        $grid.on('blur', '.jsgrid-insert-row .quantity input, .jsgrid-insert-row .price input', function (ev) {
             var $input = $(ev.target);
             var $tr = $input.parents('tr:first');
+            var $quantity = $tr.find('.quantity input');
+            var $price = $tr.find('.price input');
             var suggestion = $tr.data('data-selected-suggestion');
             if (!!suggestion) {
-                var quantity = parseInt($input.val());
-                var price = parseFloat(suggestion.baseprice);
+                var quantity = parseInt($quantity.val());
+                var price = parseFloat($price.val());
                 var totalPrice = price * quantity;
                 $tr.find('.amount input').val(totalPrice);
             }
+        });
+        $grid.on('blur', '.jsgrid-edit-row .quantity input, .jsgrid-edit-row .price input', function (ev) {
+            var $input = $(ev.target);
+            var $tr = $input.parents('tr:first');
+            var $quantity = $tr.find('.quantity input');
+            var $price = $tr.find('.price input');
+            var quantity = parseInt($quantity.val());
+            var price = parseFloat($price.val());
+            var totalPrice = price * quantity;
+            $tr.find('.amount').html(totalPrice.toString());
         });
     };
     /**
@@ -294,7 +389,7 @@ var CreateContractUIManager = (function () {
                 name: 'Items',
                 limit: 500,
                 display: function (obj) {
-                    return obj.name;
+                    return obj.displayname;
                 },
                 source: function (q, s, a) {
                     _this.itemsPickerSource(q, s, a);
@@ -330,25 +425,24 @@ var CreateContractUIManager = (function () {
                 var $tr = $this.parents('tr:first');
                 console.log('typeahead:select: ', arguments, $this);
                 $this.attr('data-selected-id', suggestion.id);
-                $this.attr('data-selected-text', suggestion.name);
+                $this.attr('data-selected-text', suggestion.displayname);
                 // only set modified class in case of item pickers inside grid
                 //if ($this.is ('.item-picker') === true) {
                 var origValue = $this.attr('data-orig-value');
-                if (origValue === suggestion.name) {
+                if (origValue === suggestion.displayname) {
                     $tr.removeClass('modified-item');
                 }
                 else {
                     $tr.addClass('modified-item');
                 }
                 //}
+                $tr.data('data-selected-suggestion', suggestion);
                 var quantity = 1;
                 var price = parseFloat(suggestion.baseprice);
                 $tr.find('.description textarea').val(suggestion.salesdescription);
                 $tr.find('.quantity input').val(quantity);
-                $tr.find('.price input').val(price);
-                var totalPrice = price * quantity;
-                $tr.find('.amount input').val(totalPrice);
-                $tr.data('data-selected-suggestion', suggestion);
+                $tr.find('.price input').val(price).focus().trigger('blur');
+                $tr.find('.quantity input').focus();
             });
             $el.data('itempicker_created', true);
             $el.focus();
@@ -409,6 +503,7 @@ var CreateContractUIManager = (function () {
                 $this.attr('data-selected-id', '');
                 $this.attr('data-selected-text', '');
                 $this.attr('data-selected-entityid', '');
+                $('.primary-contact-email-text').val('');
             }
         }).bind('typeahead:select', function (ev, suggestion) {
             console.log('typeahead:select: ', arguments);
@@ -417,6 +512,7 @@ var CreateContractUIManager = (function () {
             $this.attr('data-selected-id', suggestion.id);
             $this.attr('data-selected-entityid', suggestion.entityid);
             $this.attr('data-selected-text', name);
+            $('.primary-contact-email-text').val(suggestion.email);
         });
     };
     CreateContractUIManager.prototype.bindcustomerDropdown = function () {
@@ -472,9 +568,8 @@ var CreateContractUIManager = (function () {
             // if it does not match,
             // then remove the last selected value.
             if (isMatched == false) {
-                $this.attr('data-selected-id', '');
-                $this.attr('data-selected-text', '');
-                $this.attr('data-selected-entityid', '');
+                $this.typeahead('val', selectedText);
+                alert('Selected item does not exist.');
             }
         }).bind('typeahead:select', function (ev, suggestion) {
             console.log('typeahead:select: ', arguments);
@@ -488,6 +583,7 @@ var CreateContractUIManager = (function () {
         });
     };
     CreateContractUIManager.prototype.bindDropdown = function () {
+        var _this = this;
         // fill partners dropdown
         this._dataManager.getVendors(function (result) {
             // make it async
@@ -502,6 +598,7 @@ var CreateContractUIManager = (function () {
                         }
                     });
                 }
+                _this.loaded();
             }, 10);
         });
         this._dataManager.getEmployees(function (result) {
@@ -513,11 +610,11 @@ var CreateContractUIManager = (function () {
                     $.each(result.data, function (i, item) {
                         var name = (item.firstname + ' ' + item.lastname).trim();
                         if (!!name) {
-                            var displayText = item.id + ' - ' + name;
-                            select.options[select.options.length] = new Option(displayText, item.id);
+                            select.options[select.options.length] = new Option(name, item.id);
                         }
                     });
                 }
+                _this.loaded();
             }, 10);
         });
         this._dataManager.getDepartment(function (result) {
@@ -533,6 +630,7 @@ var CreateContractUIManager = (function () {
                         }
                     });
                 }
+                _this.loaded();
             }, 10);
         });
         this.bindcustomerDropdown();
