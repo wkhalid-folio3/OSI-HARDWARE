@@ -181,7 +181,8 @@ var CreateContractUIManager = (function () {
                     item_id: item.itemid,
                     amount: item.amount,
                     price: item.price,
-                    quantity: item.quantity
+                    quantity: item.quantity,
+                    item_description: item.description
                 });
             });
             console.log('serializedData: ', serializedData);
@@ -218,7 +219,8 @@ var CreateContractUIManager = (function () {
                         itemid: contractItem.custrecord_f3mm_ci_item.value,
                         quantity: contractItem.custrecord_f3mm_ci_quantity,
                         price: contractItem.custrecord_f3mm_ci_price,
-                        amount: contractItem.custrecord_f3mm_ci_amount
+                        amount: contractItem.custrecord_f3mm_ci_amount,
+                        description: contractItem.custrecord_f3mm_ci_item_description
                     });
                 });
             }
@@ -294,6 +296,7 @@ var CreateContractUIManager = (function () {
                 console.log('suggestion: ', suggestion);
                 if (!!suggestion) {
                     data.itemid = suggestion.id;
+                    data.description = suggestion.salesdescription;
                 }
             },
             onItemInserting: function (args) {
@@ -303,6 +306,7 @@ var CreateContractUIManager = (function () {
                 if (!!suggestion) {
                     args.item.item = suggestion.displayname;
                     args.item.itemid = suggestion.id;
+                    args.item.description = suggestion.salesdescription;
                 }
                 if (args.item.item === "") {
                     args.cancel = true;

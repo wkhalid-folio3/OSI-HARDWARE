@@ -65,6 +65,7 @@ class ContractDAL extends BaseTypeDAL {
                 lineitem['custrecord_f3mm_ci_item'] = item.item_id;
                 lineitem['custrecord_f3mm_ci_price'] = item.price;
                 lineitem['custrecord_f3mm_ci_amount'] = item.amount;
+                lineitem['custrecord_f3mm_ci_item_description'] = item.item_description || '';
                 contractItemsSublist.lineitems.push(lineitem);
             });
 
