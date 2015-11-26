@@ -62,6 +62,17 @@ var CommonDAL = (function (_super) {
     /**
      * Get all partners from db
      */
+    CommonDAL.prototype.getPriceLevels = function (options) {
+        var filters = [];
+        var cols = [];
+        cols.push(new nlobjSearchColumn('name'));
+        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
+        var result = this.getAll(filters, cols, 'pricelevel');
+        return result;
+    };
+    /**
+     * Get all partners from db
+     */
     CommonDAL.prototype.getItems = function (options) {
         var filters = [];
         var cols = [];

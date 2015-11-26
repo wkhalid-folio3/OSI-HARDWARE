@@ -1,4 +1,5 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
+/// <reference path="../../_typescript-refs/es6-promise.d.ts" />
 /// <reference path="./f3mm-data-manager.ts" />
 
 /**
@@ -49,21 +50,65 @@
 })(jQuery);
 
 
+
+
+((jsGrid, $, undefined) => {
+
+    var TextField = jsGrid.TextField;
+
+    function DecimalNumberField(config) {
+        TextField.call(this, config);
+    }
+
+    DecimalNumberField.prototype = new TextField({
+
+        sorter: "number",
+        align: "right",
+
+        filterValue: function() {
+            return parseFloat(this.filterControl.val() || 0);
+        },
+
+        insertValue: function() {
+            return parseFloat(this.insertControl.val() || 0);
+        },
+
+        editValue: function() {
+            return parseFloat(this.editControl.val() || 0);
+        },
+
+        _createTextBox: function() {
+            return $("<input>").attr("type", "number").attr("step", "0.01");
+        }
+    });
+
+    jsGrid.fields.decimal_number = jsGrid.DecimalNumberField = DecimalNumberField;
+
+})(jsGrid, jQuery);
+
+
+
+
+
+
 $(function () {
 
     var x = new CreateContractUIManager();
 
 });
 
-
+//var p = new Promise<string>((resolve, reject) => {
+//    resolve('a string');
+//});
 
 class CreateContractUIManager {
 
     private _dataManager: DataManager;
     private _contractInfo: any;
     private _viewType: string;
+    private _priceLevels: any[];
 
-    constructor(){
+    constructor() {
 
         this._viewType = window.pageType;
 
@@ -75,11 +120,15 @@ class CreateContractUIManager {
 
         this.bindDropdown();
 
-        this.bindItemsGrid();
+        this.fetchPriceLevels().then(()=> {
+            this.bindItemsGrid();
+        });
+
+        //this.bindItemsGrid();
 
         this.bindDatePicker();
 
-        $('.btn-submit').on('click', ()=>{
+        $('.btn-submit').on('click', ()=> {
             this.submit();
         });
     }
@@ -113,11 +162,25 @@ class CreateContractUIManager {
 
         $('.contract-number-text').val(contract.custrecord_f3mm_contract_number);
         $('.po-number-text').val(contract.custrecord_f3mm_po_number);
-        $('.sales-rep-dropdown').val(contract.custrecord_f3mm_sales_rep.value);
-        $('.vendor-dropdown').val(contract.custrecord_f3mm_contract_vendor.value);
-        $('.status-dropdown').val(contract.custrecord_f3mm_status.value);
+
+        if( !!contract.custrecord_f3mm_sales_rep) {
+            $('.sales-rep-dropdown').val(contract.custrecord_f3mm_sales_rep.value);
+        }
+
+        if ( !!contract.custrecord_f3mm_contract_vendor) {
+            $('.vendor-dropdown').val(contract.custrecord_f3mm_contract_vendor.value);
+        }
+
+        if ( !!contract.custrecord_f3mm_status) {
+            $('.status-dropdown').val(contract.custrecord_f3mm_status.value);
+        }
+
         $('.total-quantity-seats-text').val(contract.custrecord_f3mm_total_qty_seats);
-        $('.department-dropdown').val(contract.custrecord_f3mm_department.value);
+
+        if (!!contract.custrecord_f3mm_department) {
+            $('.department-dropdown').val(contract.custrecord_f3mm_department.value);
+        }
+
         $('.memo-text').val(contract.custrecord_f3mm_memo);
 
 
@@ -279,13 +342,21 @@ class CreateContractUIManager {
     }
 
 
+    fetchPriceLevels() {
+        return this._dataManager
+            .getPriceLevels()
+            .then((priceLevels)=>{
+                console.log(priceLevels);
+                this._priceLevels = priceLevels.data;
+            });
+    }
 
     bindItemsGrid() {
 
         var contactItems = [];
 
 
-        if(!!this._contractInfo && !!this._contractInfo.sublists) {
+        if (!!this._contractInfo && !!this._contractInfo.sublists) {
             var contractItemsInfo = this._contractInfo.sublists.recmachcustrecord_f3mm_ci_contract;
             if (!!contractItemsInfo) {
                 contractItemsInfo.forEach(contractItem=> {
@@ -300,8 +371,6 @@ class CreateContractUIManager {
                 });
             }
         }
-
-
 
 
         var gridController = {
@@ -319,8 +388,6 @@ class CreateContractUIManager {
                 //contactItems.splice(clientIndex, 1);
             }
         };
-
-
 
 
         // $("#jsGrid").jsGrid("refresh");
@@ -345,12 +412,22 @@ class CreateContractUIManager {
                 editing: false
             },
             {title: "Quantity", name: "quantity", type: "number", width: 50, css: "quantity"},
-            {title: "Price", name: "price", type: "number", width: 50, css: "price"},
-            {title: "Amount", name: "amount", type: "number", width: 50, css: "amount", editing: false}
+            {
+                title: "Price Level",
+                name: "price_level",
+                type: "select",
+                textField: "name",
+                valueField: "id",
+                width: 80,
+                css: "price",
+                items: this._priceLevels
+            },
+            {title: "Price", name: "price", type: "decimal_number", width: 50, css: "price"},
+            {title: "Amount", name: "amount", type: "decimal_number", width: 50, css: "amount", editing: false}
         ];
 
 
-        if ( this._viewType == 'view') {
+        if (this._viewType == 'view') {
             inserting = false;
             editing = false;
         }
@@ -361,7 +438,7 @@ class CreateContractUIManager {
 
         var $grid = $("#jsGrid");
         $grid.jsGrid({
-            height: "400px",
+            height: "auto",
             width: "100%",
             noDataContent: 'No items added.',
 
@@ -380,6 +457,7 @@ class CreateContractUIManager {
             onDataLoaded: (args) => {
                 console.log('onDataLoaded:', args);
 
+                //console.log(this);
                 this.loaded();
             },
 
@@ -434,8 +512,6 @@ class CreateContractUIManager {
         });
 
 
-
-
         $grid.on('focusin', '.jsgrid-edit-row input:first', (ev)=> {
             this.bindItemPicker($(ev.target));
         });
@@ -451,7 +527,7 @@ class CreateContractUIManager {
             var $quantity = $tr.find('.quantity input');
             var $price = $tr.find('.price input');
             var suggestion = $tr.data('data-selected-suggestion');
-            if(!!suggestion) {
+            if (!!suggestion) {
                 var quantity = parseInt($quantity.val());
                 var price = parseFloat($price.val());
                 var totalPrice = price * quantity;
@@ -686,7 +762,7 @@ class CreateContractUIManager {
         });
     }
 
-    bindcustomerDropdown() {
+    bindCustomerDropdown() {
 
         var _self = this;
 
@@ -836,7 +912,7 @@ class CreateContractUIManager {
             }, 10);
         });
 
-        this.bindcustomerDropdown();
+        this.bindCustomerDropdown();
         this.bindPrimaryContactDropdown();
 
     }

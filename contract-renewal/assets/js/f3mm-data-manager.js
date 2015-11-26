@@ -1,4 +1,5 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
+/// <reference path="../../_typescript-refs/es6-promise.d.ts" />
 /**
  * Created by zshaikh on 11/19/2015.
  */
@@ -16,21 +17,28 @@ var DataManager = (function () {
     };
     DataManager.prototype.getVendorsFromServer = function (callback) {
         var suiteletUrl = this.getServerUrl();
-        jQuery.get(suiteletUrl, { 'action': 'get_vendors' }, function (result) {
+        return jQuery.get(suiteletUrl, { 'action': 'get_vendors' }, function (result) {
             console.log('getPartners(); // jquery complete: ', arguments);
             callback && callback(result);
         });
     };
     DataManager.prototype.getEmployeesFromServer = function (callback) {
         var suiteletUrl = this.getServerUrl();
-        jQuery.get(suiteletUrl, { 'action': 'get_employees' }, function (result) {
+        return jQuery.get(suiteletUrl, { 'action': 'get_employees' }, function (result) {
             console.log('get_employees(); // jquery complete: ', arguments);
             callback && callback(result);
         });
     };
     DataManager.prototype.getDepartmentFromServer = function (callback) {
         var suiteletUrl = this.getServerUrl();
-        jQuery.get(suiteletUrl, { 'action': 'get_departments' }, function (result) {
+        return jQuery.get(suiteletUrl, { 'action': 'get_departments' }, function (result) {
+            console.log('get_departments(); // jquery complete: ', arguments);
+            callback && callback(result);
+        });
+    };
+    DataManager.prototype.getPriceLevelsFromServer = function (callback) {
+        var suiteletUrl = this.getServerUrl();
+        return jQuery.get(suiteletUrl, { 'action': 'get_pricelevels' }, function (result) {
             console.log('get_departments(); // jquery complete: ', arguments);
             callback && callback(result);
         });
@@ -49,7 +57,7 @@ var DataManager = (function () {
                 'params': JSON.stringify(params)
             };
             $.extend(options, filters);
-            jQuery.get(suiteletUrl, options, function (result) {
+            return jQuery.get(suiteletUrl, options, function (result) {
                 console.log('getItems(); // jquery complete: ', arguments);
                 callback && callback(result);
             });
@@ -71,7 +79,7 @@ var DataManager = (function () {
             callback && callback(data);
         }
         else {
-            this.getVendorsFromServer(function (data) {
+            return this.getVendorsFromServer(function (data) {
                 $.jStorage.set(cacheKey, data);
                 callback && callback(data);
             });
@@ -89,7 +97,29 @@ var DataManager = (function () {
             callback && callback(data);
         }
         else {
-            this.getEmployeesFromServer(function (data) {
+            return this.getEmployeesFromServer(function (data) {
+                $.jStorage.set(cacheKey, data);
+                callback && callback(data);
+            });
+        }
+    };
+    /**
+     * Get Partners from server
+     * @param callback {function} the callback function to invoke when data is fetched
+     * @returns {obj[]} returns an array of object of partner
+     */
+    DataManager.prototype.getPriceLevels = function (callback) {
+        var cacheKey = 'price_levels';
+        var data = $.jStorage.get(cacheKey);
+        if (!!data) {
+            var promise = new Promise(function (resolve, reject) {
+                resolve(data);
+            });
+            callback && callback(data);
+            return promise;
+        }
+        else {
+            return this.getPriceLevelsFromServer(function (data) {
                 $.jStorage.set(cacheKey, data);
                 callback && callback(data);
             });
@@ -105,9 +135,10 @@ var DataManager = (function () {
         var data = $.jStorage.get(cacheKey);
         if (!!data) {
             callback && callback(data);
+            return data;
         }
         else {
-            this.getDepartmentFromServer(function (data) {
+            return this.getDepartmentFromServer(function (data) {
                 $.jStorage.set(cacheKey, data);
                 callback && callback(data);
             });
@@ -127,7 +158,7 @@ var DataManager = (function () {
                 'params': JSON.stringify(params)
             };
             $.extend(options, filters);
-            jQuery.get(suiteletUrl, options, function (result) {
+            return jQuery.get(suiteletUrl, options, function (result) {
                 console.log('getPrimaryContacts(); // jquery complete: ', arguments);
                 callback && callback(result);
             });
@@ -151,7 +182,7 @@ var DataManager = (function () {
                 'params': JSON.stringify(params)
             };
             $.extend(options, filters);
-            jQuery.get(suiteletUrl, options, function (result) {
+            return jQuery.get(suiteletUrl, options, function (result) {
                 console.log('getCustomers(); // jquery complete: ', arguments);
                 callback && callback(result);
             });
@@ -167,7 +198,7 @@ var DataManager = (function () {
             'action': 'submit'
         };
         $.extend(options, { 'params': JSON.stringify(data) });
-        jQuery.post(suiteletUrl, options, function (result) {
+        return jQuery.post(suiteletUrl, options, function (result) {
             console.log('submit(); // jquery complete: ', arguments);
             callback && callback(result);
         });

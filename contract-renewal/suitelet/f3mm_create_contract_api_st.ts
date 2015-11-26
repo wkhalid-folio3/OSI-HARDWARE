@@ -92,6 +92,13 @@ class CreateContractAPISuitelet {
                 result.status = 'OK';
                 result.message = 'success';
             }
+            else if (action === 'get_pricelevels') {
+                var customers = commonDAL.getPriceLevels(params);
+                result.data = customers;
+                result.status_code = 200;
+                result.status = 'OK';
+                result.message = 'success';
+            }
             else if (action === 'get_items') {
                 var items = commonDAL.getItems(params);
                 result.data = items;

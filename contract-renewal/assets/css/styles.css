@@ -175,7 +175,11 @@ tr.modified-item {
 }
 
 #jsGrid .tt-menu {
-    left: 25px !important;
+    left: 45px !important;
+}
+
+div#jsGrid {
+    position: initial !important;
 }
 
 #jsGrid span.twitter-typeahead {

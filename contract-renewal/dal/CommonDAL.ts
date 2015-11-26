@@ -70,6 +70,25 @@ class CommonDAL extends BaseTypeDAL {
     }
 
 
+
+    /**
+     * Get all partners from db
+     */
+    getPriceLevels (options?) {
+
+        var filters = [];
+        var cols = [];
+
+        cols.push(new nlobjSearchColumn('name'));
+
+        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
+
+        var result = this.getAll(filters, cols, 'pricelevel');
+
+        return result;
+    }
+
+
     /**
      * Get all partners from db
      */

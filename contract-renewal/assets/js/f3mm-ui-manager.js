@@ -1,4 +1,5 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
+/// <reference path="../../_typescript-refs/es6-promise.d.ts" />
 /// <reference path="./f3mm-data-manager.ts" />
 /**
  * Created by zshaikh on 11/18/2015.
@@ -43,9 +44,35 @@
         return result;
     };
 })(jQuery);
+(function (jsGrid, $, undefined) {
+    var TextField = jsGrid.TextField;
+    function DecimalNumberField(config) {
+        TextField.call(this, config);
+    }
+    DecimalNumberField.prototype = new TextField({
+        sorter: "number",
+        align: "right",
+        filterValue: function () {
+            return parseFloat(this.filterControl.val() || 0);
+        },
+        insertValue: function () {
+            return parseFloat(this.insertControl.val() || 0);
+        },
+        editValue: function () {
+            return parseFloat(this.editControl.val() || 0);
+        },
+        _createTextBox: function () {
+            return $("<input>").attr("type", "number").attr("step", "0.01");
+        }
+    });
+    jsGrid.fields.decimal_number = jsGrid.DecimalNumberField = DecimalNumberField;
+})(jsGrid, jQuery);
 $(function () {
     var x = new CreateContractUIManager();
 });
+//var p = new Promise<string>((resolve, reject) => {
+//    resolve('a string');
+//});
 var CreateContractUIManager = (function () {
     function CreateContractUIManager() {
         var _this = this;
@@ -54,7 +81,10 @@ var CreateContractUIManager = (function () {
         this._contractInfo = window.contractInfo;
         this.setViewMode();
         this.bindDropdown();
-        this.bindItemsGrid();
+        this.fetchPriceLevels().then(function () {
+            _this.bindItemsGrid();
+        });
+        //this.bindItemsGrid();
         this.bindDatePicker();
         $('.btn-submit').on('click', function () {
             _this.submit();
@@ -81,11 +111,19 @@ var CreateContractUIManager = (function () {
         }
         $('.contract-number-text').val(contract.custrecord_f3mm_contract_number);
         $('.po-number-text').val(contract.custrecord_f3mm_po_number);
-        $('.sales-rep-dropdown').val(contract.custrecord_f3mm_sales_rep.value);
-        $('.vendor-dropdown').val(contract.custrecord_f3mm_contract_vendor.value);
-        $('.status-dropdown').val(contract.custrecord_f3mm_status.value);
+        if (!!contract.custrecord_f3mm_sales_rep) {
+            $('.sales-rep-dropdown').val(contract.custrecord_f3mm_sales_rep.value);
+        }
+        if (!!contract.custrecord_f3mm_contract_vendor) {
+            $('.vendor-dropdown').val(contract.custrecord_f3mm_contract_vendor.value);
+        }
+        if (!!contract.custrecord_f3mm_status) {
+            $('.status-dropdown').val(contract.custrecord_f3mm_status.value);
+        }
         $('.total-quantity-seats-text').val(contract.custrecord_f3mm_total_qty_seats);
-        $('.department-dropdown').val(contract.custrecord_f3mm_department.value);
+        if (!!contract.custrecord_f3mm_department) {
+            $('.department-dropdown').val(contract.custrecord_f3mm_department.value);
+        }
         $('.memo-text').val(contract.custrecord_f3mm_memo);
         if (!!contract.custrecord_f3mm_customer) {
             $('.customer-dropdown')
@@ -207,6 +245,15 @@ var CreateContractUIManager = (function () {
             console.error('ERROR', 'Error during main onSubmit', e.toString());
         }
     };
+    CreateContractUIManager.prototype.fetchPriceLevels = function () {
+        var _this = this;
+        return this._dataManager
+            .getPriceLevels()
+            .then(function (priceLevels) {
+            console.log(priceLevels);
+            _this._priceLevels = priceLevels.data;
+        });
+    };
     CreateContractUIManager.prototype.bindItemsGrid = function () {
         var _this = this;
         var contactItems = [];
@@ -259,8 +306,18 @@ var CreateContractUIManager = (function () {
                 editing: false
             },
             { title: "Quantity", name: "quantity", type: "number", width: 50, css: "quantity" },
-            { title: "Price", name: "price", type: "number", width: 50, css: "price" },
-            { title: "Amount", name: "amount", type: "number", width: 50, css: "amount", editing: false }
+            {
+                title: "Price Level",
+                name: "price_level",
+                type: "select",
+                textField: "name",
+                valueField: "id",
+                width: 80,
+                css: "price",
+                items: this._priceLevels
+            },
+            { title: "Price", name: "price", type: "decimal_number", width: 50, css: "price" },
+            { title: "Amount", name: "amount", type: "decimal_number", width: 50, css: "amount", editing: false }
         ];
         if (this._viewType == 'view') {
             inserting = false;
@@ -271,7 +328,7 @@ var CreateContractUIManager = (function () {
         }
         var $grid = $("#jsGrid");
         $grid.jsGrid({
-            height: "400px",
+            height: "auto",
             width: "100%",
             noDataContent: 'No items added.',
             inserting: inserting,
@@ -285,6 +342,7 @@ var CreateContractUIManager = (function () {
             controller: gridController,
             onDataLoaded: function (args) {
                 console.log('onDataLoaded:', args);
+                //console.log(this);
                 _this.loaded();
             },
             onItemUpdating: function (args) {
@@ -519,7 +577,7 @@ var CreateContractUIManager = (function () {
             $('.primary-contact-email-text').val(suggestion.email);
         });
     };
-    CreateContractUIManager.prototype.bindcustomerDropdown = function () {
+    CreateContractUIManager.prototype.bindCustomerDropdown = function () {
         var _self = this;
         var $customerDropdown = $('.customer-dropdown');
         var typeaheadOptions = {
@@ -637,7 +695,7 @@ var CreateContractUIManager = (function () {
                 _this.loaded();
             }, 10);
         });
-        this.bindcustomerDropdown();
+        this.bindCustomerDropdown();
         this.bindPrimaryContactDropdown();
     };
     return CreateContractUIManager;

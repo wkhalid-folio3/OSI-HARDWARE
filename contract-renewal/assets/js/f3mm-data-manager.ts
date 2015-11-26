@@ -1,4 +1,5 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
+/// <reference path="../../_typescript-refs/es6-promise.d.ts" />
 
 /**
  * Created by zshaikh on 11/19/2015.
@@ -29,7 +30,7 @@ class DataManager {
 
         var suiteletUrl = this.getServerUrl();
 
-        jQuery.get(suiteletUrl, {'action': 'get_vendors'}, function (result) {
+        return jQuery.get(suiteletUrl, {'action': 'get_vendors'}, function (result) {
             console.log('getPartners(); // jquery complete: ', arguments);
 
             callback && callback(result);
@@ -42,7 +43,7 @@ class DataManager {
 
         var suiteletUrl = this.getServerUrl();
 
-        jQuery.get(suiteletUrl, {'action': 'get_employees'}, function (result) {
+        return jQuery.get(suiteletUrl, {'action': 'get_employees'}, function (result) {
             console.log('get_employees(); // jquery complete: ', arguments);
 
             callback && callback(result);
@@ -56,7 +57,21 @@ class DataManager {
 
         var suiteletUrl = this.getServerUrl();
 
-        jQuery.get(suiteletUrl, {'action': 'get_departments'}, function (result) {
+        return jQuery.get(suiteletUrl, {'action': 'get_departments'}, function (result) {
+            console.log('get_departments(); // jquery complete: ', arguments);
+
+            callback && callback(result);
+
+        });
+
+    }
+
+
+    private getPriceLevelsFromServer(callback) {
+
+        var suiteletUrl = this.getServerUrl();
+
+        return jQuery.get(suiteletUrl, {'action': 'get_pricelevels'}, function (result) {
             console.log('get_departments(); // jquery complete: ', arguments);
 
             callback && callback(result);
@@ -85,7 +100,7 @@ class DataManager {
 
             $.extend(options, filters);
 
-            jQuery.get(suiteletUrl, options, function (result) {
+            return jQuery.get(suiteletUrl, options, function (result) {
                 console.log('getItems(); // jquery complete: ', arguments);
 
                 callback && callback(result);
@@ -114,7 +129,7 @@ class DataManager {
             callback && callback(data);
         }
         else {
-            this.getVendorsFromServer(function (data) {
+            return this.getVendorsFromServer(function (data) {
 
                 $.jStorage.set(cacheKey, data);
 
@@ -138,7 +153,38 @@ class DataManager {
             callback && callback(data);
         }
         else {
-            this.getEmployeesFromServer(function (data) {
+            return this.getEmployeesFromServer(function (data) {
+
+                $.jStorage.set(cacheKey, data);
+
+                callback && callback(data);
+            });
+        }
+
+    }
+
+
+    /**
+     * Get Partners from server
+     * @param callback {function} the callback function to invoke when data is fetched
+     * @returns {obj[]} returns an array of object of partner
+     */
+    getPriceLevels (callback?) : Promise<any> {
+
+        var cacheKey = 'price_levels';
+        var data = $.jStorage.get(cacheKey);
+
+        if (!!data) {
+
+            var promise = new Promise<any>((resolve, reject) => {
+                resolve(data);
+            });
+
+            callback && callback(data);
+            return promise;
+        }
+        else {
+            return this.getPriceLevelsFromServer(function (data) {
 
                 $.jStorage.set(cacheKey, data);
 
@@ -162,9 +208,10 @@ class DataManager {
 
         if (!!data) {
             callback && callback(data);
+            return data;
         }
         else {
-            this.getDepartmentFromServer(function (data) {
+            return this.getDepartmentFromServer(function (data) {
 
                 $.jStorage.set(cacheKey, data);
 
@@ -193,7 +240,7 @@ class DataManager {
 
             $.extend(options, filters);
 
-            jQuery.get(suiteletUrl, options, function (result) {
+            return jQuery.get(suiteletUrl, options, function (result) {
                 console.log('getPrimaryContacts(); // jquery complete: ', arguments);
 
                 callback && callback(result);
@@ -226,7 +273,7 @@ class DataManager {
 
             $.extend(options, filters);
 
-            jQuery.get(suiteletUrl, options, function (result) {
+            return jQuery.get(suiteletUrl, options, function (result) {
                 console.log('getCustomers(); // jquery complete: ', arguments);
 
                 callback && callback(result);
@@ -252,7 +299,7 @@ class DataManager {
 
         $.extend(options, {'params': JSON.stringify(data)});
 
-        jQuery.post(suiteletUrl, options, function (result) {
+        return jQuery.post(suiteletUrl, options, function (result) {
             console.log('submit(); // jquery complete: ', arguments);
 
             callback && callback(result);
