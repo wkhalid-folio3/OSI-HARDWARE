@@ -79,7 +79,8 @@ class CommonDAL extends BaseTypeDAL {
         var filters = [];
         var cols = [];
 
-        cols.push(new nlobjSearchColumn('name'));
+        cols.push(new nlobjSearchColumn('name').setSort());
+        cols.push(new nlobjSearchColumn('discountpct'));
 
         filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
 
@@ -100,6 +101,7 @@ class CommonDAL extends BaseTypeDAL {
         cols.push(new nlobjSearchColumn('displayname').setSort());
         cols.push(new nlobjSearchColumn('baseprice'));
         cols.push(new nlobjSearchColumn('salesdescription'));
+        cols.push(new nlobjSearchColumn('itemid'));
 
         if (!!options) {
             var query = options.query;

@@ -66,15 +66,15 @@
         align: "right",
 
         filterValue: function() {
-            return parseFloat(this.filterControl.val() || 0);
+            return parseFloat(parseFloat(this.filterControl.val() || 0).toFixed(2));
         },
 
         insertValue: function() {
-            return parseFloat(this.insertControl.val() || 0);
+            return parseFloat(this.insertControl.val() || 0).toFixed(2);
         },
 
         editValue: function() {
-            return parseFloat(this.editControl.val() || 0);
+            return parseFloat(this.editControl.val() || 0).toFixed(2);
         },
 
         _createTextBox: function() {
@@ -114,15 +114,17 @@ class CreateContractUIManager {
 
         this._dataManager = new DataManager(this._viewType);
 
+       this._priceLevels = window.priceLevels;
         this._contractInfo = window.contractInfo;
 
         this.setViewMode();
 
         this.bindDropdown();
 
-        this.fetchPriceLevels().then(()=> {
-            this.bindItemsGrid();
-        });
+        this.bindItemsGrid();
+        //this.fetchPriceLevels().then(()=> {
+        //    this.bindItemsGrid();
+        //});
 
         //this.bindItemsGrid();
 
@@ -304,7 +306,8 @@ class CreateContractUIManager {
                     amount: item.amount,
                     price: item.price,
                     quantity: item.quantity,
-                    item_description: item.description
+                    item_description: item.description,
+                    price_level: item.price_level
                 });
             });
 
@@ -366,7 +369,8 @@ class CreateContractUIManager {
                         quantity: contractItem.custrecord_f3mm_ci_quantity,
                         price: contractItem.custrecord_f3mm_ci_price,
                         amount: contractItem.custrecord_f3mm_ci_amount,
-                        description: contractItem.custrecord_f3mm_ci_item_description
+                        description: contractItem.custrecord_f3mm_ci_item_description,
+                        price_level: parseInt(contractItem.custrecord_f3mm_ci_price_level.value)
                     });
                 });
             }
@@ -382,6 +386,7 @@ class CreateContractUIManager {
                 //clients.push(insertingClient);
             },
             updateItem: function (updatingClient) {
+                console.log('updateItem: ', arguments);
             },
             deleteItem: function (deletingClient) {
                 //var clientIndex = $.inArray(deletingClient, contactItems);
@@ -399,10 +404,14 @@ class CreateContractUIManager {
         //window.db = db;
         //window.clients = contactItems;
 
+        this._priceLevels.unshift({id: 0, name: ''});
+        this._priceLevels.push({id: -1, name: 'Custom'});
+
+
         var inserting = true;
         var editing = true;
         var gridFields = [
-            {title: "Item", name: "item", type: "text", width: 150, css: "item"},
+            {title: "Item <span class='text-red'>*</span>", name: "item", type: "text", width: 150, css: "item"},
             {
                 title: "Description",
                 name: "description",
@@ -413,13 +422,13 @@ class CreateContractUIManager {
             },
             {title: "Quantity", name: "quantity", type: "number", width: 50, css: "quantity"},
             {
-                title: "Price Level",
+                title: "Price Level <span class='text-red'>*</span>",
                 name: "price_level",
                 type: "select",
                 textField: "name",
                 valueField: "id",
                 width: 80,
-                css: "price",
+                css: "price-level",
                 items: this._priceLevels
             },
             {title: "Price", name: "price", type: "decimal_number", width: 50, css: "price"},
@@ -465,7 +474,8 @@ class CreateContractUIManager {
                 console.log('onItemUpdating: ', args);
 
                 var data = args.item;
-                data.amount = data.price * data.quantity;
+                data.price = parseFloat(data.price).toFixed(2);
+                data.amount = args.row.find('.amount').html();
 
                 // TODO : need to handle the case when user does not click on item picker and just edits and saves the record.
                 var suggestion = args.row.next().data('data-selected-suggestion');
@@ -478,6 +488,8 @@ class CreateContractUIManager {
 
             onItemInserting: (args) => {
                 // cancel insertion of the item with empty 'name' field
+
+                console.log('onItemInserting:',args);
 
                 var $row = $('.jsgrid-insert-row');
                 var suggestion = $row.data('data-selected-suggestion');
@@ -492,6 +504,13 @@ class CreateContractUIManager {
                     args.cancel = true;
                     alert("Please select an item");
                 }
+
+
+                if (args.item.price_level === "") {
+                    args.cancel = true;
+                    alert("Please select price level.");
+                }
+
 
                 var existingData = $('#jsGrid').data().JSGrid.data;
                 var found = false;
@@ -521,31 +540,88 @@ class CreateContractUIManager {
         });
 
 
-        $grid.on('blur', '.jsgrid-insert-row .quantity input, .jsgrid-insert-row .price input', (ev)=> {
+        //$grid.on('blur', '.jsgrid-insert-row .quantity input, .jsgrid-insert-row .price input', (ev)=> {
+        //    var $input = $(ev.target);
+        //    var $tr = $input.parents('tr:first');
+        //    var $quantity = $tr.find('.quantity input');
+        //    var $price = $tr.find('.price input');
+        //    //var suggestion = $tr.data('data-selected-suggestion');
+        //    //if (!!suggestion) {
+        //        var quantity = parseInt($quantity.val());
+        //        var price = parseFloat($price.val());
+        //        var totalPrice = price * quantity;
+        //        $tr.find('.amount input').val(totalPrice.toFixed(2));
+        //    //}
+        //});
+
+        var gridRowClass = [
+            '.jsgrid-insert-row .quantity input',
+            '.jsgrid-insert-row .price input',
+            '.jsgrid-edit-row .quantity input',
+            '.jsgrid-edit-row .price input'
+        ];
+        $grid.on('blur', gridRowClass.join(', '), (ev)=> {
             var $input = $(ev.target);
             var $tr = $input.parents('tr:first');
             var $quantity = $tr.find('.quantity input');
             var $price = $tr.find('.price input');
-            var suggestion = $tr.data('data-selected-suggestion');
-            if (!!suggestion) {
-                var quantity = parseInt($quantity.val());
-                var price = parseFloat($price.val());
-                var totalPrice = price * quantity;
+
+            var isEditing = $tr.hasClass('jsgrid-edit-row');
+            var quantity = parseInt($quantity.val());
+            var price = parseFloat($price.val());
+            var totalPrice = (price * quantity).toFixed(2);
+
+            if (isEditing) {
+                $tr.find('.amount').html(totalPrice);
+            }
+            else {
                 $tr.find('.amount input').val(totalPrice);
             }
         });
 
-        $grid.on('blur', '.jsgrid-edit-row .quantity input, .jsgrid-edit-row .price input', (ev)=> {
-            var $input = $(ev.target);
-            var $tr = $input.parents('tr:first');
-            var $quantity = $tr.find('.quantity input');
-            var $price = $tr.find('.price input');
 
-            var quantity = parseInt($quantity.val());
-            var price = parseFloat($price.val());
-            var totalPrice = price * quantity;
-            $tr.find('.amount').html(totalPrice.toString());
+        $grid.on('change', '.jsgrid-insert-row .price-level select', (ev)=> {
+            var $priceLevelDropdown = $(ev.target);
+            var $row = $priceLevelDropdown.parents('tr:first');
+            var $priceTextbox = $row.find('.price input');
+
+            var suggestion = $row.data('data-selected-suggestion');
+            var selectedPriceLevelId = $priceLevelDropdown.val();
+            var price = $priceTextbox.val();
+
+            if (selectedPriceLevelId == "0" || selectedPriceLevelId == "-1") {
+                $priceTextbox.removeAttr('disabled');
+
+                if (!!suggestion) {
+                    $priceTextbox.val(suggestion.baseprice);
+                }
+                else {
+                    $priceTextbox.val('');
+                }
+            }
+            else {
+                $priceTextbox.attr('disabled', 'disabled');
+
+                var priceLevels = this._priceLevels;
+                var selectedPriceLevel = _.find(priceLevels, priceLevel => {
+                    return priceLevel.id == selectedPriceLevelId
+                });
+
+                if (!!suggestion && selectedPriceLevel != null) {
+                    var discountPercent = Math.abs(parseFloat(selectedPriceLevel.discountpct || 0));
+                    var discount = (suggestion.baseprice / 100) * discountPercent;
+                    var discountedPrice = (suggestion.baseprice - discount).toFixed(2);
+                    $priceTextbox.val(discountedPrice);
+                }
+            }
+
+
+            $priceTextbox.focus().trigger('blur')
+
+
         });
+
+
     }
 
 
@@ -654,24 +730,25 @@ class CreateContractUIManager {
 
                 // only set modified class in case of item pickers inside grid
                 //if ($this.is ('.item-picker') === true) {
-                    var origValue = $this.attr('data-orig-value');
-                    if (origValue === suggestion.displayname) {
-                        $tr.removeClass('modified-item');
-                    }
-                    else {
-                        $tr.addClass('modified-item');
-                    }
+                var origValue = $this.attr('data-orig-value');
+                if (origValue === suggestion.displayname) {
+                    $tr.removeClass('modified-item');
+                }
+                else {
+                    $tr.addClass('modified-item');
+                }
                 //}
-
 
 
                 $tr.data('data-selected-suggestion', suggestion);
                 var quantity = 1;
-                var price = parseFloat(suggestion.baseprice);
+                var listPriceId = 1;
+                var price = parseFloat(suggestion.baseprice).toFixed(2);
                 $tr.find('.description textarea').val(suggestion.salesdescription);
                 $tr.find('.quantity input').val(quantity);
-                $tr.find('.price input').val(price).focus().trigger('blur');
+                $tr.find('.price input').val(price); //.focus().trigger('blur');
                 $tr.find('.quantity input').focus();
+                $tr.find('.price-level select').val(listPriceId).focus().trigger('change');
             });
 
             $el.data('itempicker_created', true);

@@ -1,6 +1,7 @@
 // Declaration of all NetSuite SuiteScript 1.0 APIs
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="../dal/BaseTypeDAL.ts" />
+/// <reference path="../dal/CommonDAL.ts" />
 /// <reference path="../dal/ContractDAL.ts" />
 /// <reference path="../dal/FoldersDAL.ts" />
 /// <reference path="../_typescript-refs/f3.common.d.ts" />
@@ -17,6 +18,7 @@
  * -
  */
 
+import CommandEvent = CommandEvent;
 /**
  * CreateContractUI class that has the actual functionality of suitelet.
  * All business logic will be encapsulated in this class.
@@ -26,27 +28,30 @@
 
 class CreateContractUISuitelet {
 
-    private contractDAL : ContractDAL;
-    private foldersDAL : FoldersDAL;
-    private assetsFolderId: number;
+    private _contractDAL : ContractDAL;
+    private _foldersDAL : FoldersDAL;
+    private _commonDAL : CommonDAL;
+    private _assetsFolderId: number;
+
     title: string = 'Create Contract';
     type: string = 'create';
 
     constructor(request:nlobjRequest, response:nlobjResponse) {
 
-        this.foldersDAL = new FoldersDAL();
-        this.contractDAL = new ContractDAL();
+        this._foldersDAL = new FoldersDAL();
+        this._contractDAL = new ContractDAL();
+        this._commonDAL = new CommonDAL();
 
         var context = nlapiGetContext();
         var assetsFolderId = context.getSetting('SCRIPT', 'custscript_f3mm_st_assetsfolderid');
-        this.assetsFolderId = parseInt(assetsFolderId);
+        this._assetsFolderId = parseInt(assetsFolderId);
 
         this.main(request, response);
     }
 
     getFileUrl () {
-        var assetsFolderId = this.assetsFolderId;
-        var files = this.foldersDAL.getFiles(assetsFolderId);
+        var assetsFolderId = this._assetsFolderId;
+        var files = this._foldersDAL.getFiles(assetsFolderId);
         var found = null;
         files.forEach(file=> {
             if (file.name == "create_contract.html") {
@@ -59,8 +64,8 @@ class CreateContractUISuitelet {
     }
 
     getDependencyFiles() {
-        var assetsFolderId = this.assetsFolderId;
-        var files = this.foldersDAL.getFiles(assetsFolderId, true);
+        var assetsFolderId = this._assetsFolderId;
+        var files = this._foldersDAL.getFiles(assetsFolderId, true);
         return files;
     }
 
@@ -80,7 +85,7 @@ class CreateContractUISuitelet {
             var contract = null;
 
             if (!!contractId) {
-                contract = this.contractDAL.get(contractId);
+                contract = this._contractDAL.get(contractId);
                 F3.Util.Utility.logDebug('CreateContractUISuitelet.main() // contract: ', JSON.stringify(contract));
 
                 uiSuiteletUrl = uiSuiteletUrl + '&cid=' + contractId;
@@ -104,6 +109,11 @@ class CreateContractUISuitelet {
             var suiteletDeploymentId = 'customdeploy_f3mm_create_contract_api_st';
             var apiSuiteletUrl = nlapiResolveURL('SUITELET', suiteletScriptId, suiteletDeploymentId, false);
 
+            var priceLevels = this._commonDAL.getPriceLevels();
+            priceLevels.forEach(priceLevel => {
+                priceLevel.id = parseInt(priceLevel.id);
+            });
+
             var data = nlapiLoadFile(this.getFileUrl());
             var files = this.getDependencyFiles();
             var indexPageValue = data.getValue();
@@ -119,6 +129,7 @@ class CreateContractUISuitelet {
             indexPageValue = indexPageValue.replace(/{{ standaloneClass }}/gi, standaloneClass);
             indexPageValue = indexPageValue.replace('{{ contractInfo }}', JSON.stringify(contract));
             indexPageValue = indexPageValue.replace(/{{ ViewContractUrl }}/gi, uiSuiteletUrl);
+            indexPageValue = indexPageValue.replace(/{{ priceLevels }}/gi, JSON.stringify(priceLevels));
 
             if (standalone === true) {
                 response.write(indexPageValue);

@@ -65,7 +65,8 @@ var CommonDAL = (function (_super) {
     CommonDAL.prototype.getPriceLevels = function (options) {
         var filters = [];
         var cols = [];
-        cols.push(new nlobjSearchColumn('name'));
+        cols.push(new nlobjSearchColumn('name').setSort());
+        cols.push(new nlobjSearchColumn('discountpct'));
         filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
         var result = this.getAll(filters, cols, 'pricelevel');
         return result;
@@ -79,6 +80,7 @@ var CommonDAL = (function (_super) {
         cols.push(new nlobjSearchColumn('displayname').setSort());
         cols.push(new nlobjSearchColumn('baseprice'));
         cols.push(new nlobjSearchColumn('salesdescription'));
+        cols.push(new nlobjSearchColumn('itemid'));
         if (!!options) {
             var query = options.query;
             if (F3.Util.Utility.isBlankOrNull(query) == false) {

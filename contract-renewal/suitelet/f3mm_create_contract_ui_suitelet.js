@@ -1,20 +1,10 @@
 // Declaration of all NetSuite SuiteScript 1.0 APIs
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="../dal/BaseTypeDAL.ts" />
+/// <reference path="../dal/CommonDAL.ts" />
 /// <reference path="../dal/ContractDAL.ts" />
 /// <reference path="../dal/FoldersDAL.ts" />
 /// <reference path="../_typescript-refs/f3.common.d.ts" />
-/**
- * Created by zshaikh on 11/18/2015.
- * TODO:
- * -
- * Referenced By:
- * -
- * -
- * Dependencies:
- * -
- * -
- */
 /**
  * CreateContractUI class that has the actual functionality of suitelet.
  * All business logic will be encapsulated in this class.
@@ -24,16 +14,17 @@ var CreateContractUISuitelet = (function () {
     function CreateContractUISuitelet(request, response) {
         this.title = 'Create Contract';
         this.type = 'create';
-        this.foldersDAL = new FoldersDAL();
-        this.contractDAL = new ContractDAL();
+        this._foldersDAL = new FoldersDAL();
+        this._contractDAL = new ContractDAL();
+        this._commonDAL = new CommonDAL();
         var context = nlapiGetContext();
         var assetsFolderId = context.getSetting('SCRIPT', 'custscript_f3mm_st_assetsfolderid');
-        this.assetsFolderId = parseInt(assetsFolderId);
+        this._assetsFolderId = parseInt(assetsFolderId);
         this.main(request, response);
     }
     CreateContractUISuitelet.prototype.getFileUrl = function () {
-        var assetsFolderId = this.assetsFolderId;
-        var files = this.foldersDAL.getFiles(assetsFolderId);
+        var assetsFolderId = this._assetsFolderId;
+        var files = this._foldersDAL.getFiles(assetsFolderId);
         var found = null;
         files.forEach(function (file) {
             if (file.name == "create_contract.html") {
@@ -44,8 +35,8 @@ var CreateContractUISuitelet = (function () {
         //return "SuiteScripts/ContractRenewal/assets/create_contract.html";
     };
     CreateContractUISuitelet.prototype.getDependencyFiles = function () {
-        var assetsFolderId = this.assetsFolderId;
-        var files = this.foldersDAL.getFiles(assetsFolderId, true);
+        var assetsFolderId = this._assetsFolderId;
+        var files = this._foldersDAL.getFiles(assetsFolderId, true);
         return files;
     };
     /**
@@ -61,7 +52,7 @@ var CreateContractUISuitelet = (function () {
             var contractId = request.getParameter('cid');
             var contract = null;
             if (!!contractId) {
-                contract = this.contractDAL.get(contractId);
+                contract = this._contractDAL.get(contractId);
                 F3.Util.Utility.logDebug('CreateContractUISuitelet.main() // contract: ', JSON.stringify(contract));
                 uiSuiteletUrl = uiSuiteletUrl + '&cid=' + contractId;
                 if (editMode == 't') {
@@ -80,6 +71,10 @@ var CreateContractUISuitelet = (function () {
             var suiteletScriptId = 'customscript_f3mm_create_contract_api_st';
             var suiteletDeploymentId = 'customdeploy_f3mm_create_contract_api_st';
             var apiSuiteletUrl = nlapiResolveURL('SUITELET', suiteletScriptId, suiteletDeploymentId, false);
+            var priceLevels = this._commonDAL.getPriceLevels();
+            priceLevels.forEach(function (priceLevel) {
+                priceLevel.id = parseInt(priceLevel.id);
+            });
             var data = nlapiLoadFile(this.getFileUrl());
             var files = this.getDependencyFiles();
             var indexPageValue = data.getValue();
@@ -93,6 +88,7 @@ var CreateContractUISuitelet = (function () {
             indexPageValue = indexPageValue.replace(/{{ standaloneClass }}/gi, standaloneClass);
             indexPageValue = indexPageValue.replace('{{ contractInfo }}', JSON.stringify(contract));
             indexPageValue = indexPageValue.replace(/{{ ViewContractUrl }}/gi, uiSuiteletUrl);
+            indexPageValue = indexPageValue.replace(/{{ priceLevels }}/gi, JSON.stringify(priceLevels));
             if (standalone === true) {
                 response.write(indexPageValue);
             }
