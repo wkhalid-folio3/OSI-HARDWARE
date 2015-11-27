@@ -506,9 +506,9 @@ class CreateContractUIManager {
                 }
 
 
-                if (args.item.price_level === "") {
+                if (args.item.price_level == "0") {
                     args.cancel = true;
-                    alert("Please select price level.");
+                    alert("Please select price level");
                 }
 
 

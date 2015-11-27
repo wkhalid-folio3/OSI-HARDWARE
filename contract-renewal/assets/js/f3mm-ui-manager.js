@@ -379,9 +379,9 @@ var CreateContractUIManager = (function () {
                     args.cancel = true;
                     alert("Please select an item");
                 }
-                if (args.item.price_level === "") {
+                if (args.item.price_level == "0") {
                     args.cancel = true;
-                    alert("Please select price level.");
+                    alert("Please select price level");
                 }
                 var existingData = $('#jsGrid').data().JSGrid.data;
                 var found = false;
