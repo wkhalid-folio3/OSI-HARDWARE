@@ -363,6 +363,7 @@ class CreateContractUIManager {
             var contractItemsInfo = this._contractInfo.sublists.recmachcustrecord_f3mm_ci_contract;
             if (!!contractItemsInfo) {
                 contractItemsInfo.forEach(contractItem=> {
+                    var priceLevel = contractItem.custrecord_f3mm_ci_price_level;
                     contactItems.push({
                         item: contractItem.custrecord_f3mm_ci_item.text,
                         itemid: contractItem.custrecord_f3mm_ci_item.value,
@@ -370,7 +371,7 @@ class CreateContractUIManager {
                         price: contractItem.custrecord_f3mm_ci_price,
                         amount: contractItem.custrecord_f3mm_ci_amount,
                         description: contractItem.custrecord_f3mm_ci_item_description,
-                        price_level: parseInt(contractItem.custrecord_f3mm_ci_price_level.value)
+                        price_level: parseInt((priceLevel && priceLevel.value) || "0")
                     });
                 });
             }
