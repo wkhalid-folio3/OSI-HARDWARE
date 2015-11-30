@@ -81,6 +81,68 @@ class DataManager {
     }
 
 
+    private getTaxCodesFromServer(params, callback) {
+
+        var suiteletUrl = this.getServerUrl();
+
+
+        var options = {
+            'action': 'get_taxcodes'
+        };
+
+        var filters = {
+            'params': JSON.stringify(params)
+        };
+
+        $.extend(options, filters);
+
+        return jQuery.get(suiteletUrl, options, function (result) {
+            console.log('getTaxCodes(); // jquery complete: ', arguments);
+
+            callback && callback(result);
+
+        });
+
+    }
+
+
+
+    /**
+     * Description of method DataManager
+     * @param parameter
+     */
+    getTaxCodes (params, callback) {
+        try {
+            var cacheKey = 'taxcodes';
+            var data = $.jStorage.get(cacheKey);
+
+            if (!!data) {
+                callback && callback(data);
+            }
+            else {
+
+                return this.getTaxCodesFromServer(params, function (data) {
+
+                    $.jStorage.set(cacheKey, data);
+
+                    callback && callback(data);
+                });
+                //return jQuery.get(suiteletUrl, options, function (result) {
+                //    console.log('getTaxCodes(); // jquery complete: ', arguments);
+                //
+                //    callback && callback(result);
+                //
+                //});
+            }
+
+        } catch (e) {
+            console.error('ERROR', 'Error during main DataManager.getTaxCodes()', e.toString());
+
+            callback && callback(null);
+        }
+    }
+
+
     /**
      * Description of method DataManager
      * @param parameter
@@ -108,7 +170,7 @@ class DataManager {
             });
 
         } catch (e) {
-            console.error('ERROR', 'Error during main DataManager.getCustomers()', e.toString());
+            console.error('ERROR', 'Error during main DataManager.getItems()', e.toString());
 
             callback && callback(null);
         }

@@ -99,6 +99,13 @@ class CreateContractAPISuitelet {
                 result.status = 'OK';
                 result.message = 'success';
             }
+            else if (action === 'get_taxcodes') {
+                var customers = commonDAL.getTaxItems(params);
+                result.data = customers;
+                result.status_code = 200;
+                result.status = 'OK';
+                result.message = 'success';
+            }
             else if (action === 'get_items') {
                 var items = commonDAL.getItems(params);
                 result.data = items;
@@ -106,11 +113,16 @@ class CreateContractAPISuitelet {
                 result.status = 'OK';
                 result.message = 'success';
             }
+            else if (action === 'create_quote') {
+                var quote = contractDAL.createQuote(params);
+                result.data = quote;
+                result.status_code = 200;
+                result.status = 'OK';
+                result.message = 'success';
+            }
             else if (action === 'submit') {
 
-                var data = params;
-
-                var createdId = contractDAL.create(data);
+                var createdId = contractDAL.create(params);
 
                 result.data = {
                     id: createdId

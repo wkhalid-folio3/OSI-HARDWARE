@@ -175,7 +175,8 @@ tr.modified-item {
 }
 
 #jsGrid .tt-menu {
-    left: 45px !important;
+    /*left: 45px !important;*/
+    margin-left: 12px;
 }
 
 div#jsGrid {
@@ -188,6 +189,7 @@ div#jsGrid {
 
 #jsGrid .tt-menu {
     top: initial !important;
+    left: initial !important;
 }
 
 

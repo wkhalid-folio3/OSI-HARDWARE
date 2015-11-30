@@ -1,6 +1,7 @@
 // Declaration of all NetSuite SuiteScript 1.0 APIs
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="./BaseTypeDAL.ts" />
+/// <reference path="./CommonDAL.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -38,6 +39,31 @@ var ContractDAL = (function (_super) {
             poNumber: { id: 'custrecord_f3mm_po_number', type: 'text' }
         };
     }
+    ContractDAL.prototype.getWithDetails = function (id) {
+        var commonDAL = new CommonDAL();
+        var contract = this.get(id);
+        var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
+        var itemIds = contractItems.map(function (ci) { return parseInt(ci.custrecord_f3mm_ci_item.value); });
+        var items = commonDAL.getItems({ itemIds: itemIds });
+        contractItems.forEach(function (contractItem) {
+            var itemId = contractItem.custrecord_f3mm_ci_item.value;
+            var foundItem = items.filter(function (item) { return item.id == itemId; })[0];
+            if (!!foundItem) {
+                contractItem.custrecord_f3mm_ci_item.baseprice = foundItem.baseprice;
+                contractItem.custrecord_f3mm_ci_item.displayname = foundItem.displayname;
+                contractItem.custrecord_f3mm_ci_item.itemid = foundItem.itemid;
+            }
+        });
+        return contract;
+    };
+    ContractDAL.prototype.createQuote = function (contractId) {
+        var contract = this.getWithDetails(contractId);
+        var quote = nlapiCreateRecord('estimate');
+        quote.setFieldValue('salesrep', contract[this.fields.primaryContact.id]);
+        quote.setFieldValue('entity', contract[this.fields.customer.id].value);
+        var quoteId = nlapiSubmitRecord(quote);
+        return quoteId;
+    };
     ContractDAL.prototype.create = function (contract) {
         var record = {};
         record.id = contract.id;
@@ -68,6 +94,8 @@ var ContractDAL = (function (_super) {
                 lineitem['custrecord_f3mm_ci_amount'] = item.amount;
                 lineitem['custrecord_f3mm_ci_item_description'] = item.item_description || '';
                 lineitem['custrecord_f3mm_ci_price_level'] = item.price_level;
+                lineitem['custrecord_f3mm_ci_taxcode'] = item.tax_code;
+                lineitem['custrecord_f3mm_ci_taxrate'] = item.tax_rate;
                 contractItemsSublist.lineitems.push(lineitem);
             });
             record['sublists'] = [];

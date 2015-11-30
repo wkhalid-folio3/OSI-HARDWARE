@@ -86,6 +86,10 @@ var CommonDAL = (function (_super) {
             if (F3.Util.Utility.isBlankOrNull(query) == false) {
                 filters.push(new nlobjSearchFilter('displayname', null, 'startswith', query));
             }
+            var itemIds = options.itemIds;
+            if (!!itemIds) {
+                filters.push(new nlobjSearchFilter('internalid', null, 'anyof', itemIds));
+            }
         }
         filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
         // load data from db
@@ -147,6 +151,58 @@ var CommonDAL = (function (_super) {
         // serialize data
         var jsonConverterTimer = F3.Util.StopWatch.start('Convert objects to json manually.');
         var result = this.getAll(x, cols, 'customer');
+        jsonConverterTimer.stop();
+        return result;
+    };
+    CommonDAL.prototype.getTaxItems = function (options) {
+        var taxGroups = this.getTaxGroups(options);
+        var taxCodes = this.getTaxCodes(options);
+        var taxItems = taxGroups.concat(taxCodes);
+        taxItems.sort(function (a, b) {
+            var nameA = a.itemid.toLowerCase(), nameB = b.itemid.toLowerCase();
+            if (nameA < nameB) {
+                return -1;
+            }
+            if (nameA > nameB) {
+                return 1;
+            }
+            return 0; //default return value (no sorting)
+        });
+        return taxItems;
+    };
+    CommonDAL.prototype.getTaxGroups = function (options) {
+        var filters = [];
+        var cols = [];
+        cols.push(new nlobjSearchColumn('itemid').setSort());
+        cols.push(new nlobjSearchColumn('rate'));
+        if (!!options) {
+            var query = options.query;
+            if (F3.Util.Utility.isBlankOrNull(query) == false) {
+                filters.push(new nlobjSearchFilter('itemid', null, 'startswith', query));
+            }
+        }
+        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
+        // serialize data
+        var jsonConverterTimer = F3.Util.StopWatch.start('Convert objects to json manually.');
+        var result = this.getAll(filters, cols, 'taxgroup');
+        jsonConverterTimer.stop();
+        return result;
+    };
+    CommonDAL.prototype.getTaxCodes = function (options) {
+        var filters = [];
+        var cols = [];
+        cols.push(new nlobjSearchColumn('itemid').setSort());
+        cols.push(new nlobjSearchColumn('rate'));
+        if (!!options) {
+            var query = options.query;
+            if (F3.Util.Utility.isBlankOrNull(query) == false) {
+                filters.push(new nlobjSearchFilter('itemid', null, 'startswith', query));
+            }
+        }
+        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
+        // serialize data
+        var jsonConverterTimer = F3.Util.StopWatch.start('Convert objects to json manually.');
+        var result = this.getAll(filters, cols, 'salestaxitem');
         jsonConverterTimer.stop();
         return result;
     };

@@ -1,6 +1,7 @@
 // Declaration of all NetSuite SuiteScript 1.0 APIs
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="./BaseTypeDAL.ts" />
+/// <reference path="./CommonDAL.ts" />
 
 /**
  * Created by zshaikh on 11/18/2015.
@@ -32,6 +33,41 @@ class ContractDAL extends BaseTypeDAL {
         poNumber: {id: 'custrecord_f3mm_po_number', type: 'text'}
     };
 
+    getWithDetails(id: string) {
+
+        var commonDAL = new CommonDAL();
+        var contract = this.get(id);
+        var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
+        var itemIds = contractItems.map(ci => parseInt(ci.custrecord_f3mm_ci_item.value));
+        var items = commonDAL.getItems({itemIds: itemIds});
+
+        contractItems.forEach(contractItem => {
+            var itemId = contractItem.custrecord_f3mm_ci_item.value;
+            var foundItem = items.filter(item => item.id == itemId)[0];
+            if(!!foundItem) {
+                contractItem.custrecord_f3mm_ci_item.baseprice = foundItem.baseprice;
+                contractItem.custrecord_f3mm_ci_item.displayname = foundItem.displayname;
+                contractItem.custrecord_f3mm_ci_item.itemid = foundItem.itemid;
+            }
+        });
+
+        return contract;
+    }
+
+    createQuote(contractId) {
+
+        var contract = this.getWithDetails(contractId);
+
+        var quote = nlapiCreateRecord('estimate');
+
+        quote.setFieldValue('salesrep', contract[this.fields.primaryContact.id]);
+        quote.setFieldValue('entity', contract[this.fields.customer.id].value);
+
+
+        var quoteId = nlapiSubmitRecord(quote);
+
+        return quoteId;
+    }
 
     create(contract) {
 
@@ -67,6 +103,9 @@ class ContractDAL extends BaseTypeDAL {
                 lineitem['custrecord_f3mm_ci_amount'] = item.amount;
                 lineitem['custrecord_f3mm_ci_item_description'] = item.item_description || '';
                 lineitem['custrecord_f3mm_ci_price_level'] = item.price_level;
+                lineitem['custrecord_f3mm_ci_taxcode'] = item.tax_code;
+                lineitem['custrecord_f3mm_ci_taxrate'] = item.tax_rate;
+
 
                 contractItemsSublist.lineitems.push(lineitem);
             });
@@ -78,5 +117,3 @@ class ContractDAL extends BaseTypeDAL {
         return this.upsert(record, true);
     }
 }
-
-

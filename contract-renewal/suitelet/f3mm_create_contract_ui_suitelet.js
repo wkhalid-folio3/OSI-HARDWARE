@@ -52,7 +52,7 @@ var CreateContractUISuitelet = (function () {
             var contractId = request.getParameter('cid');
             var contract = null;
             if (!!contractId) {
-                contract = this._contractDAL.get(contractId);
+                contract = this._contractDAL.getWithDetails(contractId);
                 F3.Util.Utility.logDebug('CreateContractUISuitelet.main() // contract: ', JSON.stringify(contract));
                 uiSuiteletUrl = uiSuiteletUrl + '&cid=' + contractId;
                 if (editMode == 't') {
