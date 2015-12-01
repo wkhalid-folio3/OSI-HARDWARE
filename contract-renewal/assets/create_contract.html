@@ -33,23 +33,32 @@
             <a href="{{ ViewContractUrl }}" class="btn btn-primary">Edit</a>
             &nbsp;
             <a href="#" class="btn btn-default btn-cancel">Back to Contract Listing</a>
+            &nbsp;
+            <a href="javascript:;" class="btn btn-default btn-generate-quote">Generate Quote</a>
         </div>
 
         <br />
 
-        <div class="form-horizontal">
 
-
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="panel panel-primary">
-                        <div class="panel-heading">
-                            Primary Information
-                        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        Primary Information
                     </div>
                 </div>
             </div>
+        </div>
 
+
+        <div class="view-horizontal" style="display: none;">
+
+
+        </div>
+
+
+
+        <div class="form-horizontal" style="display: none;">
 
             <div class="row">
                 <div class="col-sm-4">
@@ -62,7 +71,7 @@
 
 
                             <div class="form-group">
-                                <label for="contract_number" class="control-label">Contract #</label>
+                                <label for="contract_number" class="control-label">Contract # <span class="mandatory">*</span></label>
 
                                 <div class="">
                                     <input type="text" class="form-control contract-number-text"
@@ -81,7 +90,7 @@
 
 
                             <div class="form-group">
-                                <label for="customer" class="control-label">Customer</label>
+                                <label for="customer" class="control-label">Customer <span class="mandatory">*</span></label>
 
                                 <div class="">
                                     <!--<select class="form-control customer-dropdown"-->
@@ -103,7 +112,7 @@
 
 
                             <div class="form-group">
-                                <label for="primary_contact" class="control-label">End User</label>
+                                <label for="primary_contact" class="control-label">End User <span class="mandatory">*</span></label>
 
                                 <div class="">
                                     <!--<select class="form-control customer-dropdown"-->
@@ -150,7 +159,7 @@
 
 
                     <div class="form-group">
-                        <label for="sales_rep" class="control-label">Sales Rep</label>
+                        <label for="sales_rep" class="control-label">Sales Rep <span class="mandatory">*</span></label>
 
                         <div class="">
                             <select class="form-control sales-rep-dropdown"
@@ -193,7 +202,7 @@
 
 
                         <div class="form-group">
-                        <label for="vendor" class="control-label">Contract Vendor</label>
+                        <label for="vendor" class="control-label">Contract Vendor <span class="mandatory">*</span></label>
 
                         <div class="">
                             <select class="form-control vendor-dropdown"
@@ -206,7 +215,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="status" class="control-label">Status</label>
+                        <label for="status" class="control-label">Status <span class="mandatory">*</span></label>
 
                         <div class="">
                             <select class="form-control status-dropdown"
@@ -227,7 +236,8 @@
                         <div class="">
                             <input type="text" class="form-control total-quantity-seats-text"
                                    id="total_quantity_seats"
-                                   name="total_quantity_seats"/>
+                                   name="total_quantity_seats"
+                                   readonly="readonly" />
                         </div>
                     </div>
 
@@ -260,7 +270,7 @@
 
 
                             <div class="form-group">
-                                <label for="start_date" class="control-label">Start Date</label>
+                                <label for="start_date" class="control-label">Start Date <span class="mandatory">*</span></label>
 
                                 <div class="">
                                     <div class="input-group date">
@@ -274,7 +284,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="end_date" class="control-label">End Date</label>
+                                <label for="end_date" class="control-label">End Date <span class="mandatory">*</span></label>
 
                                 <div class="">
                                     <div class="input-group date">
@@ -333,6 +343,130 @@
 </div>
 
 
+<div class="contract-loading-backdrop modal-backdrop fade in"></div>
+<div class="contract-loading in">
+    <div class="contract-loading-text"><img src="{{ loading.gif }}" /></div>
+</div>
+
+
+<script type="text/template" id="view_template">
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="row">
+                <div class="col-sm-8">
+
+                    <div class="form-group">
+                        <label for="contract_number" class="control-label">Contract #</label>
+                        <div class="">
+                            {{= custrecord_f3mm_contract_number }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer" class="control-label">Customer</label>
+                        <div class="">
+                            <a href="/app/common/entity/custjob.nl?id={{= custrecord_f3mm_customer.value }}">{{= custrecord_f3mm_customer.text }}</a>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="primary_contact" class="control-label">End User</label>
+                        <div class="">
+                            <a href="/app/common/entity/contact.nl?id={{= custrecord_f3mm_primary_contact.value }}">{{= custrecord_f3mm_primary_contact.text }}</a>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="primary_contact_email" class="control-label">End User Email</label>
+                        <div class="">
+                            {{= custrecord_f3mm_primary_contact_email }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sales_rep" class="control-label">Sales Rep</label>
+                        <div class="">
+                            <a href="/app/common/entity/employee.nl?id={{= custrecord_f3mm_sales_rep.value }}">{{= custrecord_f3mm_sales_rep.text }}</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="row">
+                <div class="col-sm-8">
+
+                    <div class="form-group">
+                        <label for="po_number" class="control-label">PO #</label>
+                        <div class="">
+                            {{= custrecord_f3mm_po_number }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vendor" class="control-label">Contract Vendor</label>
+                        <div class="">
+                            <a href="/app/common/entity/vendor.nl?id={{= custrecord_f3mm_contract_vendor.value }}">{{= custrecord_f3mm_contract_vendor.text }}</a>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status" class="control-label">Status <span class="mandatory">*</span></label>
+                        <div class="">
+                            {{= custrecord_f3mm_status.text }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="total_quantity_seats" class="control-label">Total Quantity Seats</label>
+                        <div class="">
+                            {{= custrecord_f3mm_total_qty_seats }}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="row">
+                <div class="col-sm-8">
+
+                    <div class="form-group">
+                        <label for="department" class="control-label">Department</label>
+                        <div class="">
+                            {{ if ( !!custrecord_f3mm_department) { }}
+                            <a href="/app/common/otherlists/departmenttype.nl?id={{= custrecord_f3mm_department.value }}">{{= custrecord_f3mm_department.text }}</a>
+                            {{ } }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="start_date" class="control-label">Start Date <span class="mandatory">*</span></label>
+                        <div class="">
+                            {{= custrecord_f3mm_start_date }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="end_date" class="control-label">End Date <span class="mandatory">*</span></label>
+                        <div class="">
+                            {{= custrecord_f3mm_end_date }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="memo" class="control-label">Memo</label>
+                        <div class="">
+                            {{= custrecord_f3mm_memo }}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
 <script>
     window.$ = (window.NS && window.NS.jQuery) || window.jQuery;
     window.pageType = '{{ type }}';
@@ -347,6 +481,7 @@
 
 <script src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.min.js"></script>
 <script type="text/javascript" src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+<!--<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/q.js/2.0.3/q.min.js"></script>-->
 <script type="text/javascript" src="{{ jstorage.js }}"></script>
 <script type="text/javascript" src="{{ typeahead.jquery.min.js }}"></script>
 <script type="text/javascript" src="{{ bootstrap-datepicker.min.js }}"></script>

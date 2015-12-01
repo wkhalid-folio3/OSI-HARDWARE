@@ -113,8 +113,8 @@ class CreateContractAPISuitelet {
                 result.status = 'OK';
                 result.message = 'success';
             }
-            else if (action === 'create_quote') {
-                var quote = contractDAL.createQuote(params);
+            else if (action === 'generate_quote') {
+                var quote = contractDAL.generateQuote(params.contractId);
                 result.data = quote;
                 result.status_code = 200;
                 result.status = 'OK';

@@ -351,6 +351,36 @@ class DataManager {
 
 
 
+    generateQuote(params, callback){
+        try {
+
+            var suiteletUrl = this.getServerUrl();
+
+            var options = {
+                'action': 'generate_quote'
+            };
+
+            var filters = {
+                'params': JSON.stringify(params)
+            };
+
+            $.extend(options, filters);
+
+            return jQuery.get(suiteletUrl, options, function (result) {
+                console.log('getCustomers(); // jquery complete: ', arguments);
+
+                callback && callback(result.data);
+
+            });
+
+        } catch (e) {
+            console.error('ERROR', 'Error during main DataManager.getCustomers()', e.toString());
+
+            callback && callback(null);
+        }
+    }
+
+
 
     submit(data, callback){
 

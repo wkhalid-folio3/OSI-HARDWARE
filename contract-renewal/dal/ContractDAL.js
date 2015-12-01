@@ -56,11 +56,27 @@ var ContractDAL = (function (_super) {
         });
         return contract;
     };
-    ContractDAL.prototype.createQuote = function (contractId) {
+    ContractDAL.prototype.generateQuote = function (contractId) {
         var contract = this.getWithDetails(contractId);
         var quote = nlapiCreateRecord('estimate');
-        quote.setFieldValue('salesrep', contract[this.fields.primaryContact.id]);
-        quote.setFieldValue('entity', contract[this.fields.customer.id].value);
+        var entityStatuses = [{ "value": "14", "text": "Closed Lost" }, { "value": "7", "text": "Opportunity Identified" }, { "value": "8", "text": "In Discussion" }, { "value": "9", "text": "Identified Decision Makers" }, { "value": "10", "text": "Proposal" }, { "value": "11", "text": "In Negotiation" }, { "value": "12", "text": "Purchasing" }];
+        quote.setFieldValue('expectedclosedate', '01/15/2016');
+        quote.setFieldValue('trandate', '12/01/2015'); // mandatory field
+        quote.setFieldValue('entitystatus', "10"); // proposal
+        quote.setFieldValue('salesrep', contract[this.fields.salesRep.id].value);
+        quote.setFieldValue('entity', contract[this.fields.customer.id].value); // mandatory field
+        var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
+        if (!!contractItems) {
+            contractItems.forEach(function (contractItem) {
+                quote.selectNewLineItem('item');
+                quote.setCurrentLineItemValue('item', 'item', contractItem.custrecord_f3mm_ci_item.value);
+                quote.setCurrentLineItemValue('item', 'quantity', contractItem.custrecord_f3mm_ci_quantity);
+                quote.setCurrentLineItemValue('item', 'price', contractItem.custrecord_f3mm_ci_price_level.value);
+                quote.setCurrentLineItemValue('item', 'rate', contractItem.custrecord_f3mm_ci_price);
+                quote.setCurrentLineItemValue('item', 'taxcode', contractItem.custrecord_f3mm_ci_taxcode.value);
+                quote.commitLineItem('item');
+            });
+        }
         var quoteId = nlapiSubmitRecord(quote);
         return quoteId;
     };

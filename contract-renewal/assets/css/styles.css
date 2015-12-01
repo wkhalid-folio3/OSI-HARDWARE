@@ -259,6 +259,19 @@ textarea {
 }
 
 
+.form-control.error {
+    border: 1px solid #FF0000 !important;
+}
+
+label.error {
+    color: #ff0000;
+}
+
+.mandatory {
+    color: #ff0000;
+}
+
+
 .input-group-addon {
     padding: 3px 12px;
 }
@@ -276,3 +289,30 @@ textarea:disabled,
 }
 
 
+
+.contract-loading-backdrop,
+.contract-loading {
+    display: none;
+}
+
+.contract-loading {
+    position: fixed;
+    top: 48%;
+    left: 48%;
+    z-index: 5000;
+}
+
+.contract-loading-text {
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+
+.view-horizontal label {
+    margin-bottom: 2px;
+}
+
+.view-horizontal .form-group {
+    margin-bottom: 10px;
+}
