@@ -241,7 +241,7 @@ var DataManager = (function () {
             $.extend(options, filters);
             return jQuery.get(suiteletUrl, options, function (result) {
                 console.log('getCustomers(); // jquery complete: ', arguments);
-                callback && callback(result.data);
+                callback && callback(result);
             });
         }
         catch (e) {

@@ -48,6 +48,7 @@ var CreateContractUISuitelet = (function () {
             var uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
             var uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
             var uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
+            //var viewQuoteUrl = '';
             var editMode = request.getParameter('e');
             var contractId = request.getParameter('cid');
             var contract = null;
@@ -87,8 +88,9 @@ var CreateContractUISuitelet = (function () {
             indexPageValue = indexPageValue.replace('{{ apiSuiteletUrl }}', apiSuiteletUrl);
             indexPageValue = indexPageValue.replace(/{{ standaloneClass }}/gi, standaloneClass);
             indexPageValue = indexPageValue.replace('{{ contractInfo }}', JSON.stringify(contract));
-            indexPageValue = indexPageValue.replace(/{{ ViewContractUrl }}/gi, uiSuiteletUrl);
+            indexPageValue = indexPageValue.replace(/{{ viewContractUrl }}/gi, uiSuiteletUrl);
             indexPageValue = indexPageValue.replace(/{{ priceLevels }}/gi, JSON.stringify(priceLevels));
+            //indexPageValue = indexPageValue.replace(/{{ viewQuoteUrl }}/gi, viewQuoteUrl);
             if (standalone === true) {
                 response.write(indexPageValue);
             }

@@ -74,8 +74,12 @@ $.validator.addMethod('requiredTypeahead', function (value, element, param) {
     var selectedId = $element.attr('data-selected-id');
     var selectedText = $element.attr('data-selected-text');
     var val = $element.val();
-    var isMatched = selectedText == val;
-    isValid = isMatched;
+    if (!val) {
+        isValid = false;
+    }
+    else {
+        isValid = selectedText == val;
+    }
     return isValid; // return bool here if valid or not.
 }, 'This field is required.');
 $(function () {
@@ -107,26 +111,31 @@ var CreateContractUIManager = (function () {
         this.bindDatePicker();
         $(".f3mm-contract-renewal").parents('form:first').removeAttr('onsubmit').validate({
             rules: {
-                contract_number: 'required',
+                contract_number: {
+                    required: true
+                },
                 customer: {
                     requiredTypeahead: true
                 },
-                'primary_contact': {
+                primary_contact: {
                     requiredTypeahead: true
                 },
-                'vendor': {
+                department: {
                     required: true
                 },
-                'sales_rep': {
+                vendor: {
                     required: true
                 },
-                'status': {
+                sales_rep: {
                     required: true
                 },
-                'end_date': {
+                status: {
                     required: true
                 },
-                'start_date': {
+                end_date: {
+                    required: true
+                },
+                start_date: {
                     required: true
                 }
             },
@@ -151,9 +160,14 @@ var CreateContractUIManager = (function () {
             $button.val('Generating...');
             _this.showLoading();
             _this._dataManager
-                .generateQuote({ contractId: _this._contractInfo.id }, function (quoteId) {
-                var viewRecordUrl = nlapiResolveURL('RECORD', 'estimate', quoteId, false);
-                window.location.href = viewRecordUrl;
+                .generateQuote({ contractId: _this._contractInfo.id }, function (result) {
+                if (!!result.data) {
+                    var viewRecordUrl = nlapiResolveURL('RECORD', 'estimate', result.data, false);
+                    window.location.href = viewRecordUrl;
+                }
+                else {
+                    alert(result.message);
+                }
             });
         });
     }
@@ -184,6 +198,11 @@ var CreateContractUIManager = (function () {
         var contract = this._contractInfo;
         if (!contract) {
             return;
+        }
+        var quotes = contract.sublists.quotes;
+        if (!!quotes && quotes.length > 0) {
+            var viewQuoteUrl = nlapiResolveURL('RECORD', 'estimate', quotes[quotes.length - 1].id, false);
+            $('.btn-view-quote').attr('href', viewQuoteUrl).show();
         }
         if (this._viewType == 'view') {
             var viewTemplate = $('#view_template').html();
@@ -319,19 +338,17 @@ var CreateContractUIManager = (function () {
             console.log('serializedData: ', serializedData);
             this.showLoading();
             this._dataManager.submit(serializedData, function (result) {
-                $('#load_jqGrid').html('Loading...');
-                //hideLoading();
                 console.log('submit success:', result);
-                //_stateManager.clearState();
-                //$('#submitChangesSuccessModal').modal('show');
-                // rebind grid with cleared state
-                //this.fetchGridData({page: 1});
-                //alert('Record has been submitted successfully');
-                var uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
-                var uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
-                var uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
-                uiSuiteletUrl = uiSuiteletUrl + '&cid=' + result.data.id;
-                window.location.href = uiSuiteletUrl;
+                if (!!result.data) {
+                    var uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
+                    var uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
+                    var uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
+                    uiSuiteletUrl = uiSuiteletUrl + '&cid=' + result.data.id;
+                    window.location.href = uiSuiteletUrl;
+                }
+                else {
+                    alert(result.message);
+                }
             });
         }
         catch (e) {
@@ -815,146 +832,154 @@ var CreateContractUIManager = (function () {
             $el.focus();
         }
     };
-    CreateContractUIManager.prototype.bindPrimaryContactDropdown = function () {
-        var _self = this;
-        var $customerDropdown = $('.primary-contact-dropdown');
-        var typeaheadOptions = {
-            hint: false,
-            minLength: 3,
-            highlight: true
-        };
-        var customerDataset = {
-            name: 'primary-contacts',
-            limit: 500,
-            display: function (obj) {
-                var name = obj.firstname + ' ' + obj.lastname;
-                return name;
-            },
-            source: function (query, sync, async) {
-                setTimeout(function () {
-                    _self._dataManager.getPrimaryContacts({
-                        query: query
-                    }, function (contacts) {
-                        try {
-                            async(contacts.data);
-                        }
-                        catch (e) {
-                            console.error('ERROR', 'Error during async binding.', e.toString());
-                        }
-                    });
-                }, 10);
-            },
-            templates: {
-                empty: [
-                    '<div class="empty-message">',
-                    'unable to find any contacts that match the current query',
-                    '</div>'
-                ].join('\n')
-            }
-        };
-        $customerDropdown.typeahead(typeaheadOptions, customerDataset);
-        $customerDropdown.bind('typeahead:change', function (ev, val) {
-            console.log('typeahead:change: ', arguments);
-            var $this = $(this);
-            var selectedId = $this.attr('data-selected-id');
-            var selectedText = $this.attr('data-selected-text');
-            var selectedEntityId = $this.attr('data-selected-entityid');
-            var text = selectedText;
-            var isMatched = text == val;
-            console.log('text: ', text);
-            console.log('val: ', val);
-            console.log('text == val: ', text == val);
-            // if it does not match,
-            // then remove the last selected value.
-            if (isMatched == false) {
-                $this.attr('data-selected-id', '');
-                $this.attr('data-selected-text', '');
-                $this.attr('data-selected-entityid', '');
-                $('.primary-contact-email-text').val('');
-            }
-        }).bind('typeahead:select', function (ev, suggestion) {
-            console.log('typeahead:select: ', arguments);
-            var name = suggestion.firstname + ' ' + suggestion.lastname;
-            var $this = $(this);
-            $this.attr('data-selected-id', suggestion.id);
-            $this.attr('data-selected-entityid', suggestion.entityid);
-            $this.attr('data-selected-text', name);
-            $('.primary-contact-email-text').val(suggestion.email);
-        });
-    };
-    CreateContractUIManager.prototype.bindCustomerDropdown = function () {
-        var _self = this;
-        var $customerDropdown = $('.customer-dropdown');
-        var typeaheadOptions = {
-            hint: false,
-            minLength: 3,
-            highlight: true
-        };
-        var customerDataset = {
-            name: 'customers',
-            limit: 500,
-            display: function (obj) {
-                var isPerson = obj.isperson === 'T';
-                var name = isPerson ? (obj.firstname + ' ' + obj.lastname) : obj.companyname;
-                return name;
-            },
-            source: function (query, sync, async) {
-                setTimeout(function () {
-                    _self._dataManager.getCustomers({
-                        query: query
-                    }, function (customers) {
-                        try {
-                            async(customers.data);
-                        }
-                        catch (e) {
-                            console.error('ERROR', 'Error during async binding.', e.toString());
-                        }
-                    });
-                }, 10);
-            },
-            templates: {
-                empty: [
-                    '<div class="empty-message">',
-                    'unable to find any customers that match the current query',
-                    '</div>'
-                ].join('\n')
-            }
-        };
-        $customerDropdown.typeahead(typeaheadOptions, customerDataset);
-        $customerDropdown.bind('typeahead:change', function (ev, val) {
-            console.log('typeahead:change: ', arguments);
-            var $this = $(this);
-            var selectedId = $this.attr('data-selected-id');
-            var selectedText = $this.attr('data-selected-text');
-            var selectedEntityId = $this.attr('data-selected-entityid');
-            var text = selectedText;
-            var isMatched = text == val;
-            console.log('text: ', text);
-            console.log('val: ', val);
-            console.log('text == val: ', text == val);
-            if (!val) {
-                $this.attr('data-selected-id', '');
-                $this.attr('data-selected-text', '');
-                $this.attr('data-selected-entityid', '');
-            }
-            else {
+    CreateContractUIManager.prototype.bindPrimaryContactDropdown = function ($contactsDropdown) {
+        //var $contactsDropdown = $('.primary-contact-dropdown');
+        var _this = this;
+        if (!$contactsDropdown.data('itempicker_created')) {
+            var typeaheadOptions = {
+                hint: false,
+                minLength: 3,
+                highlight: true
+            };
+            var contactsDataset = {
+                name: 'primary-contacts',
+                limit: 500,
+                display: function (obj) {
+                    //var name = obj.firstname + ' ' + obj.lastname;
+                    return obj.entityid;
+                },
+                source: function (query, sync, async) {
+                    setTimeout(function () {
+                        _this._dataManager.getPrimaryContacts({
+                            query: query
+                        }, function (contacts) {
+                            try {
+                                async(contacts.data);
+                            }
+                            catch (e) {
+                                console.error('ERROR', 'Error during async binding.', e.toString());
+                            }
+                        });
+                    }, 10);
+                },
+                templates: {
+                    empty: [
+                        '<div class="empty-message">',
+                        'unable to find any contacts that match the current query',
+                        '</div>'
+                    ].join('\n')
+                }
+            };
+            $contactsDropdown.typeahead(typeaheadOptions, contactsDataset);
+            $contactsDropdown.bind('typeahead:change', function (ev, val) {
+                console.log('typeahead:change: ', arguments);
+                var $this = $(this);
+                var selectedId = $this.attr('data-selected-id');
+                var selectedText = $this.attr('data-selected-text');
+                var text = selectedText;
+                var isMatched = text == val;
+                console.log('text: ', text);
+                console.log('val: ', val);
+                console.log('text == val: ', text == val);
                 // if it does not match,
                 // then remove the last selected value.
                 if (isMatched == false) {
-                    $this.typeahead('val', selectedText);
-                    alert('Selected item does not exist.');
+                    $this.attr('data-selected-id', '');
+                    $this.attr('data-selected-text', '');
+                    $('.primary-contact-email-text').val('');
                 }
-            }
-        }).bind('typeahead:select', function (ev, suggestion) {
-            console.log('typeahead:select: ', arguments);
-            var name = suggestion.isperson == 'T'
-                ? (suggestion.firstname + ' ' + suggestion.lastname)
-                : suggestion.companyname;
-            var $this = $(this);
-            $this.attr('data-selected-id', suggestion.id);
-            $this.attr('data-selected-entityid', suggestion.entityid);
-            $this.attr('data-selected-text', name);
-        });
+            }).bind('typeahead:select', function (ev, suggestion) {
+                console.log('typeahead:select: ', arguments);
+                var name = suggestion.firstname + ' ' + suggestion.lastname;
+                var $this = $(this);
+                $this.attr('data-selected-id', suggestion.id);
+                $this.attr('data-selected-text', suggestion.entityid);
+                $('.primary-contact-email-text').val(suggestion.email);
+            });
+            $contactsDropdown.data('itempicker_created', true);
+            $contactsDropdown.focus();
+        }
+    };
+    CreateContractUIManager.prototype.bindCustomerDropdown = function ($customerDropdown) {
+        //var $customerDropdown = $('.customer-dropdown');
+        var _this = this;
+        if (!$customerDropdown.data('itempicker_created')) {
+            var typeaheadOptions = {
+                hint: false,
+                minLength: 3,
+                highlight: true
+            };
+            var customerDataset = {
+                name: 'customers',
+                limit: 500,
+                display: function (obj) {
+                    var isPerson = obj.isperson === 'T';
+                    var name = isPerson ? (obj.firstname + ' ' + obj.lastname) : obj.companyname;
+                    var text = obj.entityid;
+                    if (!!obj.altname) {
+                        text = text + ' ' + obj.altname;
+                    }
+                    return text;
+                },
+                source: function (query, sync, async) {
+                    setTimeout(function () {
+                        _this._dataManager.getCustomers({
+                            query: query
+                        }, function (customers) {
+                            try {
+                                async(customers.data);
+                            }
+                            catch (e) {
+                                console.error('ERROR', 'Error during async binding.', e.toString());
+                            }
+                        });
+                    }, 10);
+                },
+                templates: {
+                    empty: [
+                        '<div class="empty-message">',
+                        'unable to find any customers that match the current query',
+                        '</div>'
+                    ].join('\n')
+                }
+            };
+            $customerDropdown.typeahead(typeaheadOptions, customerDataset);
+            $customerDropdown.bind('typeahead:change', function (ev, val) {
+                console.log('typeahead:change: ', arguments);
+                var $this = $(this);
+                var selectedId = $this.attr('data-selected-id');
+                var selectedText = $this.attr('data-selected-text');
+                var text = selectedText;
+                var isMatched = text == val;
+                console.log('text: ', text);
+                console.log('val: ', val);
+                console.log('text == val: ', text == val);
+                if (!val) {
+                    $this.attr('data-selected-id', '');
+                    $this.attr('data-selected-text', '');
+                }
+                else {
+                    // if it does not match,
+                    // then remove the last selected value.
+                    if (isMatched == false) {
+                        $this.typeahead('val', selectedText);
+                        alert('Selected item does not exist.');
+                    }
+                }
+            }).bind('typeahead:select', function (ev, suggestion) {
+                console.log('typeahead:select: ', arguments);
+                var name = suggestion.isperson === 'T' ? (suggestion.firstname + ' ' + suggestion.lastname) : suggestion.companyname;
+                var text = suggestion.entityid;
+                if (!!suggestion.altname) {
+                    text = text + ' ' + suggestion.altname;
+                }
+                var $this = $(this);
+                $this.attr('data-selected-id', suggestion.id);
+                $this.attr('data-selected-text', text);
+            });
+            $customerDropdown.data('itempicker_created', true);
+            $customerDropdown.focus();
+        }
     };
     CreateContractUIManager.prototype.bindDropdown = function () {
         var _this = this;
@@ -1007,8 +1032,14 @@ var CreateContractUIManager = (function () {
                 _this.loaded();
             }, 10);
         });
-        this.bindCustomerDropdown();
-        this.bindPrimaryContactDropdown();
+        $(document.body).on('focusin', '.customer-dropdown', function (ev) {
+            _this.bindCustomerDropdown($(ev.target));
+        });
+        $(document.body).on('focusin', '.primary-contact-dropdown', function (ev) {
+            _this.bindPrimaryContactDropdown($(ev.target));
+        });
+        //this.bindCustomerDropdown();
+        //this.bindPrimaryContactDropdown();
     };
     return CreateContractUIManager;
 })();

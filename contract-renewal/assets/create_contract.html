@@ -26,13 +26,15 @@
         <div class="form-actions " style="display: none">
             <button type="submit" class="btn btn-primary btn-submit">Save</button>
             &nbsp;
-            <a href="{{ ViewContractUrl }}" class="btn btn-default btn-cancel">Cancel</a>
+            <a href="{{ viewContractUrl }}" class="btn btn-default btn-cancel">Cancel</a>
         </div>
 
         <div class="form-actions view-contract-action-buttons" style="display: none">
-            <a href="{{ ViewContractUrl }}" class="btn btn-primary">Edit</a>
+            <a href="{{ viewContractUrl }}" class="btn btn-primary">Edit</a>
             &nbsp;
             <a href="#" class="btn btn-default btn-cancel">Back to Contract Listing</a>
+            &nbsp;
+            <a href="#" class="btn btn-default btn-view-quote" style="display: none;" target="_blank">View Quote</a>
             &nbsp;
             <a href="javascript:;" class="btn btn-default btn-generate-quote">Generate Quote</a>
         </div>
@@ -256,7 +258,7 @@
 
 
                     <div class="form-group">
-                        <label for="department" class="control-label">Department</label>
+                        <label for="department" class="control-label">Department <span class="mandatory">*</span></label>
 
                         <div class="">
                             <select class="form-control department-dropdown"
@@ -335,7 +337,7 @@
             <br />
             <button type="submit" class="btn btn-primary btn-submit">Save</button>
             &nbsp;
-            <a href="{{ ViewContractUrl }}" class="btn btn-default btn-cancel">Cancel</a>
+            <a href="{{ viewContractUrl }}" class="btn btn-default btn-cancel">Cancel</a>
         </div>
 
 
@@ -365,14 +367,18 @@
                     <div class="form-group">
                         <label for="customer" class="control-label">Customer</label>
                         <div class="">
+                            {{ if ( !!custrecord_f3mm_customer) { }}
                             <a href="/app/common/entity/custjob.nl?id={{= custrecord_f3mm_customer.value }}">{{= custrecord_f3mm_customer.text }}</a>
+                            {{ } }}
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="primary_contact" class="control-label">End User</label>
                         <div class="">
+                            {{ if ( !!custrecord_f3mm_primary_contact) { }}
                             <a href="/app/common/entity/contact.nl?id={{= custrecord_f3mm_primary_contact.value }}">{{= custrecord_f3mm_primary_contact.text }}</a>
+                            {{ } }}
                         </div>
                     </div>
 
@@ -386,7 +392,9 @@
                     <div class="form-group">
                         <label for="sales_rep" class="control-label">Sales Rep</label>
                         <div class="">
+                            {{ if ( !!custrecord_f3mm_sales_rep) { }}
                             <a href="/app/common/entity/employee.nl?id={{= custrecord_f3mm_sales_rep.value }}">{{= custrecord_f3mm_sales_rep.text }}</a>
+                            {{ } }}
                         </div>
                     </div>
 
@@ -407,12 +415,14 @@
                     <div class="form-group">
                         <label for="vendor" class="control-label">Contract Vendor</label>
                         <div class="">
+                            {{ if ( !!custrecord_f3mm_contract_vendor) { }}
                             <a href="/app/common/entity/vendor.nl?id={{= custrecord_f3mm_contract_vendor.value }}">{{= custrecord_f3mm_contract_vendor.text }}</a>
+                            {{ } }}
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="status" class="control-label">Status <span class="mandatory">*</span></label>
+                        <label for="status" class="control-label">Status</label>
                         <div class="">
                             {{= custrecord_f3mm_status.text }}
                         </div>
@@ -442,14 +452,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="start_date" class="control-label">Start Date <span class="mandatory">*</span></label>
+                        <label for="start_date" class="control-label">Start Date</label>
                         <div class="">
                             {{= custrecord_f3mm_start_date }}
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="end_date" class="control-label">End Date <span class="mandatory">*</span></label>
+                        <label for="end_date" class="control-label">End Date</label>
                         <div class="">
                             {{= custrecord_f3mm_end_date }}
                         </div>

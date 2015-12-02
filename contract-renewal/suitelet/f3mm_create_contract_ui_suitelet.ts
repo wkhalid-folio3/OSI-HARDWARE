@@ -79,6 +79,7 @@ class CreateContractUISuitelet {
             var uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
             var uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
             var uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
+            //var viewQuoteUrl = '';
 
             var editMode = request.getParameter('e');
             var contractId = request.getParameter('cid');
@@ -90,6 +91,7 @@ class CreateContractUISuitelet {
 
                 uiSuiteletUrl = uiSuiteletUrl + '&cid=' + contractId;
 
+
                 if (editMode == 't') {
                     this.title = 'Edit Contract';
                     this.type = 'edit';
@@ -99,6 +101,12 @@ class CreateContractUISuitelet {
                     this.title = 'View Contract';
                     this.type = 'view';
                 }
+
+
+                //var quotes = contract.sublists.quotes;
+                //if ( !!quotes && quotes.length > 0) {
+                //    viewQuoteUrl = nlapiResolveURL('RECORD', 'estimate', quotes[quotes.length -1].id, false);
+                //}
             }
 
             var standaloneParam = request.getParameter('standalone');
@@ -128,8 +136,10 @@ class CreateContractUISuitelet {
             indexPageValue = indexPageValue.replace('{{ apiSuiteletUrl }}', apiSuiteletUrl);
             indexPageValue = indexPageValue.replace(/{{ standaloneClass }}/gi, standaloneClass);
             indexPageValue = indexPageValue.replace('{{ contractInfo }}', JSON.stringify(contract));
-            indexPageValue = indexPageValue.replace(/{{ ViewContractUrl }}/gi, uiSuiteletUrl);
+            indexPageValue = indexPageValue.replace(/{{ viewContractUrl }}/gi, uiSuiteletUrl);
             indexPageValue = indexPageValue.replace(/{{ priceLevels }}/gi, JSON.stringify(priceLevels));
+            //indexPageValue = indexPageValue.replace(/{{ viewQuoteUrl }}/gi, viewQuoteUrl);
+
 
             if (standalone === true) {
                 response.write(indexPageValue);

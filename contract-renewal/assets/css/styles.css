@@ -240,6 +240,7 @@ label.control-label {
     padding: 4px 4px 2px 3px;
     background-color: #607799;
     line-height: 9px;
+    border-radius: 0;
 }
 
 

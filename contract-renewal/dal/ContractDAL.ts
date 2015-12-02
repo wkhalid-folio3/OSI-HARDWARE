@@ -40,11 +40,14 @@ class ContractDAL extends BaseTypeDAL {
         var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
         var itemIds = contractItems.map(ci => parseInt(ci.custrecord_f3mm_ci_item.value));
         var items = commonDAL.getItems({itemIds: itemIds});
+        var quotes = commonDAL.getQuotes({contractId: id});
+
+        contract.sublists.quotes = quotes;
 
         contractItems.forEach(contractItem => {
             var itemId = contractItem.custrecord_f3mm_ci_item.value;
             var foundItem = items.filter(item => item.id == itemId)[0];
-            if(!!foundItem) {
+            if (!!foundItem) {
                 contractItem.custrecord_f3mm_ci_item.baseprice = foundItem.baseprice;
                 contractItem.custrecord_f3mm_ci_item.displayname = foundItem.displayname;
                 contractItem.custrecord_f3mm_ci_item.itemid = foundItem.itemid;
@@ -63,11 +66,17 @@ class ContractDAL extends BaseTypeDAL {
 
         var entityStatuses = [{"value":"14","text":"Closed Lost"},{"value":"7","text":"Opportunity Identified"},{"value":"8","text":"In Discussion"},{"value":"9","text":"Identified Decision Makers"},{"value":"10","text":"Proposal"},{"value":"11","text":"In Negotiation"},{"value":"12","text":"Purchasing"}];
 
-        quote.setFieldValue('expectedclosedate', '01/15/2016');
-        quote.setFieldValue('trandate', '12/01/2015'); // mandatory field
+        var tranDate = new Date();
+        var expectedClosingDate = new Date();
+        expectedClosingDate.setDate(expectedClosingDate.getDate() + 7); // add 7 days
+
+        quote.setFieldValue('expectedclosedate', nlapiDateToString(expectedClosingDate)); // mandatory field
+        quote.setFieldValue('trandate', nlapiDateToString(tranDate)); // mandatory field
         quote.setFieldValue('entitystatus', "10"); // proposal
         quote.setFieldValue('salesrep', contract[this.fields.salesRep.id].value);
-        quote.setFieldValue('entity', contract[this.fields.customer.id].value); // mandatory field
+        quote.setFieldValue('entity', contract[this.fields.customer.id].value);
+        quote.setFieldValue('custbody_f3mm_quote_contract', contractId); // attach contract record
+        quote.setFieldValue('department', contract[this.fields.department.id].value);
 
 
         var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
@@ -119,7 +128,7 @@ class ContractDAL extends BaseTypeDAL {
                 var lineitem = {};
                 lineitem['custrecord_f3mm_ci_quantity'] = item.quantity;
                 lineitem['custrecord_f3mm_ci_item'] = item.item_id;
-                lineitem['custrecord_f3mm_ci_price'] = item.price;
+                lineitem['custrecord_f3mm_ci_price'] = item.price == "-1" ? "" : item.price;
                 lineitem['custrecord_f3mm_ci_amount'] = item.amount;
                 lineitem['custrecord_f3mm_ci_item_description'] = item.item_description || '';
                 lineitem['custrecord_f3mm_ci_price_level'] = item.price_level;

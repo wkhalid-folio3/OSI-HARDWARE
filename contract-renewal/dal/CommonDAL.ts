@@ -21,15 +21,15 @@ class CommonDAL extends BaseTypeDAL {
         if (!!options) {
             var query = options.query;
             if (F3.Util.Utility.isBlankOrNull(query) == false) {
-                filters.push(['firstname', 'startswith', query]);
+                //filters.push(['firstname', 'startswith', query]);
                 //filters.push('or');
                 //filters.push(['lastname', 'contains', query]);
                 //filters.push('or');
                 //filters.push(['companyname', 'startswith', query]);
                 //filters.push('or');
                 //filters.push(['email', 'contains', query]);
-                filters.push('or');
-                filters.push(['entityid', 'is', query]);
+                //filters.push('or');
+                filters.push(['entityid', 'startswith', query]);
             }
         }
 
@@ -85,6 +85,33 @@ class CommonDAL extends BaseTypeDAL {
         filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
 
         var result = this.getAll(filters, cols, 'pricelevel');
+
+        return result;
+    }
+
+
+    /**
+     * Get all partners from db
+     */
+    getQuotes (options) {
+
+        var filters = [];
+        var cols = [];
+
+        cols.push(new nlobjSearchColumn('tranid').setSort());
+        cols.push(new nlobjSearchColumn('trandate'));
+
+        if (!!options) {
+            var contractId = options.contractId;
+            if (F3.Util.Utility.isBlankOrNull(contractId) == false) {
+                filters.push(new nlobjSearchFilter('custbody_f3mm_quote_contract', null, 'anyof', contractId));
+            }
+        }
+
+        //filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
+
+        // load data from db
+        var result = this.getAll(filters, cols, 'estimate');
 
         return result;
     }
@@ -168,24 +195,37 @@ class CommonDAL extends BaseTypeDAL {
         var filters = [];
         var cols = [];
 
-        cols.push(new nlobjSearchColumn('isperson').setSort());
-        cols.push(new nlobjSearchColumn('firstname').setSort());
+        cols.push(new nlobjSearchColumn('isperson'));
+        cols.push(new nlobjSearchColumn('firstname'));
         cols.push(new nlobjSearchColumn('lastname'));
-        cols.push(new nlobjSearchColumn('companyname').setSort());
-        cols.push(new nlobjSearchColumn('entityid'));
+        //cols.push(new nlobjSearchColumn('altname'));
+        cols.push(new nlobjSearchColumn('companyname'));
+        cols.push(new nlobjSearchColumn('entityid').setSort());
 
         if (!!options) {
             var query = options.query;
             if (F3.Util.Utility.isBlankOrNull(query) == false) {
-                filters.push(['firstname', 'startswith', query]);
-                filters.push('or');
+                var splittedQuery = query.split(' ');
+                if(!!splittedQuery) {
+                    for (var i in splittedQuery) {
+                        var q = splittedQuery[i];
+                        if ( !! q ) {
+                            filters.push(['firstname', 'startswith', q]);
+                            filters.push('or');
+                            filters.push(['lastname', 'startswith', q]);
+                            filters.push('or');
+                        }
+                    }
+                }
+
+
                 //filters.push(['lastname', 'contains', query]);
                 //filters.push('or');
-                filters.push(['companyname', 'startswith', query]);
+                //filters.push(['companyname', 'startswith', query]);
                 //filters.push('or');
                 //filters.push(['email', 'contains', query]);
-                filters.push('or');
-                filters.push(['entityid', 'is', query]);
+                //filters.push('or');
+                filters.push(['entityid', 'startswith', query]);
             }
         }
 
