@@ -4,17 +4,6 @@
 /// <reference path="../dal/ContractDAL.ts" />
 /// <reference path="../dal/CommonDAL.ts" />
 /**
- * Created by zshaikh on 11/19/2015.
- * -
- * Referenced By:
- * -
- * -
- * Dependencies:
- * - BaseTypeDAL.ts
- * - ContractDAL.ts
- * - CommonDAL.ts
- */
-/**
  * This class is responsible for handling all REST API calls
  * Following are the operations performed by this class:
  *  - Create / Update Contract
@@ -39,24 +28,41 @@ var CreateContractAPISuitelet = (function () {
      * @returns {void}
      */
     CreateContractAPISuitelet.prototype.main = function (request, response) {
-        F3.Util.Utility.logDebug('CreateContractAPISuitelet.main();');
+        F3.Util.Utility.logDebug('CreateContractAPISuitelet.main();', null);
         var mainRequestTimer = F3.Util.StopWatch.start('F3_PPT_API_Suitelet.main();');
+        var action = request.getParameter('action');
+        var params = request.getParameter('params');
+        var callback = request.getParameter('callback');
+        if (!!params) {
+            params = JSON.parse(params);
+        }
+        F3.Util.Utility.logDebug('F3_PPT_API_Suitelet.main(); // action = ', action);
+        F3.Util.Utility.logDebug('F3_PPT_API_Suitelet.main(); // params = ', JSON.stringify(params));
+        var result = this.executionAction(action, params);
+        var json = JSON.stringify(result);
+        F3.Util.Utility.logDebug('Response: ', json);
+        if (!!callback) {
+            json = callback + '(' + json + ')';
+        }
+        response.setContentType('JSON');
+        response.writeLine(json);
+        mainRequestTimer.stop();
+    };
+    /**
+     * Responsing for executing action
+     * @param {string} action the string representation of action to execute
+     * @param {object} params json represntation of params object to pass to executing action
+     * @returns {IResult} returns json representation of result of executed action
+     */
+    CreateContractAPISuitelet.prototype.executionAction = function (action, params) {
+        var commonDAL = new CommonDAL();
+        var contractDAL = new ContractDAL();
         var result = {
             data: null,
             status_code: 200,
             status: 'OK',
             message: ''
         };
-        var action = request.getParameter('action');
-        var params = request.getParameter('params');
-        var callback = request.getParameter('callback');
-        var commonDAL = new CommonDAL();
-        var contractDAL = new ContractDAL();
-        if (!!params) {
-            params = JSON.parse(params);
-        }
-        F3.Util.Utility.logDebug('F3_PPT_API_Suitelet.main(); // action = ', action);
-        F3.Util.Utility.logDebug('F3_PPT_API_Suitelet.main(); // params = ', JSON.stringify(params));
         try {
             if (action === 'get_customers') {
                 var customers = commonDAL.getCustomers(params);
@@ -115,19 +121,15 @@ var CreateContractAPISuitelet = (function () {
                 result.message = 'success';
             }
             else if (action === 'generate_quote') {
-                var quoteId = contractDAL.generateQuote(params.contractId);
-                result.data = {
-                    id: quoteId
-                };
+                var quote = contractDAL.generateQuote(params);
+                result.data = quote;
                 result.status_code = 200;
                 result.status = 'OK';
                 result.message = 'success';
             }
             else if (action === 'submit') {
-                var createdId = contractDAL.updateOrCreate(params);
-                result.data = {
-                    id: createdId
-                };
+                var record = contractDAL.updateOrCreate(params);
+                result.data = record;
                 result.status_code = 200;
                 result.status = 'OK';
                 result.message = 'success';
@@ -144,14 +146,7 @@ var CreateContractAPISuitelet = (function () {
             result.status = 'Internal server error';
             result.message = ex.toString();
         }
-        var json = JSON.stringify(result);
-        F3.Util.Utility.logDebug('Response: ', json);
-        if (!!callback) {
-            json = callback + '(' + json + ')';
-        }
-        response.setContentType('JSON');
-        response.writeLine(json);
-        mainRequestTimer.stop();
+        return result;
     };
     return CreateContractAPISuitelet;
 })();

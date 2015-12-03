@@ -1,23 +1,20 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
 
 /**
- * Created by zshaikh on 11/18/2015.
+ * Reference: https://github.com/hongymagic/jQuery.serializeObject
+ * Use internal $.serializeArray to get list of form elements which is
+ * consistent with $.serialize
+ *
+ * From version 2.0.0, $.serializeObject will stop converting [name] values
+ * to camelCase format. This is *consistent* with other serialize methods:
+ *
+ * - $.serialize
+ * - $.serializeArray
+ *
+ * If you require camel casing, you can either download version 1.0.4 or map
+ * them yourself.
+ *
  */
-
-
-// Reference: https://github.com/hongymagic/jQuery.serializeObject
-// Use internal $.serializeArray to get list of form elements which is
-// consistent with $.serialize
-//
-// From version 2.0.0, $.serializeObject will stop converting [name] values
-// to camelCase format. This is *consistent* with other serialize methods:
-//
-//   - $.serialize
-//   - $.serializeArray
-//
-// If you require camel casing, you can either download version 1.0.4 or map
-// them yourself.
-//
 (function($){
     $.fn.serializeObject = function () {
         "use strict";

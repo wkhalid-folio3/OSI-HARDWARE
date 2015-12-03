@@ -43,7 +43,7 @@ class ContractDAL extends BaseTypeDAL {
     /**
      * Gets contract with specified id including details of Items and related Quote
      * @param {string} id
-     * @returns {object}
+     * @returns {object} json representation of contract obejct along with contract items and quotes
      */
     getWithDetails(id: string) {
 
@@ -74,8 +74,9 @@ class ContractDAL extends BaseTypeDAL {
      * @param {string} contractId id of the contract to generate contract from
      * @returns {number} id of quote generated from contract
      */
-    generateQuote(contractId) {
+    generateQuote(params) {
 
+        var contractId = params.contractId;
         var contract = this.getWithDetails(contractId);
         var quote = nlapiCreateRecord('estimate');
 
@@ -119,7 +120,7 @@ class ContractDAL extends BaseTypeDAL {
 
         var quoteId = nlapiSubmitRecord(quote);
 
-        return quoteId;
+        return {id: quoteId};
     }
 
     /**
@@ -129,7 +130,7 @@ class ContractDAL extends BaseTypeDAL {
      */
     updateOrCreate(contract) {
 
-        if(!contract) {
+        if (!contract) {
             throw new Error("contract cannot be null.");
         }
 
@@ -175,6 +176,8 @@ class ContractDAL extends BaseTypeDAL {
             record['sublists'].push(contractItemsSublist);
         }
 
-        return this.upsert(record, true);
+        var id = this.upsert(record, true);
+
+        return {id: id};
     }
 }

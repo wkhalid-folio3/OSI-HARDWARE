@@ -2,6 +2,14 @@
 /// <reference path="../../_typescript-refs/es6-promise.d.ts" />
 /**
  * Created by zshaikh on 11/19/2015.
+ * -
+ * Referenced By:
+ * - f3mm-ui-manager.ts
+ * -
+ * Dependencies:
+ * - jquery-1.11.0.min.js
+ * - jstorage.js
+ * -
  */
 /**
  * Responsible for communicating with server
@@ -22,6 +30,11 @@ var DataManager = (function () {
         this._serverUrl = window.apiSuiteletUrl;
         this._serverUrl += '&type=' + this._viewType; // append type
     }
+    /**
+     * Get Vendors from server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
     DataManager.prototype.getVendorsFromServer = function (callback) {
         var data = { 'action': 'get_vendors' };
         return jQuery.get(this._serverUrl, data, function (result) {
@@ -29,6 +42,11 @@ var DataManager = (function () {
             callback && callback(result);
         });
     };
+    /**
+     * Get Employees from server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
     DataManager.prototype.getEmployeesFromServer = function (callback) {
         var data = { 'action': 'get_employees' };
         return jQuery.get(this._serverUrl, data, function (result) {
@@ -36,6 +54,11 @@ var DataManager = (function () {
             callback && callback(result);
         });
     };
+    /**
+     * Get Departments from server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
     DataManager.prototype.getDepartmentFromServer = function (callback) {
         var data = { 'action': 'get_departments' };
         return jQuery.get(this._serverUrl, data, function (result) {
@@ -43,6 +66,12 @@ var DataManager = (function () {
             callback && callback(result);
         });
     };
+    /**
+     * Get tax codes from server
+     * @param {object} params parameters to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
     DataManager.prototype.getTaxCodesFromServer = function (params, callback) {
         var options = {
             'action': 'get_taxcodes'
@@ -57,7 +86,7 @@ var DataManager = (function () {
         });
     };
     /**
-     * Get tax codes from server
+     * Get tax codes from cache or server
      * @param {object} params parameters to pass to server
      * @param {function} callback callback function to receive data in
      * @returns {void}

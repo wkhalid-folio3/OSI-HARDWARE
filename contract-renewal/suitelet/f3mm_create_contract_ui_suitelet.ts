@@ -17,8 +17,7 @@
  */
 
 /**
- * CreateContractUISuitelet class that has the actual functionality of suitelet.
- * All business logic will be encapsulated in this class.
+ * This class is responsible for creating html of Create Contract Screen
  */
 class CreateContractUISuitelet {
 
@@ -43,10 +42,14 @@ class CreateContractUISuitelet {
         this.main(request, response);
     }
 
-    getFileUrl () {
+    /**
+     * Get file id
+     */
+    getHtmlTemplateFileId () {
         var assetsFolderId = this._assetsFolderId;
         var files = this._foldersDAL.getFiles(assetsFolderId);
         var found = null;
+
         files.forEach(file=> {
             if (file.name == "create_contract.html") {
                 found = file;
@@ -54,7 +57,6 @@ class CreateContractUISuitelet {
         });
 
         return found.internalid;
-        //return "SuiteScripts/ContractRenewal/assets/create_contract.html";
     }
 
     getDependencyFiles() {
@@ -108,7 +110,7 @@ class CreateContractUISuitelet {
                 priceLevel.id = parseInt(priceLevel.id);
             });
 
-            var data = nlapiLoadFile(this.getFileUrl());
+            var data = nlapiLoadFile(this.getHtmlTemplateFileId());
             var files = this.getDependencyFiles();
             var indexPageValue = data.getValue();
 

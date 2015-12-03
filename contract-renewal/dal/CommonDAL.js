@@ -7,12 +7,40 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 /**
  * Created by zshaikh on 11/19/2015.
+ * -
+ * Referenced By:
+ * - f3mm_create_contract_api_st.ts
+ * - f3mm_create_contract_ui_suitelet.ts
+ * -
+ * Dependencies:
+ * - ContractDAL.ts
+ * -
+ */
+/**
+ * This class handles all common operations related to searching records in database
+ * Following are the responsibilities of this class:
+ *  - Get Contacts
+ *  - Get Employees
+ *  - Get Price Levels
+ *  - Get Quotes
+ *  - Get Items
+ *  - Get Vendors
+ *  - Get Departments
+ *  - Get Customers
+ *  - Get Tax Items
+ *  - Get Tax Groups
+ *  - Get Tax Codes
  */
 var CommonDAL = (function (_super) {
     __extends(CommonDAL, _super);
     function CommonDAL() {
         _super.apply(this, arguments);
     }
+    /**
+     * Gets / Searches contract with specified query from database
+     * @param {object?} options
+     * @returns {object[]} array of contacts searched from database
+     */
     CommonDAL.prototype.getContacts = function (options) {
         var filters = [];
         var cols = [];
@@ -33,14 +61,6 @@ var CommonDAL = (function (_super) {
                 else {
                     queryToSearch = query.trim();
                 }
-                //queryFilters.push(['firstname', 'startswith', query]);
-                //queryFilters.push('or');
-                //queryFilters.push(['lastname', 'contains', query]);
-                //queryFilters.push('or');
-                //queryFilters.push(['companyname', 'startswith', query]);
-                //queryFilters.push('or');
-                //queryFilters.push(['email', 'contains', query]);
-                //queryFilters.push('or');
                 queryFilters.push(['entityid', 'contains', queryToSearch]);
             }
         }
@@ -56,7 +76,9 @@ var CommonDAL = (function (_super) {
         return result;
     };
     /**
-     * Get all partners from db
+     * Gets / Searches employees with specified query from database
+     * @param {object?} options
+     * @returns {object[]} array of employees searched from database
      */
     CommonDAL.prototype.getEmployees = function (options) {
         var filters = [];
@@ -70,7 +92,9 @@ var CommonDAL = (function (_super) {
         return result;
     };
     /**
-     * Get all partners from db
+     * Gets Price Levels of specified inventory item from database
+     * @param {object?} options
+     * @returns {object[]} array of price levels fetched from database
      */
     CommonDAL.prototype.getPriceLevels = function (options) {
         var record = nlapiLoadRecord(options.recordType, options.itemId);
@@ -78,7 +102,9 @@ var CommonDAL = (function (_super) {
         return priceLevels;
     };
     /**
-     * Get all partners from db
+     * Get Quotes of a Contract
+     * @param {object} options
+     * @returns {object[]} array of quotes fetched from database
      */
     CommonDAL.prototype.getQuotes = function (options) {
         var filters = [];
@@ -97,7 +123,9 @@ var CommonDAL = (function (_super) {
         return result;
     };
     /**
-     * Get all partners from db
+     * Get / Search Items
+     * @param {object} options
+     * @returns {object[]} array of searched items
      */
     CommonDAL.prototype.getItems = function (options) {
         var filters = [];
@@ -122,7 +150,9 @@ var CommonDAL = (function (_super) {
         return result;
     };
     /**
-     * Get all partners from db
+     * Get Vendors from database
+     * @param {object?} options
+     * @returns {object[]} array of vendors
      */
     CommonDAL.prototype.getVendors = function (options) {
         var filters = [];
@@ -137,7 +167,9 @@ var CommonDAL = (function (_super) {
         return result;
     };
     /**
-     * Get all partners from db
+     * Get Departments from database
+     * @param {object?} options
+     * @returns {object[]} array of departments
      */
     CommonDAL.prototype.getDepartments = function (options) {
         var filters = [];
@@ -147,6 +179,11 @@ var CommonDAL = (function (_super) {
         var result = this.getAll(filters, cols, 'department');
         return result;
     };
+    /**
+     * Get / Search Customers from database based on specified query
+     * @param {object?} options
+     * @returns {object[]} array of searched customers
+     */
     CommonDAL.prototype.getCustomers = function (options) {
         var filters = [];
         var cols = [];
@@ -193,6 +230,11 @@ var CommonDAL = (function (_super) {
         jsonConverterTimer.stop();
         return result;
     };
+    /**
+     * Get / Search Tax Groups and Tax Codes and merge them
+     * @param {object?} options
+     * @returns {object[]} array of tax groups and tax codes merged
+     */
     CommonDAL.prototype.getTaxItems = function (options) {
         var taxGroups = this.getTaxGroups(options);
         var taxCodes = this.getTaxCodes(options);
@@ -209,6 +251,11 @@ var CommonDAL = (function (_super) {
         });
         return taxItems;
     };
+    /**
+     * Get / Search Tax Groups
+     * @param {object?} options
+     * @returns {object[]} array of searched tax groups
+     */
     CommonDAL.prototype.getTaxGroups = function (options) {
         var filters = [];
         var cols = [];
@@ -227,6 +274,11 @@ var CommonDAL = (function (_super) {
         jsonConverterTimer.stop();
         return result;
     };
+    /**
+     * Get / Search Tax Codes
+     * @param {object?} options
+     * @returns {object[]} array of searched tax codes
+     */
     CommonDAL.prototype.getTaxCodes = function (options) {
         var filters = [];
         var cols = [];

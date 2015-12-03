@@ -3,7 +3,16 @@
 
 /**
  * Created by zshaikh on 11/19/2015.
+ * -
+ * Referenced By:
+ * - f3mm-ui-manager.ts
+ * -
+ * Dependencies:
+ * - jquery-1.11.0.min.js
+ * - jstorage.js
+ * -
  */
+
 
 /**
  * Responsible for communicating with server
@@ -30,6 +39,11 @@ class DataManager {
         this._serverUrl += '&type=' + this._viewType; // append type
     }
 
+    /**
+     * Get Vendors from server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
     private getVendorsFromServer(callback) {
 
         var data = {'action': 'get_vendors'};
@@ -42,6 +56,11 @@ class DataManager {
 
     }
 
+    /**
+     * Get Employees from server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
     private getEmployeesFromServer(callback) {
 
         var data = {'action': 'get_employees'};
@@ -54,6 +73,11 @@ class DataManager {
 
     }
 
+    /**
+     * Get Departments from server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
     private getDepartmentFromServer(callback) {
 
         var data = {'action': 'get_departments'};
@@ -66,6 +90,12 @@ class DataManager {
 
     }
 
+    /**
+     * Get tax codes from server
+     * @param {object} params parameters to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
     private getTaxCodesFromServer(params, callback) {
 
         var options = {
@@ -88,7 +118,7 @@ class DataManager {
     }
 
     /**
-     * Get tax codes from server
+     * Get tax codes from cache or server
      * @param {object} params parameters to pass to server
      * @param {function} callback callback function to receive data in
      * @returns {void}

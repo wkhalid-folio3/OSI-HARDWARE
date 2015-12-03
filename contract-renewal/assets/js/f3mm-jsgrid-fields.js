@@ -3,7 +3,7 @@
  * Created by zshaikh on 11/18/2015.
  */
 /**
- * A Custom Field for JSGrid to support decimal numbers
+ * Customized handling for min attribute on number field of JSGrid
  */
 (function (jsGrid, $, undefined) {
     var NumberField = jsGrid.NumberField;
@@ -15,6 +15,9 @@
         return $input;
     };
 })(jsGrid, jQuery);
+/**
+ * A Custom Field for JSGrid to support decimal numbers
+ */
 (function (jsGrid, $, undefined) {
     var TextField = jsGrid.TextField;
     function DecimalNumberField(config) {

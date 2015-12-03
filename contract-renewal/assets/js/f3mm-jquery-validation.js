@@ -1,6 +1,6 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
 /**
- * Created by zshaikh on 11/18/2015.
+ * Created by zshaikh on 11/26/2015.
  */
 /**
  * A Custom jQuery Validation function for validating typeahead components

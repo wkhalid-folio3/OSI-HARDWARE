@@ -3,8 +3,35 @@
 
 /**
  * Created by zshaikh on 11/18/2015.
+ * -
+ * Referenced By:
+ * - f3mm-init
+ *
+ * Dependencies:
+ * - f3mm-data-manager.ts
+ * - f3mm-jquery-validation.ts
+ * - f3mm-jquery-plugins.ts
+ * - f3mm-jsgrid-fields.ts
+ *
+ * External Library Dependencies:
+ * - jsgrid-customized.js (with some customizations)
+ * - underscore-min.js
+ * - jquery-1.11.0.min.js
+ * - typeahead.jquery.min.js
+ * - bootstrap-datepicker.min.js
+ *
  */
 
+
+/**
+ * User Interface Manager class
+ * Responsible for:
+ *  - Building UI
+ *  - Populating different UI controls with required data
+ *  - Capturing data from user actions (click, filed change) and performing respective actions
+ *  - Sending captured data to DataManager class if required.
+ *  - Manipulating User Interface based on server response.
+ */
 class CreateContractUIManager {
 
     private _dataManager:DataManager;
@@ -13,6 +40,10 @@ class CreateContractUIManager {
     private _priceLevels:any[];
     private _loadedCount:number = 0;
 
+    /**
+     * constructor of ui manager class
+     * responsible for initializing dropdown elements and items grid.
+     */
     constructor() {
 
         this._viewType = window.pageType;
@@ -33,16 +64,25 @@ class CreateContractUIManager {
         $('.btn-generate-quote').on('click', this.generateQuote.bind(this));
     }
 
+    /**
+     * Show Loading Indicator
+     */
     private showLoading() {
         var $loading = $('.contract-loading-backdrop,.contract-loading');
         $loading.addClass('in').show();
     }
 
+    /**
+     * Hide Loading Indicator
+     */
     private hideLoading() {
         var $loading = $('.contract-loading-backdrop,.contract-loading');
         $loading.removeClass('in').hide();
     }
 
+    /**
+     * Apply validation on form elements
+     */
     private applyValidation() {
 
         var $form = $(".f3mm-contract-renewal").parents('form:first');
@@ -95,6 +135,9 @@ class CreateContractUIManager {
         });
     }
 
+    /**
+     * Show Create / View / Edit Screen based on _viewType property
+     */
     private setViewMode() {
         console.log('this.setViewMode(); // this._viewType: ', this._viewType);
 
@@ -111,6 +154,10 @@ class CreateContractUIManager {
         }
     }
 
+    /**
+     * Generate Quote when user clicks on Generate Quote button
+     * @param {Event} ev the event object injected by browser containing the event information
+     */
     private generateQuote(ev) {
         var $button = $(ev.target);
 
@@ -136,6 +183,11 @@ class CreateContractUIManager {
         });
     }
 
+    /**
+     * Loaded function called when the page is loaded completely from server.
+     * Used to perform after load tasks like binding events and populating ui controls
+     * @returns {void}
+     */
     private loaded() {
         this._loadedCount++;
         console.log('this.loaded();', this._loadedCount);
@@ -152,92 +204,109 @@ class CreateContractUIManager {
             $('.btn-view-quote').attr('href', viewQuoteUrl).show();
         }
 
-
         if (this._viewType == 'view') {
-
-            var viewTemplate = $('#view_template').html();
-            var compiledTemplate = _.template(viewTemplate);
-            var htmlMarkup = compiledTemplate(contract);
-            $('.view-horizontal').html(htmlMarkup);
-
-
-            if (contract.custrecord_f3mm_status.value == "1") {
-                $('.btn-generate-quote').attr('disabled', 'disabled');
-            }
-            else {
-                $('.btn-generate-quote').removeAttr('disabled');
-            }
+            this.bindViewScreen(contract);
         }
         else {
-
-            var $form = $('.form-horizontal');
-
-            $('.contract-number-text', $form).val(contract.custrecord_f3mm_contract_number);
-            $('.po-number-text', $form).val(contract.custrecord_f3mm_po_number);
-
-            if (!!contract.custrecord_f3mm_sales_rep) {
-                $('.sales-rep-dropdown', $form).val(contract.custrecord_f3mm_sales_rep.value);
-            }
-
-            if (!!contract.custrecord_f3mm_contract_vendor) {
-                $('.vendor-dropdown', $form).val(contract.custrecord_f3mm_contract_vendor.value);
-            }
-
-            if (!!contract.custrecord_f3mm_status) {
-                $('.status-dropdown', $form).val(contract.custrecord_f3mm_status.value);
-            }
-
-            $('.total-quantity-seats-text', $form).val(contract.custrecord_f3mm_total_qty_seats);
-
-            if (!!contract.custrecord_f3mm_department) {
-                $('.department-dropdown', $form).val(contract.custrecord_f3mm_department.value);
-            }
-
-            $('.memo-text', $form).val(contract.custrecord_f3mm_memo);
-
-
-            if (!!contract.custrecord_f3mm_customer) {
-                $('.customer-dropdown', $form)
-                    .attr('data-selected-id', contract.custrecord_f3mm_customer.value)
-                    .attr('data-selected-text', contract.custrecord_f3mm_customer.text)
-                    .val(contract.custrecord_f3mm_customer.text);
-            }
-
-            if (!!contract.custrecord_f3mm_primary_contact) {
-                $('.primary-contact-dropdown', $form)
-                    .attr('data-selected-id', contract.custrecord_f3mm_primary_contact.value)
-                    .attr('data-selected-text', contract.custrecord_f3mm_primary_contact.text)
-                    .val(contract.custrecord_f3mm_primary_contact.text);
-
-                if (!!contract.custrecord_f3mm_primary_contact_email) {
-                    $('.primary-contact-email-text', $form).val(contract.custrecord_f3mm_primary_contact_email);
-                }
-            }
-
-            if (this._viewType == 'view') {
-                if (!!contract.custrecord_f3mm_start_date) {
-                    $('.start-date-text', $form).val(contract.custrecord_f3mm_start_date);
-                }
-                if (!!contract.custrecord_f3mm_end_date) {
-                    $('.end-date-text', $form).val(contract.custrecord_f3mm_end_date);
-                }
-            }
-            else {
-                if (!!contract.custrecord_f3mm_start_date) {
-                    $('.start-date-text', $form).parent().datepicker('setDate', contract.custrecord_f3mm_start_date);
-                }
-
-                if (!!contract.custrecord_f3mm_end_date) {
-                    $('.end-date-text', $form).parent().datepicker('setDate', contract.custrecord_f3mm_end_date);
-                }
-            }
+            this.bindEditScreen(contract);
         }
 
-        if (this._loadedCount > 3) {
-            //this.hideLoading();
+    }
+
+    /**
+     * Binds View Contract Screen with page
+     * @param {object} contract json representation of contract object
+     * @returns {void}
+     */
+    private bindViewScreen(contract) {
+
+        var viewTemplate = $('#view_template').html();
+        var compiledTemplate = _.template(viewTemplate);
+        var htmlMarkup = compiledTemplate(contract);
+        $('.view-horizontal').html(htmlMarkup);
+
+        if (contract.custrecord_f3mm_status.value == "1") {
+            $('.btn-generate-quote').attr('disabled', 'disabled');
+        }
+        else {
+            $('.btn-generate-quote').removeAttr('disabled');
         }
     }
 
+    /**
+     * Binds Edit Contract screen with page
+     * @param {object} contract json representation of contract object
+     * @returns {void}
+     */
+    private bindEditScreen(contract){
+
+        var $form = $('.form-horizontal');
+
+        $('.contract-number-text', $form).val(contract.custrecord_f3mm_contract_number);
+        $('.po-number-text', $form).val(contract.custrecord_f3mm_po_number);
+
+        if (!!contract.custrecord_f3mm_sales_rep) {
+            $('.sales-rep-dropdown', $form).val(contract.custrecord_f3mm_sales_rep.value);
+        }
+
+        if (!!contract.custrecord_f3mm_contract_vendor) {
+            $('.vendor-dropdown', $form).val(contract.custrecord_f3mm_contract_vendor.value);
+        }
+
+        if (!!contract.custrecord_f3mm_status) {
+            $('.status-dropdown', $form).val(contract.custrecord_f3mm_status.value);
+        }
+
+        $('.total-quantity-seats-text', $form).val(contract.custrecord_f3mm_total_qty_seats);
+
+        if (!!contract.custrecord_f3mm_department) {
+            $('.department-dropdown', $form).val(contract.custrecord_f3mm_department.value);
+        }
+
+        $('.memo-text', $form).val(contract.custrecord_f3mm_memo);
+
+
+        if (!!contract.custrecord_f3mm_customer) {
+            $('.customer-dropdown', $form)
+                .attr('data-selected-id', contract.custrecord_f3mm_customer.value)
+                .attr('data-selected-text', contract.custrecord_f3mm_customer.text)
+                .val(contract.custrecord_f3mm_customer.text);
+        }
+
+        if (!!contract.custrecord_f3mm_primary_contact) {
+            $('.primary-contact-dropdown', $form)
+                .attr('data-selected-id', contract.custrecord_f3mm_primary_contact.value)
+                .attr('data-selected-text', contract.custrecord_f3mm_primary_contact.text)
+                .val(contract.custrecord_f3mm_primary_contact.text);
+
+            if (!!contract.custrecord_f3mm_primary_contact_email) {
+                $('.primary-contact-email-text', $form).val(contract.custrecord_f3mm_primary_contact_email);
+            }
+        }
+
+        if (this._viewType == 'view') {
+            if (!!contract.custrecord_f3mm_start_date) {
+                $('.start-date-text', $form).val(contract.custrecord_f3mm_start_date);
+            }
+            if (!!contract.custrecord_f3mm_end_date) {
+                $('.end-date-text', $form).val(contract.custrecord_f3mm_end_date);
+            }
+        }
+        else {
+            if (!!contract.custrecord_f3mm_start_date) {
+                $('.start-date-text', $form).parent().datepicker('setDate', contract.custrecord_f3mm_start_date);
+            }
+
+            if (!!contract.custrecord_f3mm_end_date) {
+                $('.end-date-text', $form).parent().datepicker('setDate', contract.custrecord_f3mm_end_date);
+            }
+        }
+    }
+
+    /**
+     * Binds Date Picker component with specific fields
+     * @returns {void}
+     */
     private bindDatePicker() {
         if (this._viewType !== 'view') {
             $('.input-group.date').not('[disabled]').datepicker({
@@ -282,6 +351,10 @@ class CreateContractUIManager {
         };
     }
 
+    /**
+     * Submits contract information (extracted from ui elements) to server
+     * @returns {void}
+     */
     submit() {
 
         try {
@@ -351,7 +424,6 @@ class CreateContractUIManager {
 
             });
 
-
         } catch (e) {
             console.error('ERROR', 'Error during main onSubmit', e.toString());
             alert('Error during record submission.');
@@ -359,20 +431,28 @@ class CreateContractUIManager {
         }
     }
 
+    /**
+     * Invoked by JSGrid whenever any item is inserted or changed or removed from Grid.
+     * @returns {void}
+     */
     private itemsChanged() {
         var existingData = $('#jsGrid').data().JSGrid.data;
 
         var quantities = _.pluck(existingData, 'quantity');
 
+        // calculate quantity from all items
         var totalQuantitySeats = _.reduce(quantities, (memo, num) => memo + parseInt(num), 0);
 
+        // set quantity in total quantity seats textbox
         $('.total-quantity-seats-text').val(totalQuantitySeats);
-
     }
 
-    private prepareGridData () : [] {
+    /**
+     * Prepares items data before binding with the grid
+     * @returns {object[]} returns array of objects containing contract items data
+     */
+    private prepareGridData(): any[] {
         var contactItems = [];
-
 
         if (!!this._contractInfo && !!this._contractInfo.sublists) {
             var contractItemsInfo = this._contractInfo.sublists.recmachcustrecord_f3mm_ci_contract;
@@ -400,18 +480,12 @@ class CreateContractUIManager {
         return contactItems;
     }
 
+    /**
+     * Prepares Grid fields before initializing the grid
+     * @returns {object[]} returns array of fields
+     */
+    private prepareGridFields() : any[] {
 
-    bindItemsGrid() {
-
-        var contactItems = this.prepareGridData();
-
-        //this._priceLevels.unshift({id: 0, name: ''});
-        //this._priceLevels.push({id: -1, name: 'Custom'});
-
-        this._priceLevels = [{id: 0, name: ''}];
-
-        var inserting = true;
-        var editing = true;
         var gridFields = [
             {title: "Item <span class='mandatory'>*</span>", name: "item", type: "text", width: 150, css: "item"},
             {
@@ -461,21 +535,36 @@ class CreateContractUIManager {
         ];
 
 
+        if (this._viewType != 'view') {
+            gridFields.push({type: "control", modeSwitchButton: false, editButton: false});
+        }
+
+        return gridFields;
+    }
+
+    /**
+     * Binds Contract Items with the Grid
+     * @returns {void}
+     */
+    bindItemsGrid() {
+
+        this._priceLevels = [{id: 0, name: ''}];
+
+        var contactItems = this.prepareGridData();
+        var gridFields = this.prepareGridFields();
+        var inserting = true;
+        var editing = true;
+
         if (this._viewType == 'view') {
             inserting = false;
             editing = false;
         }
-        else {
-            gridFields.push({type: "control", modeSwitchButton: false, editButton: false});
-        }
-
 
         var $grid = $("#jsGrid");
         $grid.jsGrid({
             height: "auto",
             width: "100%",
             noDataContent: 'No items added.',
-
             inserting: inserting,
             filtering: false,
             editing: editing,
@@ -486,294 +575,291 @@ class CreateContractUIManager {
             pageButtonCount: 5,
             controller: {
                 loadData: (filter) => {
-                    console.log('contactItems:', contactItems);
                     return contactItems;
                 }
             },
-            onItemInserted: ()=> {
-                this.itemsChanged();
-            },
-            onItemUpdated: ()=> {
-                this.itemsChanged();
-            },
-            onItemDeleted: ()=> {
-                this.itemsChanged();
-            },
-
-            onDataLoaded: (args) => {
-                console.log('onDataLoaded:', args);
-
-                //console.log(this);
-                this.loaded();
-            },
-
-            onItemUpdating: (args) => {
-                console.log('onItemUpdating: ', JSON.stringify(args.item));
-
-                var data = args.item;
-                data.price = parseFloat(data.price).toFixed(2);
-                data.amount = parseFloat(args.row.next().find('.amount').html()).toFixed(2);
-
-                // TODO : need to handle the case when user does not click on item picker and just edits and saves the record.
-                var $updateRow = args.row.next();
-                var suggestion = $updateRow.data('data-selected-suggestion');
-
-                console.log('onItemUpdating: ', JSON.stringify(suggestion));
-
-                if (!!suggestion) {
-                    data.item = suggestion.displayname;
-                    data.itemid = suggestion.id;
-                    data.description = suggestion.salesdescription;
-                    data.baseprice = suggestion.baseprice;
-                }
-                //else {
-                //    data.item = "";
-                //    data.itemid = "";
-                //    data.description = "";
-                //}
-
-                if (data.item === "") {
-                    args.preserve = true;
-                    args.cancel = true;
-                    alert("Please select an item");
-                    return;
-                }
-
-                if (parseInt(data.quantity) <= 0) {
-                    args.cancel = true;
-                    alert("Quantity cannot be less than or equal to 0");
-                    return;
-                }
-
-
-                var taxCode = $updateRow.data('selected-tax-code');
-                if (!!taxCode) {
-                    data.taxcodeid = taxCode.id;
-                    data.taxcode = taxCode.itemid;
-                    data.taxrate = taxCode.rate + '%';
-                }
-                //else {
-                //    data.taxcodeid = "";
-                //    data.taxcode = "";
-                //    data.taxrate = "";
-                //}
-
-                if (!data.taxcode) {
-                    args.preserve = true;
-                    args.cancel = true;
-                    alert("Please select tax code");
-                    return;
-                }
-
-                if (data.price_level == "0") {
-                    args.preserve = true;
-                    args.cancel = true;
-                    alert("Please select price level");
-                    return;
-                }
-
-            },
-
-            onItemInserting: (args) => {
-                // cancel insertion of the item with empty 'name' field
-
-                console.log('onItemInserting:', args);
-
-                var $row = $('.jsgrid-insert-row');
-                var suggestion = $row.data('data-selected-suggestion');
-
-                if (!!suggestion) {
-                    args.item.item = suggestion.displayname;
-                    args.item.itemid = suggestion.id;
-                    args.item.baseprice = suggestion.baseprice;
-                    args.item.description = suggestion.salesdescription;
-                }
-
-
-                var taxCode = $row.data('selected-tax-code');
-                if (!!taxCode) {
-                    args.item.taxcodeid = taxCode.id;
-                    args.item.taxcode = taxCode.itemid;
-                    args.item.taxrate = taxCode.rate + '%';
-                }
-
-
-                if (args.item.item === "") {
-                    args.preserve = true;
-                    args.cancel = true;
-                    alert("Please select an item");
-                    return;
-                }
-
-                if (parseInt(args.item.quantity) <= 0) {
-                    args.preserve = true;
-                    args.cancel = true;
-                    alert("Quantity cannot be less than or equal to 0");
-                    return;
-                }
-
-                if (!args.item.taxcode) {
-                    args.preserve = true;
-                    args.cancel = true;
-                    alert("Please select tax code");
-                    return;
-                }
-
-
-                if (args.item.price_level == "0") {
-                    args.preserve = true;
-                    args.cancel = true;
-                    alert("Please select price level");
-                    return;
-                }
-
-
-                var existingData = $('#jsGrid').data().JSGrid.data;
-                var found = false;
-
-                existingData.forEach(item => {
-                    if (item.itemid == args.item.itemid) {
-                        found = true;
-                    }
-                });
-
-                if (found === true) {
-                    args.preserve = true;
-                    args.cancel = true;
-                    alert("The selected item already exists. Please select another item.");
-                }
-            },
-
+            onItemInserted: this.itemsChanged.bind(this),
+            onItemUpdated: this.itemsChanged.bind(this),
+            onItemDeleted: this.itemsChanged.bind(this),
+            onDataLoaded: this.loaded.bind(this),
+            onItemUpdating: this.onGridItemUpdating.bind(this),
+            onItemInserting: this.onGridItemInserting.bind(this),
             fields: gridFields
         });
 
 
-        $grid.on('focusin', '.jsgrid-insert-row input:first, .jsgrid-edit-row input:first', (ev)=> {
-            this.bindItemPicker($(ev.target));
-        });
-
-        $grid.on('focusin', '.jsgrid-insert-row .taxcode input, .jsgrid-edit-row .taxcode input', (ev)=> {
-            this.bindTaxCodePicker($(ev.target));
-        });
-
-
+        // bind grid events
         var gridRowClass = [
             '.jsgrid-insert-row .quantity input',
             '.jsgrid-insert-row .price input',
             '.jsgrid-edit-row .quantity input',
             '.jsgrid-edit-row .price input'
         ];
-        $grid.on('blur', gridRowClass.join(', '), (ev)=> {
-            var $input = $(ev.target);
-            var $tr = $input.parents('tr:first');
-            var $quantity = $tr.find('.quantity input');
-            var $price = $tr.find('.price input');
-
-            var isEditing = $tr.hasClass('jsgrid-edit-row');
-            var quantity = parseInt($quantity.val());
-            var price = parseFloat($price.val());
-            var totalPrice = (price * quantity).toFixed(2);
-
-            if (isEditing) {
-                $tr.find('.amount').html(totalPrice);
-            }
-            else {
-                $tr.find('.amount input').val(totalPrice);
-            }
+        $grid.on('focusin', '.jsgrid-insert-row input:first, .jsgrid-edit-row input:first', (ev)=> {
+            this.bindItemPicker($(ev.target));
         });
-
-
-        $grid.on('change', '.jsgrid-insert-row .price-level select', (ev)=> {
-            var $priceLevelDropdown = $(ev.target);
-            var $row = $priceLevelDropdown.parents('tr:first');
-            var $priceTextbox = $row.find('.price input');
-
-            var suggestion = $row.data('data-selected-suggestion');
-            var selectedPriceLevelId = $priceLevelDropdown.val();
-            var price = $priceTextbox.val();
-
-            if (selectedPriceLevelId == "0" || selectedPriceLevelId == "-1") {
-                $priceTextbox.removeAttr('disabled');
-
-                if (!!suggestion) {
-                    $priceTextbox.val(suggestion.baseprice);
-                }
-                else {
-                    $priceTextbox.val('');
-                }
-            }
-            else {
-                $priceTextbox.attr('disabled', 'disabled');
-
-                var priceLevels = this._priceLevels;
-                var selectedPriceLevel = _.find(priceLevels, priceLevel => {
-                    return priceLevel.id == selectedPriceLevelId
-                });
-
-                if (!!suggestion && selectedPriceLevel != null) {
-                    var discountPercent = Math.abs(parseFloat(selectedPriceLevel.discountpct || 0));
-                    var discount = (suggestion.baseprice / 100) * discountPercent;
-                    var discountedPrice = (suggestion.baseprice - discount).toFixed(2);
-                    $priceTextbox.val(discountedPrice);
-                }
-            }
-
-
-            $priceTextbox.focus().trigger('blur')
-
-
+        $grid.on('focusin', '.jsgrid-insert-row .taxcode input, .jsgrid-edit-row .taxcode input', (ev)=> {
+            this.bindTaxCodePicker($(ev.target));
         });
+        $grid.on('blur', gridRowClass.join(', '), this.onPriceOrQuantityChanged.bind(this));
+        $grid.on('change', '.jsgrid-insert-row .price-level select', this.onPriceLevelChangedInInsertRow.bind(this));
+        $grid.on('change', '.jsgrid-edit-row .price-level select', this.onPriceLevelChangedInEditRow.bind(this));
+    }
 
+    /**
+     * Invoked by JSGrid whenever any item is updating in the grid
+     * @param {object} args contains json object of item and html element of grid row
+     * @returns {void}
+     */
+    private onGridItemUpdating(args) {
+        console.log('onItemUpdating: ', JSON.stringify(args.item));
 
-        $grid.on('change', '.jsgrid-edit-row .price-level select', (ev)=> {
-            var $priceLevelDropdown = $(ev.target);
-            var $row = $priceLevelDropdown.parents('tr:first');
-            var $priceTextbox = $row.find('.price input');
+        var data = args.item;
+        data.price = parseFloat(data.price).toFixed(2);
+        data.amount = parseFloat(args.row.next().find('.amount').html()).toFixed(2);
 
-            var jsGridItem = $row.prev().data('JSGridItem');
-            var suggestion = jsGridItem;
-            var selectedPriceLevelId = $priceLevelDropdown.val();
-            var price = $priceTextbox.val();
+        var $updateRow = args.row.next();
+        var suggestion = $updateRow.data('data-selected-suggestion');
 
-            if (selectedPriceLevelId == "0" || selectedPriceLevelId == "-1") {
-                $priceTextbox.removeAttr('disabled');
+        console.log('onItemUpdating: ', JSON.stringify(suggestion));
 
-                if (!!suggestion) {
-                    $priceTextbox.val(suggestion.baseprice);
-                }
-                else {
-                    $priceTextbox.val('');
-                }
-            }
-            else {
-                $priceTextbox.attr('disabled', 'disabled');
+        if (!!suggestion) {
+            data.item = suggestion.displayname;
+            data.itemid = suggestion.id;
+            data.description = suggestion.salesdescription;
+            data.baseprice = suggestion.baseprice;
+        }
 
-                var priceLevels = this._priceLevels;
-                var selectedPriceLevel = _.find(priceLevels, priceLevel => {
-                    return priceLevel.id == selectedPriceLevelId
-                });
+        if (data.item === "") {
+            args.preserve = true;
+            args.cancel = true;
+            alert("Please select an item");
+            return;
+        }
 
-                if (!!suggestion && selectedPriceLevel != null) {
-                    var discountPercent = Math.abs(parseFloat(selectedPriceLevel.discountpct || 0));
-                    var discount = (suggestion.baseprice / 100) * discountPercent;
-                    var discountedPrice = (suggestion.baseprice - discount).toFixed(2);
-                    $priceTextbox.val(discountedPrice);
-                }
-            }
+        if (parseInt(data.quantity) <= 0) {
+            args.cancel = true;
+            alert("Quantity cannot be less than or equal to 0");
+            return;
+        }
 
+        var taxCode = $updateRow.data('selected-tax-code');
+        if (!!taxCode) {
+            data.taxcodeid = taxCode.id;
+            data.taxcode = taxCode.itemid;
+            data.taxrate = taxCode.rate + '%';
+        }
 
-            $priceTextbox.focus().trigger('blur')
-        });
+        if (!data.taxcode) {
+            args.preserve = true;
+            args.cancel = true;
+            alert("Please select tax code");
+            return;
+        }
 
+        if (data.price_level == "0") {
+            args.preserve = true;
+            args.cancel = true;
+            alert("Please select price level");
+            return;
+        }
 
     }
 
+    /**
+     * Invoked by JSGrid whenever any item is inserting in the grid
+     * @param {object} args contains json object of item and html element of grid row
+     * @returns {void}
+     */
+    private onGridItemInserting(args) {
+        console.log('onItemInserting:', args);
+
+        var $row = $('.jsgrid-insert-row');
+        var suggestion = $row.data('data-selected-suggestion');
+
+        if (!!suggestion) {
+            args.item.item = suggestion.displayname;
+            args.item.itemid = suggestion.id;
+            args.item.baseprice = suggestion.baseprice;
+            args.item.description = suggestion.salesdescription;
+        }
+
+
+        var taxCode = $row.data('selected-tax-code');
+        if (!!taxCode) {
+            args.item.taxcodeid = taxCode.id;
+            args.item.taxcode = taxCode.itemid;
+            args.item.taxrate = taxCode.rate + '%';
+        }
+
+
+        if (args.item.item === "") {
+            args.preserve = true;
+            args.cancel = true;
+            alert("Please select an item");
+            return;
+        }
+
+        if (parseInt(args.item.quantity) <= 0) {
+            args.preserve = true;
+            args.cancel = true;
+            alert("Quantity cannot be less than or equal to 0");
+            return;
+        }
+
+        if (!args.item.taxcode) {
+            args.preserve = true;
+            args.cancel = true;
+            alert("Please select tax code");
+            return;
+        }
+
+
+        if (args.item.price_level == "0") {
+            args.preserve = true;
+            args.cancel = true;
+            alert("Please select price level");
+            return;
+        }
+
+
+        var existingData = $('#jsGrid').data().JSGrid.data;
+        var found = false;
+
+        existingData.forEach(item => {
+            if (item.itemid == args.item.itemid) {
+                found = true;
+            }
+        });
+
+        if (found === true) {
+            args.preserve = true;
+            args.cancel = true;
+            alert("The selected item already exists. Please select another item.");
+        }
+    }
+
+    /**
+     * Invoked whenever price or quantity is changed in any row of grid
+     * Responsible for calculating total amount based on price and quantity
+     * @param {Event} ev contains json object of item and html element of grid row
+     * @returns {void}
+     */
+    private onPriceOrQuantityChanged(ev) {
+        var $input = $(ev.target);
+        var $tr = $input.parents('tr:first');
+        var $quantity = $tr.find('.quantity input');
+        var $price = $tr.find('.price input');
+
+        var isEditing = $tr.hasClass('jsgrid-edit-row');
+        var quantity = parseInt($quantity.val());
+        var price = parseFloat($price.val());
+        var totalPrice = (price * quantity).toFixed(2);
+
+        if (isEditing) {
+            $tr.find('.amount').html(totalPrice);
+        }
+        else {
+            $tr.find('.amount input').val(totalPrice);
+        }
+    }
+
+    /**
+     * Invoked whenever price level field is changed in insert row of grid
+     * Responsible for calculating total amount based on price level, price and quantity
+     * @param {Event} ev contains json object of item and html element of grid row
+     * @returns {void}
+     */
+    private onPriceLevelChangedInInsertRow(ev) {
+        var $priceLevelDropdown = $(ev.target);
+        var $row = $priceLevelDropdown.parents('tr:first');
+        var $priceTextbox = $row.find('.price input');
+
+        var suggestion = $row.data('data-selected-suggestion');
+        var selectedPriceLevelId = $priceLevelDropdown.val();
+        var price = $priceTextbox.val();
+
+        if (selectedPriceLevelId == "0" || selectedPriceLevelId == "-1") {
+            $priceTextbox.removeAttr('disabled');
+
+            if (!!suggestion) {
+                $priceTextbox.val(suggestion.baseprice);
+            }
+            else {
+                $priceTextbox.val('');
+            }
+        }
+        else {
+            $priceTextbox.attr('disabled', 'disabled');
+
+            var priceLevels = this._priceLevels;
+            var selectedPriceLevel = _.find(priceLevels, priceLevel => {
+                return priceLevel.id == selectedPriceLevelId
+            });
+
+            if (!!suggestion && selectedPriceLevel != null) {
+                var discountPercent = Math.abs(parseFloat(selectedPriceLevel.discountpct || 0));
+                var discount = (suggestion.baseprice / 100) * discountPercent;
+                var discountedPrice = (suggestion.baseprice - discount).toFixed(2);
+                $priceTextbox.val(discountedPrice);
+            }
+        }
+
+
+        $priceTextbox.focus().trigger('blur')
+    }
+
+    /**
+     * Invoked whenever price level field is changed in any editing row of grid
+     * Responsible for calculating total amount based on price level, price and quantity
+     * @param {Event} ev contains json object of item and html element of grid row
+     * @returns {void}
+     */
+    private onPriceLevelChangedInEditRow(ev) {
+        var $priceLevelDropdown = $(ev.target);
+        var $row = $priceLevelDropdown.parents('tr:first');
+        var $priceTextbox = $row.find('.price input');
+
+        var jsGridItem = $row.prev().data('JSGridItem');
+        var suggestion = jsGridItem;
+        var selectedPriceLevelId = $priceLevelDropdown.val();
+        var price = $priceTextbox.val();
+
+        if (selectedPriceLevelId == "0" || selectedPriceLevelId == "-1") {
+            $priceTextbox.removeAttr('disabled');
+
+            if (!!suggestion) {
+                $priceTextbox.val(suggestion.baseprice);
+            }
+            else {
+                $priceTextbox.val('');
+            }
+        }
+        else {
+            $priceTextbox.attr('disabled', 'disabled');
+
+            var priceLevels = this._priceLevels;
+            var selectedPriceLevel = _.find(priceLevels, priceLevel => {
+                return priceLevel.id == selectedPriceLevelId
+            });
+
+            if (!!suggestion && selectedPriceLevel != null) {
+                var discountPercent = Math.abs(parseFloat(selectedPriceLevel.discountpct || 0));
+                var discount = (suggestion.baseprice / 100) * discountPercent;
+                var discountedPrice = (suggestion.baseprice - discount).toFixed(2);
+                $priceTextbox.val(discountedPrice);
+            }
+        }
+
+
+        $priceTextbox.focus().trigger('blur');
+    }
 
     /**
      * itemsPickerSource - fetch data from server based on provided query
-     * @param query {string} the keyword which user has typed
-     * @param sync {function} the callback method to invoke synchronously
-     * @param async {function} the callback method to invoke asynchronously
+     * @param {string} query the keyword which user has typed
+     * @param {function} sync  the callback method to invoke synchronously
+     * @param {function} async  the callback method to invoke asynchronously
      */
     private taxcodePickerSource(query, sync, async) {
 
@@ -802,12 +888,11 @@ class CreateContractUIManager {
 
     }
 
-
     /**
      * itemsPickerSource - fetch data from server based on provided query
-     * @param query {string} the keyword which user has typed
-     * @param sync {function} the callback method to invoke synchronously
-     * @param async {function} the callback method to invoke asynchronously
+     * @param {string} query the keyword which user has typed
+     * @param {function} sync  the callback method to invoke synchronously
+     * @param {function} async  the callback method to invoke asynchronously
      */
     private itemsPickerSource(query, sync, async) {
 
@@ -829,9 +914,9 @@ class CreateContractUIManager {
 
     }
 
-
     /**
-     * bindItemPicker - Bind item picker control with typeahead autocomplete
+     * Binds typeahead autocomplete component with Tax Code control
+     * @param {object} $el jQuery element
      */
     private bindTaxCodePicker($el) {
 
@@ -926,7 +1011,8 @@ class CreateContractUIManager {
     }
 
     /**
-     * bindItemPicker - Bind item picker control with typeahead autocomplete
+     * Binds typeahead autocomplete component with item picker control
+     * @param {object} $el jQuery element
      */
     private bindItemPicker($el) {
 
@@ -999,17 +1085,19 @@ class CreateContractUIManager {
                 $this.attr('data-selected-text', suggestion.displayname);
                 $tr.data('data-selected-suggestion', suggestion);
 
-                this._dataManager.getPriceLevels({recordType: suggestion.recordType, itemId: suggestion.id}, function(priceLevels){
+                this._dataManager.getPriceLevels({
+                    recordType: suggestion.recordType,
+                    itemId: suggestion.id
+                }, function (priceLevels) {
 
                     var $priceLevelDropdown = $tr.find('.price-level select');
                     $priceLevelDropdown.empty();
-                    priceLevels.forEach(priceLevel=>{
+                    priceLevels.forEach(priceLevel=> {
                         $("<option>")
                             .attr("value", priceLevel.id)
                             .text(priceLevel.name)
                             .appendTo($priceLevelDropdown);
                     });
-
 
                     var quantity = 1; // default to 1
                     var listPriceId = 1; // default to 1
@@ -1028,7 +1116,10 @@ class CreateContractUIManager {
         }
     }
 
-
+    /**
+     * Binds typeahead autocomplete component with primary contact control
+     * @param {object} $contactsDropdown jQuery element
+     */
     bindPrimaryContactDropdown($contactsDropdown) {
 
         if (!$contactsDropdown.data('itempicker_created')) {
@@ -1124,6 +1215,10 @@ class CreateContractUIManager {
         }
     }
 
+    /**
+     * Binds typeahead autocomplete component with customer control
+     * @param {object} $customerDropdown jQuery element
+     */
     bindCustomerDropdown($customerDropdown) {
 
         if (!$customerDropdown.data('itempicker_created')) {
@@ -1221,7 +1316,9 @@ class CreateContractUIManager {
         }
     }
 
-
+    /**
+     * Binds All Dropdowns with required data
+     */
     bindDropdown() {
 
         // fill partners dropdown
@@ -1298,5 +1395,3 @@ class CreateContractUIManager {
     }
 
 }
-
-

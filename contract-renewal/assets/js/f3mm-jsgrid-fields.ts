@@ -5,7 +5,7 @@
  */
 
 /**
- * A Custom Field for JSGrid to support decimal numbers
+ * Customized handling for min attribute on number field of JSGrid
  */
 ((jsGrid, $, undefined) => {
     var NumberField = jsGrid.NumberField;
@@ -21,7 +21,9 @@
 })(jsGrid, jQuery);
 
 
-
+/**
+ * A Custom Field for JSGrid to support decimal numbers
+ */
 ((jsGrid, $, undefined) => {
 
     var TextField = jsGrid.TextField;

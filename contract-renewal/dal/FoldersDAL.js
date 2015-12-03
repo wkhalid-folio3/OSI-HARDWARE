@@ -7,6 +7,20 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 /**
  * Created by zshaikh on 11/18/2015.
+ * -
+ * Referenced By:
+ * - f3mm_create_contract_ui_suitelet.ts
+ * -
+ * Dependencies:
+ * - BaseTypeDAL.ts
+ * -
+ */
+/**
+ * This class is responsing for performing DB operations related to File / Folder Search
+ * Following are the responsibilities of this class:
+ *  - Load Contracts from Database
+ *  - Update / Create Contracts along with its line items
+ *  - Generate Quote from Contract
  */
 var FoldersDAL = (function (_super) {
     __extends(FoldersDAL, _super);
@@ -14,6 +28,12 @@ var FoldersDAL = (function (_super) {
         _super.apply(this, arguments);
         this.internalId = 'folder';
     }
+    /**
+     * Gets files withing specified folderId
+     * @param {number} folderId to search files within
+     * @param {boolean} recursive default to false
+     * @returns {object[]} array of files object
+     */
     FoldersDAL.prototype.getFiles = function (folderId, recursive) {
         if (recursive === void 0) { recursive = false; }
         var filters = [];
@@ -31,6 +51,11 @@ var FoldersDAL = (function (_super) {
         var result = this.getAll(filters, cols);
         return result;
     };
+    /**
+     * Gets files with specified file ids
+     * @param {string[]} fileIds array of file ids
+     * @returns {object[]} array of files object
+     */
     FoldersDAL.prototype.getMedia = function (fileIds) {
         var filters = [];
         var cols = [];

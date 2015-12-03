@@ -2,11 +2,21 @@
 /// <reference path="./f3mm-ui-manager.ts" />
 
 /**
- * Created by zshaikh on 12/3/2015.
+ * Created by zshaikh on 11/18/2015.
+ * -
+ * Referenced By:
+ * -
+ *
+ * Dependencies:
+ * - f3mm-ui-manager.ts
+ * - underscore-min.js
+ * -
  */
 
-
-$(function () {
+/**
+ * Application entry point.
+ */
+$(() => {
 
     // set underscore template settings
     _.templateSettings = {
@@ -14,7 +24,7 @@ $(function () {
         evaluate: /\{\{(.+?)\}\}/g,
     };
 
-    // store it in global variable for debugging purpose
+    // HACK : store it in global variable for debugging purpose
     window.createContractUIManager = new CreateContractUIManager();
 
 });

@@ -49,7 +49,7 @@ var ContractDAL = (function (_super) {
     /**
      * Gets contract with specified id including details of Items and related Quote
      * @param {string} id
-     * @returns {object}
+     * @returns {object} json representation of contract obejct along with contract items and quotes
      */
     ContractDAL.prototype.getWithDetails = function (id) {
         var commonDAL = new CommonDAL();
@@ -75,7 +75,8 @@ var ContractDAL = (function (_super) {
      * @param {string} contractId id of the contract to generate contract from
      * @returns {number} id of quote generated from contract
      */
-    ContractDAL.prototype.generateQuote = function (contractId) {
+    ContractDAL.prototype.generateQuote = function (params) {
+        var contractId = params.contractId;
         var contract = this.getWithDetails(contractId);
         var quote = nlapiCreateRecord('estimate');
         var tranDate = new Date();
@@ -110,7 +111,7 @@ var ContractDAL = (function (_super) {
             });
         }
         var quoteId = nlapiSubmitRecord(quote);
-        return quoteId;
+        return { id: quoteId };
     };
     /**
      * Create/Update a Contract based on json data passed
@@ -157,7 +158,8 @@ var ContractDAL = (function (_super) {
             record['sublists'] = [];
             record['sublists'].push(contractItemsSublist);
         }
-        return this.upsert(record, true);
+        var id = this.upsert(record, true);
+        return { id: id };
     };
     return ContractDAL;
 })(BaseTypeDAL);
