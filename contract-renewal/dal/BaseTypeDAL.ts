@@ -1,25 +1,54 @@
-// Declaration of all NetSuite SuiteScript 1.0 APIs
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="../_typescript-refs/f3.common.d.ts" />
 
+/**
+ * Created by zshaikh on 11/18/2015.
+ * -
+ * Referenced By:
+ * - CommonDAL.ts
+ * - ContractDAL.ts
+ * - FoldersDAL.ts
+ * -
+ * Dependencies:
+ * - f3_common.js
+ * -
+ */
+
+/**
+ * This is generic class, responsible for communication with Database
+ * Following are the Responsibilities of this class:
+ *  - Load a single record with line items (child records) from Database
+ *  - Search Records with specific filters and columns
+ *  - Insert / Update Records
+ */
 class BaseTypeDAL {
     internalId:string;
     fields: {};
 
+    /**
+     * Load a record with specified id and and return in json format
+     * @param {string} id id of record to load
+     * @returns {object} json representation of record
+     */
     get (id: string) : any {
         var record = nlapiLoadRecord(this.internalId, id);
 
-        var json = this.getRecordJson(record);
+        var json = this.getJsonForFullRecord(record);
 
         return json;
     }
 
+    /**
+     * Load a record with specified id and and return in json format
+     * @param {nlobjSearchFilter[]} filters filters to filter data of search result
+     * @param {nlobjSearchColumn[]} columns columns to return in search result
+     * @param {string?} internalId optional parameter, if null then internal id of this calss will be used
+     * @returns {object[]} json representation of records
+     */
     getAll (filters: nlobjSearchFilter[], columns: nlobjSearchColumn[], internalId?: string) : {}[] {
 
         var recs = null;
         var arr = [];
-        var cols = null;
-        var obj = null;
 
         try {
             filters = filters ? filters : [];
@@ -29,33 +58,41 @@ class BaseTypeDAL {
             recs = nlapiSearchRecord(internalId, null, filters, columns);
 
             if (recs && recs.length > 0) {
-                //cols = recs[0].getAllColumns();
-                arr = this.getObjects(recs);
-                //for (var x = 0; x < recs.length; x++) {
-                //    arr.push(this.getObject(recs[x], cols, null));
-                //}
+                arr = this.getJsonArray(recs);
             }
         }
         catch (e) {
-            //F3.Util.Utility.logException('F3.Storage.BaseDao.getAll', e);
+            F3.Util.Utility.logException('BaseTypeDAL.getAll', e.toString());
             throw e;
         }
+
         return arr;
     }
 
-    getObjects (records: nlobjSearchResult[]) : {}[] {
+    /**
+     * Convert search result array into json array.
+     * @param {nlobjSearchResult[]} records array of search result
+     * @returns {object[]} json representation of search result array
+     */
+    getJsonArray (records: nlobjSearchResult[]) : {}[] {
 
         var result = [];
         if (!!records && records.length > 0) {
 
             var cols = records[0].getAllColumns();
             var columnNames = [];
+            var item = null,
+                label = null,
+                nm = null,
+                j = 0;
+            var record = null,
+                jsonObj = null,
+                k = 0;
 
             if (!!cols) {
-                for (var j = 0; j < cols.length; j++) {
-                    var item = cols[j];
-                    var label = item.getLabel();
-                    var nm = null;
+                for (; j < cols.length; j++) {
+                    item = cols[j];
+                    label = item.getLabel();
                     if (!!label) {
                         label = label.toLowerCase();
                         label = label.indexOf('_') == 0 ? label.substr(1) : label;
@@ -70,15 +107,24 @@ class BaseTypeDAL {
                 }
             }
 
-            for (var x = 0; x < records.length; x++) {
-                result.push(this.getObject(records[x], cols, columnNames));
+            for (; k < records.length; k++) {
+                record = records[k];
+                jsonObj = this.getJsonObject(record, cols, columnNames);
+                result.push(jsonObj);
             }
         }
 
         return result;
     }
 
-    getObject (row: nlobjSearchResult, cols: nlobjSearchColumn[], columnNames? : string[]) : {} {
+    /**
+     * Convert search result object into json array.
+     * @param {nlobjSearchResult} row single row of search result
+     * @param {nlobjSearchColumn[]} cols array of columns to convert into json
+     * @param {string[]?} columnNames array of column names
+     * @returns {object[]} json representation of search result object
+     */
+    getJsonObject (row: nlobjSearchResult, cols: nlobjSearchColumn[], columnNames? : string[]) : {} {
 
         var obj = null;
         if (row) {
@@ -103,11 +149,15 @@ class BaseTypeDAL {
         return obj;
     }
 
+    /**
+     * Gets all column of current class to perform search
+     * @returns {nlobjSearchColumn[]} array of columns
+     */
     getSearchColumns () : nlobjSearchColumn[] {
         var cols = [];
 
-        for (var x in this.fields) {
-            var field = this.fields[x];
+        for (var key in this.fields) {
+            var field = this.fields[key];
             var fieldName = field.id || field.toString();
             var searchCol = new nlobjSearchColumn(fieldName, null, null);
             cols.push(searchCol);
@@ -116,148 +166,189 @@ class BaseTypeDAL {
         return cols;
     }
 
+    /**
+     * Convert any record object of type `nlobjRecord` into json
+     * @param {nlobjRecord} record record object to convert
+     * @returns {object} json representation of record
+     */
+    getJsonForFullRecord (record: nlobjRecord) : {} {
 
-    getRecordJson (row: nlobjRecord) : {} {
+        var result = null;
+        if (!!record) {
+            result = {id: record.getId(), recordType: record.getRecordType()};
 
-        var obj = null;
-        if (!!row) {
-            obj = {id: row.getId(), recordType: row.getRecordType()};
-            var nm = null, item, val, text;
+            // serialize body fields
+            var allFields = record.getAllFields();
 
-            F3.Util.Utility.logDebug('BaseTypeDAL.getRecordJson() // row.fields: ', JSON.stringify(row.getAllFields()));
-
-            var allFields = row.getAllFields();
-            for (var index in allFields){
+            // iterate over columns of body fields
+            for (var index in allFields) {
                 var field = allFields[index];
-                var nm = field;
-                var val : any = row.getFieldValue(field);
-                var text : any = row.getFieldText(field);
+                var name = field;
+                var val:any = record.getFieldValue(field);
+                var text:any = record.getFieldText(field);
 
                 if (!!text && val != text) {
-                    obj[nm] = {text: text, value: val};
+                    result[name] = {text: text, value: val};
                 }
                 else {
-                    obj[nm] = val;
+                    result[name] = val;
                 }
             }
 
-            obj.sublists = {};
-            F3.Util.Utility.logDebug('BaseTypeDAL.getRecordJson() // row.linefields: ', JSON.stringify(row.linefields));
-            var lineItemGroups = row.getAllLineItems();
-            F3.Util.Utility.logDebug('BaseTypeDAL.getRecordJson() // lineItemGroups: ', JSON.stringify(lineItemGroups));
+            // serialize child records
+            result.sublists = {};
+            var lineItemGroups = record.getAllLineItems();
 
-            for (var h in lineItemGroups) {
+            // iterate over child record types
+            for (var lineItemIndex in lineItemGroups) {
 
-                var key = lineItemGroups[h];
-                var lineItemCount = row.getLineItemCount(key);
+                var key = lineItemGroups[lineItemIndex];
 
-                obj.sublists[key] = [];
+                var sublistItems = this.getSublistItems(record, key);
 
-                for (var i = 1; i <= lineItemCount; i++) {
-                    var lineItem = {};
-                    var fields = row.getAllLineItemFields(key);
-                    for(var j in fields) {
-                        var field = fields[j];
-                        var nm = field;
-                        var val : any = row.getLineItemValue(key, field, i);
-                        var text : any = row.getLineItemText(key, field, i);
-
-                        if (!!text && val != text) {
-                            lineItem[nm] = {text: text, value: val};
-                        }
-                        else {
-                            lineItem[nm] = val;
-                        }
-                    }
-
-                    obj.sublists[key].push(lineItem);
-                }
+                result.sublists[key] = sublistItems;
             }
 
         }
 
-        return obj;
+        return result;
     }
 
+    /**
+     * Convert sublist items of specific record to json format
+     * @param {nlobjRecord} record record object to convert
+     * @param {string} key sublist key to get items of.
+     * @returns {object} json representation of record
+     */
+    getSublistItems(record: nlobjRecord, key: string){
+        var sublistItems = [];
+        var lineItemCount = record.getLineItemCount(key);
+
+        // iterate over child record items of type `key`
+        for (var i = 1; i <= lineItemCount; i++) {
+            var lineItem = {};
+            var fields = record.getAllLineItemFields(key);
+
+            // iterate over columns
+            for (var j in fields) {
+                var field = fields[j];
+                var name:string = field;
+                var val:any = record.getLineItemValue(key, field, i);
+                var text:any = record.getLineItemText(key, field, i);
+
+                if (!!text && val != text) {
+                    lineItem[name] = {text: text, value: val};
+                }
+                else {
+                    lineItem[name] = val;
+                }
+            }
+
+            sublistItems.push(lineItem);
+        }
+
+        return sublistItems;
+    }
 
     /**
      * Either inserts or updates data. Upsert = Up[date] + [In]sert
-     * @param record
-     * @returns {*}
+     * @param {object} record json representation of object to insert/update in db
+     * @param {boolean?} removeExistingLineItems default to false
+     * @returns {number} id of the inserted or updated record
      */
     upsert (record, removeExistingLineItems?: boolean) {
 
         F3.Util.Utility.logDebug('BaseTypeDAL.upsert(); // item = ', JSON.stringify(record));
 
         var id = null;
-        var rec = null;
+        var dbRecord = null;
 
-        if (record) {
-            try {
-                rec = F3.Util.Utility.isBlankOrNull(record.id) ? nlapiCreateRecord(this.internalId) : nlapiLoadRecord(this.internalId, record.id);
+        try {
+
+            if (!!record) {
+
+                // either load or create record
+                if (F3.Util.Utility.isBlankOrNull(record.id)) {
+                    dbRecord = nlapiCreateRecord(this.internalId);
+                }
+                else {
+                    dbRecord = nlapiLoadRecord(this.internalId, record.id);
+                }
+
+                // we donot want to add id in the body fields
                 delete record.id;
+
                 for (var key in record) {
                     if (!F3.Util.Utility.isBlankOrNull(key)) {
-
                         var itemData = record[key];
                         if (key == 'sublists' && !!itemData) {
-
-                            F3.Util.Utility.logDebug('BaseTypeDAL.upsert(); // sublists = ', JSON.stringify(itemData));
-
-                            itemData.forEach(sublist => {
-
-                                F3.Util.Utility.logDebug('BaseTypeDAL.upsert(); // sublist = ', JSON.stringify(sublist));
-
-                                if ( removeExistingLineItems === true ) {
-                                    var existingItemsCount = rec.getLineItemCount(sublist.internalId);
-                                    for (var j = 1; j <= existingItemsCount; j++) {
-                                        rec.removeLineItem(sublist.internalId, '1');
-                                    }
-                                }
-
-                                sublist.lineitems.forEach((lineitem, index) => {
-
-                                    F3.Util.Utility.logDebug('BaseTypeDAL.upsert(); // lineitem = ', JSON.stringify(lineitem));
-
-                                    var linenum = rec.findLineItemValue(sublist.internalId, sublist.keyField, lineitem[sublist.keyField]);
-                                    if (linenum > -1) {
-                                        rec.selectLineItem(sublist.internalId, linenum);
-                                    }
-                                    else {
-                                        rec.selectNewLineItem(sublist.internalId);
-                                    }
-
-                                    F3.Util.Utility.logDebug('BaseTypeDAL.upsert(); // linenum = ', linenum);
-
-                                    for (var i in lineitem) {
-                                        rec.setCurrentLineItemValue(sublist.internalId, i, lineitem[i]);
-                                    }
-
-                                    rec.commitLineItem(sublist.internalId);
-                                });
-
-                            });
+                            // update line items
+                            this.upsertLineItems(dbRecord, itemData, removeExistingLineItems);
                         }
                         else {
-                            rec.setFieldValue(key, itemData);
+                            dbRecord.setFieldValue(key, itemData);
                         }
                     }
                 }
 
-                id = nlapiSubmitRecord(rec, true);
+                id = nlapiSubmitRecord(dbRecord, true);
 
                 F3.Util.Utility.logDebug('BaseTypeDAL.upsert(); // id = ', id);
             }
-            catch (e) {
-                F3.Util.Utility.logException('F3.Storage.BaseDao.upsert', e.toString());
-                throw e;
-            }
+        }
+        catch (e) {
+            F3.Util.Utility.logException('F3.Storage.BaseDao.upsert', e.toString());
+            throw e;
         }
 
         return id;
     }
 
+    /**
+     * insert / update line items.
+     * also deletes existing lineitems if 3rd parameter is true
+     * @param {object} dbRecord dbRecord to update data in
+     * @param {object} itemData json representation of object to insert/update in db
+     * @param {boolean?} removeExistingLineItems default to false
+     * @returns {void}
+     */
+    private upsertLineItems(dbRecord, itemData, removeExistingLineItems?: boolean) {
+
+        itemData.forEach(sublist => {
+
+            F3.Util.Utility.logDebug('BaseTypeDAL.upsertLineItems(); // sublist = ', JSON.stringify(sublist));
+
+            if (removeExistingLineItems === true) {
+                var existingItemsCount = dbRecord.getLineItemCount(sublist.internalId);
+                for (var j = 1; j <= existingItemsCount; j++) {
+                    dbRecord.removeLineItem(sublist.internalId, '1');
+                }
+            }
+
+            sublist.lineitems.forEach((lineitem, index) => {
+
+                F3.Util.Utility.logDebug('BaseTypeDAL.upsertLineItems(); // lineitem = ', JSON.stringify(lineitem));
+
+                var linenum = dbRecord.findLineItemValue(sublist.internalId, sublist.keyField, lineitem[sublist.keyField]);
+                if (linenum > -1) {
+                    dbRecord.selectLineItem(sublist.internalId, linenum);
+                }
+                else {
+                    dbRecord.selectNewLineItem(sublist.internalId);
+                }
+
+                F3.Util.Utility.logDebug('BaseTypeDAL.upsertLineItems(); // linenum = ', linenum);
+
+                for (var i in lineitem) {
+                    dbRecord.setCurrentLineItemValue(sublist.internalId, i, lineitem[i]);
+                }
+
+                dbRecord.commitLineItem(sublist.internalId);
+            });
+
+        });
+
+
+    }
+
 }
-
-
-

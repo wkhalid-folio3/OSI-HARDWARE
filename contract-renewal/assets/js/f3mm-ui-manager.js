@@ -1,115 +1,35 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
-/// <reference path="../../_typescript-refs/es6-promise.d.ts" />
 /// <reference path="./f3mm-data-manager.ts" />
 /**
  * Created by zshaikh on 11/18/2015.
  */
-// Reference: https://github.com/hongymagic/jQuery.serializeObject
-// Use internal $.serializeArray to get list of form elements which is
-// consistent with $.serialize
-//
-// From version 2.0.0, $.serializeObject will stop converting [name] values
-// to camelCase format. This is *consistent* with other serialize methods:
-//
-//   - $.serialize
-//   - $.serializeArray
-//
-// If you require camel casing, you can either download version 1.0.4 or map
-// them yourself.
-//
-(function ($) {
-    $.fn.serializeObject = function () {
-        "use strict";
-        var result = {};
-        var extend = function (i, element) {
-            console.log('extend: ', element);
-            //// CUSTOM HANDLING: added data-key handling to preserve names
-            var name = element.name; // element.getAttribute('data-key') ||
-            var node = result[name];
-            // If node with same name exists already, need to convert it to an array as it
-            // is a multi-value field (i.e., checkboxes)
-            if ('undefined' !== typeof node && node !== null) {
-                if ($.isArray(node)) {
-                    node.push(element.value);
-                }
-                else {
-                    result[name] = [node, element.value];
-                }
-            }
-            else {
-                result[name] = element.value;
-            }
-        };
-        $.each(this.serializeArray(), extend);
-        return result;
-    };
-})(jQuery);
-(function (jsGrid, $, undefined) {
-    var TextField = jsGrid.TextField;
-    function DecimalNumberField(config) {
-        TextField.call(this, config);
-    }
-    DecimalNumberField.prototype = new TextField({
-        sorter: "number",
-        align: "right",
-        filterValue: function () {
-            return parseFloat(parseFloat(this.filterControl.val() || 0).toFixed(2));
-        },
-        insertValue: function () {
-            return parseFloat(this.insertControl.val() || 0).toFixed(2);
-        },
-        editValue: function () {
-            return parseFloat(this.editControl.val() || 0).toFixed(2);
-        },
-        _createTextBox: function () {
-            return $("<input>").attr("type", "number").attr("step", "0.01");
-        }
-    });
-    jsGrid.fields.decimal_number = jsGrid.DecimalNumberField = DecimalNumberField;
-})(jsGrid, jQuery);
-$.validator.addMethod('requiredTypeahead', function (value, element, param) {
-    //Your Validation Here
-    var isValid = false;
-    var $element = $(element);
-    var selectedId = $element.attr('data-selected-id');
-    var selectedText = $element.attr('data-selected-text');
-    var val = $element.val();
-    if (!val) {
-        isValid = false;
-    }
-    else {
-        isValid = selectedText == val;
-    }
-    return isValid; // return bool here if valid or not.
-}, 'This field is required.');
-$(function () {
-    _.templateSettings = {
-        interpolate: /\{\{=(.+?)\}\}/g,
-        evaluate: /\{\{(.+?)\}\}/g
-    };
-    window.createContractUIManager = new CreateContractUIManager();
-});
-//var p = new Promise<string>((resolve, reject) => {
-//    resolve('a string');
-//});
 var CreateContractUIManager = (function () {
     function CreateContractUIManager() {
-        var _this = this;
         this._loadedCount = 0;
         this._viewType = window.pageType;
-        this._dataManager = new DataManager(this._viewType);
         this._priceLevels = window.priceLevels;
         this._contractInfo = window.contractInfo;
-        //this.showLoading();
+        this._dataManager = new DataManager(this._viewType);
         this.setViewMode();
         this.bindDropdown();
         this.bindItemsGrid();
-        //this.fetchPriceLevels().then(()=> {
-        //    this.bindItemsGrid();
-        //});
-        //this.bindItemsGrid();
         this.bindDatePicker();
-        $(".f3mm-contract-renewal").parents('form:first').removeAttr('onsubmit').validate({
+        this.applyValidation();
+        $('.btn-generate-quote').on('click', this.generateQuote.bind(this));
+    }
+    CreateContractUIManager.prototype.showLoading = function () {
+        var $loading = $('.contract-loading-backdrop,.contract-loading');
+        $loading.addClass('in').show();
+    };
+    CreateContractUIManager.prototype.hideLoading = function () {
+        var $loading = $('.contract-loading-backdrop,.contract-loading');
+        $loading.removeClass('in').hide();
+    };
+    CreateContractUIManager.prototype.applyValidation = function () {
+        var _this = this;
+        var $form = $(".f3mm-contract-renewal").parents('form:first');
+        $form.removeAttr('onsubmit');
+        $form.validate({
             rules: {
                 contract_number: {
                     required: true
@@ -150,38 +70,15 @@ var CreateContractUIManager = (function () {
                 }
             },
             submitHandler: function (form) {
-                console.log(_this);
                 _this.submit();
                 return false;
             }
         });
-        $('.btn-generate-quote').on('click', function (ev) {
-            var $button = $(ev.target);
-            $button.val('Generating...');
-            _this.showLoading();
-            _this._dataManager
-                .generateQuote({ contractId: _this._contractInfo.id }, function (result) {
-                if (!!result.data) {
-                    var viewRecordUrl = nlapiResolveURL('RECORD', 'estimate', result.data, false);
-                    window.location.href = viewRecordUrl;
-                }
-                else {
-                    alert(result.message);
-                }
-            });
-        });
-    }
-    CreateContractUIManager.prototype.showLoading = function () {
-        $('.contract-loading-backdrop,.contract-loading').addClass('in').show();
-    };
-    CreateContractUIManager.prototype.hideLoading = function () {
-        $('.contract-loading-backdrop,.contract-loading').removeClass('in').hide();
     };
     CreateContractUIManager.prototype.setViewMode = function () {
         console.log('this.setViewMode(); // this._viewType: ', this._viewType);
         if (this._viewType == 'view') {
             $('.form-horizontal :input, .input-group.date').attr('disabled', 'disabled');
-            //$('.input-group.date').datepicker('remove');
             $('.form-actions').hide();
             $('.view-contract-action-buttons').show();
             $('.view-horizontal').show();
@@ -191,6 +88,27 @@ var CreateContractUIManager = (function () {
             $('.view-contract-action-buttons').hide();
             $('.form-horizontal').show();
         }
+    };
+    CreateContractUIManager.prototype.generateQuote = function (ev) {
+        var _this = this;
+        var $button = $(ev.target);
+        if ($button.attr('disabled') == 'disabled') {
+            return false;
+        }
+        $button.val('Generating...');
+        this.showLoading();
+        var data = { contractId: this._contractInfo.id };
+        this._dataManager.generateQuote(data, function (result) {
+            if (!!result.data && !!result.data.id) {
+                $button.val('Generated!');
+                var viewRecordUrl = nlapiResolveURL('RECORD', 'estimate', result.data.id, false);
+                window.location.href = viewRecordUrl;
+            }
+            else {
+                alert(result.message);
+                _this.hideLoading();
+            }
+        });
     };
     CreateContractUIManager.prototype.loaded = function () {
         this._loadedCount++;
@@ -209,6 +127,12 @@ var CreateContractUIManager = (function () {
             var compiledTemplate = _.template(viewTemplate);
             var htmlMarkup = compiledTemplate(contract);
             $('.view-horizontal').html(htmlMarkup);
+            if (contract.custrecord_f3mm_status.value == "1") {
+                $('.btn-generate-quote').attr('disabled', 'disabled');
+            }
+            else {
+                $('.btn-generate-quote').removeAttr('disabled');
+            }
         }
         else {
             var $form = $('.form-horizontal');
@@ -273,7 +197,8 @@ var CreateContractUIManager = (function () {
         }
     };
     /**
-     * validateFilters - validate selected customer id
+     * Validates if selected customer and selected primary contact is valid or not
+     * @returns {bool}
      */
     CreateContractUIManager.prototype.validateFields = function () {
         var $customerDropdown = $('.customer-dropdown');
@@ -300,8 +225,8 @@ var CreateContractUIManager = (function () {
         };
     };
     CreateContractUIManager.prototype.submit = function () {
+        var _this = this;
         try {
-            //showLoading();
             var validated = this.validateFields();
             // if not valid then return
             if (validated === false) {
@@ -348,12 +273,14 @@ var CreateContractUIManager = (function () {
                 }
                 else {
                     alert(result.message);
+                    _this.hideLoading();
                 }
             });
         }
         catch (e) {
-            alert('Error during record submission.');
             console.error('ERROR', 'Error during main onSubmit', e.toString());
+            alert('Error during record submission.');
+            this.hideLoading();
         }
     };
     CreateContractUIManager.prototype.itemsChanged = function () {
@@ -362,17 +289,7 @@ var CreateContractUIManager = (function () {
         var totalQuantitySeats = _.reduce(quantities, function (memo, num) { return memo + parseInt(num); }, 0);
         $('.total-quantity-seats-text').val(totalQuantitySeats);
     };
-    CreateContractUIManager.prototype.fetchPriceLevels = function () {
-        var _this = this;
-        return this._dataManager
-            .getPriceLevels()
-            .then(function (priceLevels) {
-            console.log(priceLevels);
-            _this._priceLevels = priceLevels.data;
-        });
-    };
-    CreateContractUIManager.prototype.bindItemsGrid = function () {
-        var _this = this;
+    CreateContractUIManager.prototype.prepareGridData = function () {
         var contactItems = [];
         if (!!this._contractInfo && !!this._contractInfo.sublists) {
             var contractItemsInfo = this._contractInfo.sublists.recmachcustrecord_f3mm_ci_contract;
@@ -383,7 +300,7 @@ var CreateContractUIManager = (function () {
                     contactItems.push({
                         item: contractItem.custrecord_f3mm_ci_item.text,
                         itemid: contractItem.custrecord_f3mm_ci_item.value,
-                        item_baseprice: contractItem.custrecord_f3mm_ci_item.baseprice,
+                        baseprice: contractItem.custrecord_f3mm_ci_item.baseprice,
                         quantity: contractItem.custrecord_f3mm_ci_quantity,
                         price: contractItem.custrecord_f3mm_ci_price,
                         amount: contractItem.custrecord_f3mm_ci_amount,
@@ -396,29 +313,14 @@ var CreateContractUIManager = (function () {
                 });
             }
         }
-        var gridController = {
-            loadData: function (filter) {
-                console.log('contactItems:', contactItems);
-                return contactItems;
-            },
-            insertItem: function (insertingClient) {
-            },
-            updateItem: function (updatingClient) {
-                console.log('updateItem: ', arguments);
-            },
-            deleteItem: function (deletingClient) {
-                //var clientIndex = $.inArray(deletingClient, contactItems);
-                //contactItems.splice(clientIndex, 1);
-            }
-        };
-        // $("#jsGrid").jsGrid("refresh");
-        //$("#jsGrid").jsGrid("updateItem", clients[1], { Item: "hello" }).done(function() {
-        //    console.log("update completed");
-        //});
-        //window.db = db;
-        //window.clients = contactItems;
-        this._priceLevels.unshift({ id: 0, name: '' });
-        this._priceLevels.push({ id: -1, name: 'Custom' });
+        return contactItems;
+    };
+    CreateContractUIManager.prototype.bindItemsGrid = function () {
+        var _this = this;
+        var contactItems = this.prepareGridData();
+        //this._priceLevels.unshift({id: 0, name: ''});
+        //this._priceLevels.push({id: -1, name: 'Custom'});
+        this._priceLevels = [{ id: 0, name: '' }];
         var inserting = true;
         var editing = true;
         var gridFields = [
@@ -431,7 +333,14 @@ var CreateContractUIManager = (function () {
                 css: "description",
                 editing: false
             },
-            { title: "Quantity", name: "quantity", type: "number", width: 50, css: "quantity" },
+            {
+                title: "Quantity  <span class='mandatory'>*</span>",
+                name: "quantity",
+                type: "number",
+                width: 50,
+                css: "quantity",
+                min: 0
+            },
             {
                 title: "Price Level <span class='mandatory'>*</span>",
                 name: "price_level",
@@ -444,8 +353,22 @@ var CreateContractUIManager = (function () {
             },
             { title: "Price", name: "price", type: "decimal_number", width: 50, css: "price" },
             { title: "Amount", name: "amount", type: "decimal_number", width: 50, css: "amount", editing: false },
-            { title: "Tax Code <span class='mandatory'>*</span>", name: "taxcode", type: "text", width: 150, css: "taxcode" },
-            { title: "Tax", name: "taxrate", type: "decimal_number", width: 50, css: "taxrate", editing: false, inserting: false },
+            {
+                title: "Tax Code <span class='mandatory'>*</span>",
+                name: "taxcode",
+                type: "text",
+                width: 150,
+                css: "taxcode"
+            },
+            {
+                title: "Tax",
+                name: "taxrate",
+                type: "decimal_number",
+                width: 50,
+                css: "taxrate",
+                editing: false,
+                inserting: false
+            }
         ];
         if (this._viewType == 'view') {
             inserting = false;
@@ -467,7 +390,12 @@ var CreateContractUIManager = (function () {
             autoload: true,
             pageSize: 15,
             pageButtonCount: 5,
-            controller: gridController,
+            controller: {
+                loadData: function (filter) {
+                    console.log('contactItems:', contactItems);
+                    return contactItems;
+                }
+            },
             onItemInserted: function () {
                 _this.itemsChanged();
             },
@@ -483,23 +411,58 @@ var CreateContractUIManager = (function () {
                 _this.loaded();
             },
             onItemUpdating: function (args) {
-                console.log('onItemUpdating: ', args);
+                console.log('onItemUpdating: ', JSON.stringify(args.item));
                 var data = args.item;
                 data.price = parseFloat(data.price).toFixed(2);
                 data.amount = parseFloat(args.row.next().find('.amount').html()).toFixed(2);
                 // TODO : need to handle the case when user does not click on item picker and just edits and saves the record.
                 var $updateRow = args.row.next();
                 var suggestion = $updateRow.data('data-selected-suggestion');
-                console.log('suggestion: ', suggestion);
+                console.log('onItemUpdating: ', JSON.stringify(suggestion));
                 if (!!suggestion) {
+                    data.item = suggestion.displayname;
                     data.itemid = suggestion.id;
                     data.description = suggestion.salesdescription;
+                    data.baseprice = suggestion.baseprice;
+                }
+                //else {
+                //    data.item = "";
+                //    data.itemid = "";
+                //    data.description = "";
+                //}
+                if (data.item === "") {
+                    args.preserve = true;
+                    args.cancel = true;
+                    alert("Please select an item");
+                    return;
+                }
+                if (parseInt(data.quantity) <= 0) {
+                    args.cancel = true;
+                    alert("Quantity cannot be less than or equal to 0");
+                    return;
                 }
                 var taxCode = $updateRow.data('selected-tax-code');
                 if (!!taxCode) {
                     data.taxcodeid = taxCode.id;
                     data.taxcode = taxCode.itemid;
                     data.taxrate = taxCode.rate + '%';
+                }
+                //else {
+                //    data.taxcodeid = "";
+                //    data.taxcode = "";
+                //    data.taxrate = "";
+                //}
+                if (!data.taxcode) {
+                    args.preserve = true;
+                    args.cancel = true;
+                    alert("Please select tax code");
+                    return;
+                }
+                if (data.price_level == "0") {
+                    args.preserve = true;
+                    args.cancel = true;
+                    alert("Please select price level");
+                    return;
                 }
             },
             onItemInserting: function (args) {
@@ -510,6 +473,7 @@ var CreateContractUIManager = (function () {
                 if (!!suggestion) {
                     args.item.item = suggestion.displayname;
                     args.item.itemid = suggestion.id;
+                    args.item.baseprice = suggestion.baseprice;
                     args.item.description = suggestion.salesdescription;
                 }
                 var taxCode = $row.data('selected-tax-code');
@@ -519,16 +483,25 @@ var CreateContractUIManager = (function () {
                     args.item.taxrate = taxCode.rate + '%';
                 }
                 if (args.item.item === "") {
+                    args.preserve = true;
                     args.cancel = true;
                     alert("Please select an item");
                     return;
                 }
-                if (!args.item.taxcodeid) {
+                if (parseInt(args.item.quantity) <= 0) {
+                    args.preserve = true;
                     args.cancel = true;
-                    alert("Please select taxcode");
+                    alert("Quantity cannot be less than or equal to 0");
+                    return;
+                }
+                if (!args.item.taxcode) {
+                    args.preserve = true;
+                    args.cancel = true;
+                    alert("Please select tax code");
                     return;
                 }
                 if (args.item.price_level == "0") {
+                    args.preserve = true;
                     args.cancel = true;
                     alert("Please select price level");
                     return;
@@ -541,6 +514,7 @@ var CreateContractUIManager = (function () {
                     }
                 });
                 if (found === true) {
+                    args.preserve = true;
                     args.cancel = true;
                     alert("The selected item already exists. Please select another item.");
                 }
@@ -617,7 +591,7 @@ var CreateContractUIManager = (function () {
             if (selectedPriceLevelId == "0" || selectedPriceLevelId == "-1") {
                 $priceTextbox.removeAttr('disabled');
                 if (!!suggestion) {
-                    $priceTextbox.val(suggestion.item_baseprice);
+                    $priceTextbox.val(suggestion.baseprice);
                 }
                 else {
                     $priceTextbox.val('');
@@ -631,8 +605,8 @@ var CreateContractUIManager = (function () {
                 });
                 if (!!suggestion && selectedPriceLevel != null) {
                     var discountPercent = Math.abs(parseFloat(selectedPriceLevel.discountpct || 0));
-                    var discount = (suggestion.item_baseprice / 100) * discountPercent;
-                    var discountedPrice = (suggestion.item_baseprice - discount).toFixed(2);
+                    var discount = (suggestion.baseprice / 100) * discountPercent;
+                    var discountedPrice = (suggestion.baseprice - discount).toFixed(2);
                     $priceTextbox.val(discountedPrice);
                 }
             }
@@ -688,7 +662,6 @@ var CreateContractUIManager = (function () {
      * bindItemPicker - Bind item picker control with typeahead autocomplete
      */
     CreateContractUIManager.prototype.bindTaxCodePicker = function ($el) {
-        //var $el = $(this);
         var _this = this;
         if (!$el.data('itempicker_created')) {
             console.log('bind item picker control.', $el);
@@ -718,6 +691,7 @@ var CreateContractUIManager = (function () {
             $el.bind('typeahead:change', function () {
                 console.log('typeahead:change: ', arguments);
                 var $this = $(this);
+                var $tr = $this.parents('tr:first');
                 var selectedId = $this.attr('data-selected-id');
                 var selectedText = $this.attr('data-selected-text');
                 var val = $this.val();
@@ -725,11 +699,18 @@ var CreateContractUIManager = (function () {
                 console.log('selectedText: ', selectedText);
                 console.log('val: ', val);
                 console.log('selectedText == val: ', selectedText == val);
-                // if it does not match,
-                // then remove the last selected value.
-                if (isMatched == false) {
-                    $this.typeahead('val', selectedText);
-                    alert('Selected item does not exist.');
+                if (!val) {
+                    $this.attr('data-selected-id', '');
+                    $this.attr('data-selected-text', '');
+                    $tr.data('selected-tax-code', null);
+                }
+                else {
+                    // if it does not match,
+                    // then remove the last selected value.
+                    if (isMatched == false) {
+                        $this.typeahead('val', selectedText);
+                        alert('Selected tax code does not exist.');
+                    }
                 }
             }).bind('typeahead:select', function (ev, suggestion, extra) {
                 var $this = $(this);
@@ -758,7 +739,6 @@ var CreateContractUIManager = (function () {
      * bindItemPicker - Bind item picker control with typeahead autocomplete
      */
     CreateContractUIManager.prototype.bindItemPicker = function ($el) {
-        //var $el = $(this);
         var _this = this;
         if (!$el.data('itempicker_created')) {
             console.log('bind item picker control.', $el);
@@ -787,8 +767,8 @@ var CreateContractUIManager = (function () {
             $el.typeahead(options, dataSet);
             $el.bind('typeahead:change', function () {
                 console.log('typeahead:change: ', arguments);
-                return;
                 var $this = $(this);
+                var $tr = $this.parents('tr:first');
                 var selectedId = $this.attr('data-selected-id');
                 var selectedText = $this.attr('data-selected-text');
                 var val = $this.val();
@@ -796,44 +776,50 @@ var CreateContractUIManager = (function () {
                 console.log('selectedText: ', selectedText);
                 console.log('val: ', val);
                 console.log('selectedText == val: ', selectedText == val);
-                // if it does not match,
-                // then remove the last selected value.
-                if (isMatched == false) {
-                    $this.typeahead('val', selectedText);
-                    alert('Selected item does not exist.');
+                if (!val) {
+                    $this.attr('data-selected-id', '');
+                    $this.attr('data-selected-text', '');
+                    $tr.data('data-selected-suggestion', null);
                 }
-            }).bind('typeahead:select', function (ev, suggestion, extra) {
-                var $this = $(this);
+                else {
+                    // if it does not match,
+                    // then remove the last selected value.
+                    if (isMatched == false) {
+                        $this.typeahead('val', selectedText);
+                        alert('Selected item does not exist.');
+                    }
+                }
+            }).bind('typeahead:select', function (ev, suggestion) {
+                var $this = $(ev.target);
                 var $tr = $this.parents('tr:first');
                 console.log('typeahead:select: ', arguments, $this);
                 $this.attr('data-selected-id', suggestion.id);
                 $this.attr('data-selected-text', suggestion.displayname);
-                // only set modified class in case of item pickers inside grid
-                //if ($this.is ('.item-picker') === true) {
-                var origValue = $this.attr('data-orig-value');
-                if (origValue === suggestion.displayname) {
-                    $tr.removeClass('modified-item');
-                }
-                else {
-                    $tr.addClass('modified-item');
-                }
-                //}
                 $tr.data('data-selected-suggestion', suggestion);
-                var quantity = 1;
-                var listPriceId = 1;
-                var price = parseFloat(suggestion.baseprice).toFixed(2);
-                $tr.find('.description textarea').val(suggestion.salesdescription);
-                $tr.find('.quantity input').val(quantity);
-                $tr.find('.price input').val(price); //.focus().trigger('blur');
-                $tr.find('.quantity input').focus();
-                $tr.find('.price-level select').val(listPriceId).focus().trigger('change');
+                _this._dataManager.getPriceLevels({ recordType: suggestion.recordType, itemId: suggestion.id }, function (priceLevels) {
+                    var $priceLevelDropdown = $tr.find('.price-level select');
+                    $priceLevelDropdown.empty();
+                    priceLevels.forEach(function (priceLevel) {
+                        $("<option>")
+                            .attr("value", priceLevel.id)
+                            .text(priceLevel.name)
+                            .appendTo($priceLevelDropdown);
+                    });
+                    var quantity = 1; // default to 1
+                    var listPriceId = 1; // default to 1
+                    var price = parseFloat(suggestion.baseprice).toFixed(2);
+                    $tr.find('.description textarea').val(suggestion.salesdescription);
+                    $tr.find('.quantity input').val(quantity);
+                    $tr.find('.price input').val(price);
+                    $tr.find('.quantity input').focus();
+                    $tr.find('.price-level select').val(listPriceId).focus().trigger('change');
+                });
             });
             $el.data('itempicker_created', true);
             $el.focus();
         }
     };
     CreateContractUIManager.prototype.bindPrimaryContactDropdown = function ($contactsDropdown) {
-        //var $contactsDropdown = $('.primary-contact-dropdown');
         var _this = this;
         if (!$contactsDropdown.data('itempicker_created')) {
             var typeaheadOptions = {
@@ -845,8 +831,11 @@ var CreateContractUIManager = (function () {
                 name: 'primary-contacts',
                 limit: 500,
                 display: function (obj) {
-                    //var name = obj.firstname + ' ' + obj.lastname;
-                    return obj.entityid;
+                    var name = obj.entityid;
+                    if (!!obj.company && !!obj.company.text) {
+                        name = obj.company.text + ' : ' + obj.entityid;
+                    }
+                    return name;
                 },
                 source: function (query, sync, async) {
                     setTimeout(function () {
@@ -881,27 +870,35 @@ var CreateContractUIManager = (function () {
                 console.log('text: ', text);
                 console.log('val: ', val);
                 console.log('text == val: ', text == val);
-                // if it does not match,
-                // then remove the last selected value.
-                if (isMatched == false) {
+                if (!val) {
                     $this.attr('data-selected-id', '');
                     $this.attr('data-selected-text', '');
                     $('.primary-contact-email-text').val('');
                 }
-            }).bind('typeahead:select', function (ev, suggestion) {
+                else {
+                    // if it does not match,
+                    // then remove the last selected value.
+                    if (isMatched == false) {
+                        $this.typeahead('val', selectedText);
+                        alert('Selected tax code does not exist.');
+                    }
+                }
+            }).bind('typeahead:select', function (ev, obj) {
                 console.log('typeahead:select: ', arguments);
-                var name = suggestion.firstname + ' ' + suggestion.lastname;
+                var name = obj.entityid;
+                if (!!obj.company && !!obj.company.text) {
+                    name = obj.company.text + ' : ' + obj.entityid;
+                }
                 var $this = $(this);
-                $this.attr('data-selected-id', suggestion.id);
-                $this.attr('data-selected-text', suggestion.entityid);
-                $('.primary-contact-email-text').val(suggestion.email);
+                $this.attr('data-selected-id', obj.id);
+                $this.attr('data-selected-text', name);
+                $('.primary-contact-email-text').val(obj.email);
             });
             $contactsDropdown.data('itempicker_created', true);
             $contactsDropdown.focus();
         }
     };
     CreateContractUIManager.prototype.bindCustomerDropdown = function ($customerDropdown) {
-        //var $customerDropdown = $('.customer-dropdown');
         var _this = this;
         if (!$customerDropdown.data('itempicker_created')) {
             var typeaheadOptions = {
@@ -963,7 +960,7 @@ var CreateContractUIManager = (function () {
                     // then remove the last selected value.
                     if (isMatched == false) {
                         $this.typeahead('val', selectedText);
-                        alert('Selected item does not exist.');
+                        alert('Selected customer does not exist.');
                     }
                 }
             }).bind('typeahead:select', function (ev, suggestion) {
@@ -1038,8 +1035,6 @@ var CreateContractUIManager = (function () {
         $(document.body).on('focusin', '.primary-contact-dropdown', function (ev) {
             _this.bindPrimaryContactDropdown($(ev.target));
         });
-        //this.bindCustomerDropdown();
-        //this.bindPrimaryContactDropdown();
     };
     return CreateContractUIManager;
 })();

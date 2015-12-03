@@ -1,4 +1,3 @@
-// Declaration of all NetSuite SuiteScript 1.0 APIs
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="./BaseTypeDAL.ts" />
 /// <reference path="./CommonDAL.ts" />
@@ -11,11 +10,19 @@ var __extends = (this && this.__extends) || function (d, b) {
  * Created by zshaikh on 11/18/2015.
  * -
  * Referenced By:
- * -
+ * - f3mm_create_contract_api_st.ts
+ * - f3mm_create_contract_ui_suitelet.ts
  * -
  * Dependencies:
+ * - BaseTypeDAL.ts
  * -
- * -
+ */
+/**
+ * This class handles all operations related to Contracts.
+ * Following are the responsibilities of this class:
+ *  - Load Contracts from Database
+ *  - Update / Create Contracts along with its line items
+ *  - Generate Quote from Contract
  */
 var ContractDAL = (function (_super) {
     __extends(ContractDAL, _super);
@@ -39,6 +46,11 @@ var ContractDAL = (function (_super) {
             poNumber: { id: 'custrecord_f3mm_po_number', type: 'text' }
         };
     }
+    /**
+     * Gets contract with specified id including details of Items and related Quote
+     * @param {string} id
+     * @returns {object}
+     */
     ContractDAL.prototype.getWithDetails = function (id) {
         var commonDAL = new CommonDAL();
         var contract = this.get(id);
@@ -58,20 +70,33 @@ var ContractDAL = (function (_super) {
         });
         return contract;
     };
+    /**
+     * Generates a Quote from Contract. the contract is loaded based on specified contractId parameter.
+     * @param {string} contractId id of the contract to generate contract from
+     * @returns {number} id of quote generated from contract
+     */
     ContractDAL.prototype.generateQuote = function (contractId) {
         var contract = this.getWithDetails(contractId);
         var quote = nlapiCreateRecord('estimate');
-        var entityStatuses = [{ "value": "14", "text": "Closed Lost" }, { "value": "7", "text": "Opportunity Identified" }, { "value": "8", "text": "In Discussion" }, { "value": "9", "text": "Identified Decision Makers" }, { "value": "10", "text": "Proposal" }, { "value": "11", "text": "In Negotiation" }, { "value": "12", "text": "Purchasing" }];
         var tranDate = new Date();
         var expectedClosingDate = new Date();
         expectedClosingDate.setDate(expectedClosingDate.getDate() + 7); // add 7 days
+        // TODO : need to set due date base on customer requirement
+        //var dueDate = new Date();
+        //dueDate.setDate(dueDate.getDate() + 7); // add 7 days
         quote.setFieldValue('expectedclosedate', nlapiDateToString(expectedClosingDate)); // mandatory field
         quote.setFieldValue('trandate', nlapiDateToString(tranDate)); // mandatory field
-        quote.setFieldValue('entitystatus', "10"); // proposal
+        quote.setFieldValue('duedate', nlapiDateToString(tranDate)); // mandatory field
+        // entityStatuses for references
+        var proposalStatusId = "10";
+        quote.setFieldValue('entitystatus', proposalStatusId); // proposal
         quote.setFieldValue('salesrep', contract[this.fields.salesRep.id].value);
         quote.setFieldValue('entity', contract[this.fields.customer.id].value);
         quote.setFieldValue('custbody_f3mm_quote_contract', contractId); // attach contract record
         quote.setFieldValue('department', contract[this.fields.department.id].value);
+        quote.setFieldValue('custbody_estimate_end_user', contract[this.fields.primaryContact.id].value);
+        quote.setFieldValue('custbody_end_user_email', contract[this.fields.primaryContactEmail.id]);
+        quote.setFieldValue('memo', contract[this.fields.memo.id]);
         var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
         if (!!contractItems) {
             contractItems.forEach(function (contractItem) {
@@ -87,7 +112,15 @@ var ContractDAL = (function (_super) {
         var quoteId = nlapiSubmitRecord(quote);
         return quoteId;
     };
-    ContractDAL.prototype.create = function (contract) {
+    /**
+     * Create/Update a Contract based on json data passed
+     * @param {object} contract json object containing data for contract
+     * @returns {number} id of created / updated contract
+     */
+    ContractDAL.prototype.updateOrCreate = function (contract) {
+        if (!contract) {
+            throw new Error("contract cannot be null.");
+        }
         var record = {};
         record.id = contract.id;
         record[this.fields.customer.id] = contract.customer;

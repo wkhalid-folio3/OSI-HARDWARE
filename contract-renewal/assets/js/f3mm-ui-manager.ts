@@ -1,159 +1,53 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
-/// <reference path="../../_typescript-refs/es6-promise.d.ts" />
 /// <reference path="./f3mm-data-manager.ts" />
 
 /**
  * Created by zshaikh on 11/18/2015.
  */
 
-
-// Reference: https://github.com/hongymagic/jQuery.serializeObject
-// Use internal $.serializeArray to get list of form elements which is
-// consistent with $.serialize
-//
-// From version 2.0.0, $.serializeObject will stop converting [name] values
-// to camelCase format. This is *consistent* with other serialize methods:
-//
-//   - $.serialize
-//   - $.serializeArray
-//
-// If you require camel casing, you can either download version 1.0.4 or map
-// them yourself.
-//
-(function($){
-    $.fn.serializeObject = function () {
-        "use strict";
-
-        var result = {};
-        var extend = function (i, element) {
-            console.log('extend: ' , element);
-            //// CUSTOM HANDLING: added data-key handling to preserve names
-            var name = element.name; // element.getAttribute('data-key') ||
-            var node = result[name];
-
-            // If node with same name exists already, need to convert it to an array as it
-            // is a multi-value field (i.e., checkboxes)
-            if ('undefined' !== typeof node && node !== null) {
-                if ($.isArray(node)) {
-                    node.push(element.value);
-                } else {
-                    result[name] = [node, element.value];
-                }
-            } else {
-                result[name] = element.value;
-            }
-        };
-
-        $.each(this.serializeArray(), extend);
-        return result;
-    };
-})(jQuery);
-
-
-
-
-((jsGrid, $, undefined) => {
-
-    var TextField = jsGrid.TextField;
-
-    function DecimalNumberField(config) {
-        TextField.call(this, config);
-    }
-
-    DecimalNumberField.prototype = new TextField({
-
-        sorter: "number",
-        align: "right",
-
-        filterValue: function() {
-            return parseFloat(parseFloat(this.filterControl.val() || 0).toFixed(2));
-        },
-
-        insertValue: function() {
-            return parseFloat(this.insertControl.val() || 0).toFixed(2);
-        },
-
-        editValue: function() {
-            return parseFloat(this.editControl.val() || 0).toFixed(2);
-        },
-
-        _createTextBox: function() {
-            return $("<input>").attr("type", "number").attr("step", "0.01");
-        }
-    });
-
-    jsGrid.fields.decimal_number = jsGrid.DecimalNumberField = DecimalNumberField;
-
-})(jsGrid, jQuery);
-
-
-
-$.validator.addMethod('requiredTypeahead', function (value, element, param) {
-    //Your Validation Here
-    var isValid = false;
-
-    var $element = $(element);
-    var selectedId = $element.attr('data-selected-id');
-    var selectedText = $element.attr('data-selected-text');
-    var val = $element.val();
-
-    if (!val) {
-        isValid = false;
-    }
-    else {
-        isValid = selectedText == val;
-    }
-
-    return isValid; // return bool here if valid or not.
-}, 'This field is required.');
-
-
-$(function () {
-
-    _.templateSettings = {
-        interpolate: /\{\{=(.+?)\}\}/g,
-        evaluate: /\{\{(.+?)\}\}/g,
-    };
-
-    window.createContractUIManager = new CreateContractUIManager();
-
-});
-
-//var p = new Promise<string>((resolve, reject) => {
-//    resolve('a string');
-//});
-
 class CreateContractUIManager {
 
-    private _dataManager: DataManager;
-    private _contractInfo: any;
-    private _viewType: string;
-    private _priceLevels: any[];
+    private _dataManager:DataManager;
+    private _contractInfo:any;
+    private _viewType:string;
+    private _priceLevels:any[];
     private _loadedCount:number = 0;
 
     constructor() {
 
         this._viewType = window.pageType;
-        this._dataManager = new DataManager(this._viewType);
         this._priceLevels = window.priceLevels;
         this._contractInfo = window.contractInfo;
-
-        //this.showLoading();
+        this._dataManager = new DataManager(this._viewType);
 
         this.setViewMode();
 
         this.bindDropdown();
 
         this.bindItemsGrid();
-        //this.fetchPriceLevels().then(()=> {
-        //    this.bindItemsGrid();
-        //});
-
-        //this.bindItemsGrid();
 
         this.bindDatePicker();
 
-        $(".f3mm-contract-renewal").parents('form:first').removeAttr('onsubmit').validate({
+        this.applyValidation();
+
+        $('.btn-generate-quote').on('click', this.generateQuote.bind(this));
+    }
+
+    private showLoading() {
+        var $loading = $('.contract-loading-backdrop,.contract-loading');
+        $loading.addClass('in').show();
+    }
+
+    private hideLoading() {
+        var $loading = $('.contract-loading-backdrop,.contract-loading');
+        $loading.removeClass('in').hide();
+    }
+
+    private applyValidation() {
+
+        var $form = $(".f3mm-contract-renewal").parents('form:first');
+        $form.removeAttr('onsubmit');
+        $form.validate({
             rules: {
                 contract_number: {
                     required: true
@@ -183,7 +77,7 @@ class CreateContractUIManager {
                     required: true
                 }
             },
-            errorPlacement: function ($error, $element) {
+            errorPlacement: ($error, $element) => {
                 var $parent = $element.parent();
                 var isGroup = $parent.is('.input-group');
 
@@ -195,38 +89,10 @@ class CreateContractUIManager {
                 }
             },
             submitHandler: (form) => {
-                console.log(this);
                 this.submit();
                 return false;
             }
         });
-
-        $('.btn-generate-quote').on('click', (ev)=> {
-            var $button = $(ev.target);
-
-            $button.val('Generating...');
-
-            this.showLoading();
-            this._dataManager
-                .generateQuote({contractId: this._contractInfo.id}, (result)=> {
-
-                    if (!!result.data) {
-                        var viewRecordUrl = nlapiResolveURL('RECORD', 'estimate', result.data, false);
-                        window.location.href = viewRecordUrl;
-                    }
-                    else {
-                        alert(result.message);
-                    }
-                });
-        });
-    }
-
-    private showLoading() {
-        $('.contract-loading-backdrop,.contract-loading').addClass('in').show();
-    }
-
-    private hideLoading() {
-        $('.contract-loading-backdrop,.contract-loading').removeClass('in').hide();
     }
 
     private setViewMode() {
@@ -234,13 +100,9 @@ class CreateContractUIManager {
 
         if (this._viewType == 'view') {
             $('.form-horizontal :input, .input-group.date').attr('disabled', 'disabled');
-            //$('.input-group.date').datepicker('remove');
             $('.form-actions').hide();
             $('.view-contract-action-buttons').show();
             $('.view-horizontal').show();
-
-            //$("#jsGrid").jsGrid('option', 'inserting', 'false');
-            //$("#jsGrid").jsGrid('option', 'editing', 'false');
         }
         else {
             $('.form-actions').show();
@@ -249,7 +111,30 @@ class CreateContractUIManager {
         }
     }
 
+    private generateQuote(ev) {
+        var $button = $(ev.target);
 
+        if ($button.attr('disabled') == 'disabled') {
+            return false;
+        }
+
+        $button.val('Generating...');
+
+        this.showLoading();
+        var data = {contractId: this._contractInfo.id};
+        this._dataManager.generateQuote(data, (result)=> {
+
+            if (!!result.data && !!result.data.id) {
+                $button.val('Generated!');
+                var viewRecordUrl = nlapiResolveURL('RECORD', 'estimate', result.data.id, false);
+                window.location.href = viewRecordUrl;
+            }
+            else {
+                alert(result.message);
+                this.hideLoading();
+            }
+        });
+    }
 
     private loaded() {
         this._loadedCount++;
@@ -262,7 +147,7 @@ class CreateContractUIManager {
         }
 
         var quotes = contract.sublists.quotes;
-        if ( !!quotes && quotes.length > 0) {
+        if (!!quotes && quotes.length > 0) {
             var viewQuoteUrl = nlapiResolveURL('RECORD', 'estimate', quotes[quotes.length - 1].id, false);
             $('.btn-view-quote').attr('href', viewQuoteUrl).show();
         }
@@ -270,11 +155,18 @@ class CreateContractUIManager {
 
         if (this._viewType == 'view') {
 
-            var viewTemplate= $('#view_template').html();
+            var viewTemplate = $('#view_template').html();
             var compiledTemplate = _.template(viewTemplate);
             var htmlMarkup = compiledTemplate(contract);
             $('.view-horizontal').html(htmlMarkup);
 
+
+            if (contract.custrecord_f3mm_status.value == "1") {
+                $('.btn-generate-quote').attr('disabled', 'disabled');
+            }
+            else {
+                $('.btn-generate-quote').removeAttr('disabled');
+            }
         }
         else {
 
@@ -341,15 +233,12 @@ class CreateContractUIManager {
             }
         }
 
-
         if (this._loadedCount > 3) {
             //this.hideLoading();
         }
     }
 
-
-    bindDatePicker() {
-
+    private bindDatePicker() {
         if (this._viewType !== 'view') {
             $('.input-group.date').not('[disabled]').datepicker({
                 format: "m/d/yyyy",
@@ -359,11 +248,11 @@ class CreateContractUIManager {
         }
     }
 
-
     /**
-     * validateFilters - validate selected customer id
+     * Validates if selected customer and selected primary contact is valid or not
+     * @returns {bool}
      */
-    private validateFields() : any {
+    private validateFields():any {
 
         var $customerDropdown = $('.customer-dropdown');
         var customerText = $customerDropdown.val();
@@ -393,11 +282,9 @@ class CreateContractUIManager {
         };
     }
 
-    submit(){
+    submit() {
+
         try {
-
-
-            //showLoading();
 
             var validated = this.validateFields();
 
@@ -408,7 +295,7 @@ class CreateContractUIManager {
 
             var serializedData = $('.form-horizontal :input').serializeObject();
 
-            if(!!this._contractInfo) {
+            if (!!this._contractInfo) {
                 serializedData.id = this._contractInfo.id;
             }
 
@@ -422,7 +309,7 @@ class CreateContractUIManager {
 
             serializedData.items = [];
             var items = $('#jsGrid').data().JSGrid.data;
-            $.each(items, function(index, item){
+            $.each(items, function (index, item) {
                 serializedData.items.push({
                     item_id: item.itemid,
                     amount: item.amount,
@@ -440,9 +327,6 @@ class CreateContractUIManager {
                 alert('You must enter at least one line item for this transaction.');
                 return;
             }
-
-
-
 
             console.log('serializedData: ', serializedData);
 
@@ -462,18 +346,20 @@ class CreateContractUIManager {
                 }
                 else {
                     alert(result.message);
+                    this.hideLoading();
                 }
 
             });
 
 
         } catch (e) {
-            alert('Error during record submission.');
             console.error('ERROR', 'Error during main onSubmit', e.toString());
+            alert('Error during record submission.');
+            this.hideLoading();
         }
     }
 
-    private itemsChanged () {
+    private itemsChanged() {
         var existingData = $('#jsGrid').data().JSGrid.data;
 
         var quantities = _.pluck(existingData, 'quantity');
@@ -484,17 +370,7 @@ class CreateContractUIManager {
 
     }
 
-    fetchPriceLevels() {
-        return this._dataManager
-            .getPriceLevels()
-            .then((priceLevels)=>{
-                console.log(priceLevels);
-                this._priceLevels = priceLevels.data;
-            });
-    }
-
-    bindItemsGrid() {
-
+    private prepareGridData () : [] {
         var contactItems = [];
 
 
@@ -507,50 +383,32 @@ class CreateContractUIManager {
                     contactItems.push({
                         item: contractItem.custrecord_f3mm_ci_item.text,
                         itemid: contractItem.custrecord_f3mm_ci_item.value,
-                        item_baseprice: contractItem.custrecord_f3mm_ci_item.baseprice,
+                        baseprice: contractItem.custrecord_f3mm_ci_item.baseprice,
                         quantity: contractItem.custrecord_f3mm_ci_quantity,
                         price: contractItem.custrecord_f3mm_ci_price,
                         amount: contractItem.custrecord_f3mm_ci_amount,
                         description: contractItem.custrecord_f3mm_ci_item_description,
                         price_level: parseInt((priceLevel && priceLevel.value) || "0"),
                         taxcode: taxCode && taxCode.text,
-                        taxcodeid:  taxCode && taxCode.value,
+                        taxcodeid: taxCode && taxCode.value,
                         taxrate: contractItem.custrecord_f3mm_ci_taxrate
                     });
                 });
             }
         }
 
-
-        var gridController = {
-            loadData: (filter) => {
-                console.log('contactItems:', contactItems);
-                return contactItems;
-            },
-            insertItem: (insertingClient) => {
-            },
-            updateItem: (updatingClient) => {
-                console.log('updateItem: ', arguments);
-            },
-            deleteItem: (deletingClient) => {
-                //var clientIndex = $.inArray(deletingClient, contactItems);
-                //contactItems.splice(clientIndex, 1);
-            }
-        };
+        return contactItems;
+    }
 
 
-        // $("#jsGrid").jsGrid("refresh");
+    bindItemsGrid() {
 
-        //$("#jsGrid").jsGrid("updateItem", clients[1], { Item: "hello" }).done(function() {
-        //    console.log("update completed");
-        //});
+        var contactItems = this.prepareGridData();
 
-        //window.db = db;
-        //window.clients = contactItems;
+        //this._priceLevels.unshift({id: 0, name: ''});
+        //this._priceLevels.push({id: -1, name: 'Custom'});
 
-        this._priceLevels.unshift({id: 0, name: ''});
-        this._priceLevels.push({id: -1, name: 'Custom'});
-
+        this._priceLevels = [{id: 0, name: ''}];
 
         var inserting = true;
         var editing = true;
@@ -564,7 +422,14 @@ class CreateContractUIManager {
                 css: "description",
                 editing: false
             },
-            {title: "Quantity", name: "quantity", type: "number", width: 50, css: "quantity"},
+            {
+                title: "Quantity  <span class='mandatory'>*</span>",
+                name: "quantity",
+                type: "number",
+                width: 50,
+                css: "quantity",
+                min: 0
+            },
             {
                 title: "Price Level <span class='mandatory'>*</span>",
                 name: "price_level",
@@ -577,8 +442,22 @@ class CreateContractUIManager {
             },
             {title: "Price", name: "price", type: "decimal_number", width: 50, css: "price"},
             {title: "Amount", name: "amount", type: "decimal_number", width: 50, css: "amount", editing: false},
-            {title: "Tax Code <span class='mandatory'>*</span>", name: "taxcode", type: "text", width: 150, css: "taxcode"},
-            {title: "Tax", name: "taxrate", type: "decimal_number", width: 50, css: "taxrate", editing: false, inserting: false},
+            {
+                title: "Tax Code <span class='mandatory'>*</span>",
+                name: "taxcode",
+                type: "text",
+                width: 150,
+                css: "taxcode"
+            },
+            {
+                title: "Tax",
+                name: "taxrate",
+                type: "decimal_number",
+                width: 50,
+                css: "taxrate",
+                editing: false,
+                inserting: false
+            }
         ];
 
 
@@ -605,9 +484,12 @@ class CreateContractUIManager {
             autoload: true,
             pageSize: 15,
             pageButtonCount: 5,
-
-            controller: gridController,
-
+            controller: {
+                loadData: (filter) => {
+                    console.log('contactItems:', contactItems);
+                    return contactItems;
+                }
+            },
             onItemInserted: ()=> {
                 this.itemsChanged();
             },
@@ -626,7 +508,7 @@ class CreateContractUIManager {
             },
 
             onItemUpdating: (args) => {
-                console.log('onItemUpdating: ', args);
+                console.log('onItemUpdating: ', JSON.stringify(args.item));
 
                 var data = args.item;
                 data.price = parseFloat(data.price).toFixed(2);
@@ -635,18 +517,59 @@ class CreateContractUIManager {
                 // TODO : need to handle the case when user does not click on item picker and just edits and saves the record.
                 var $updateRow = args.row.next();
                 var suggestion = $updateRow.data('data-selected-suggestion');
-                console.log('suggestion: ', suggestion);
+
+                console.log('onItemUpdating: ', JSON.stringify(suggestion));
+
                 if (!!suggestion) {
+                    data.item = suggestion.displayname;
                     data.itemid = suggestion.id;
                     data.description = suggestion.salesdescription;
+                    data.baseprice = suggestion.baseprice;
                 }
+                //else {
+                //    data.item = "";
+                //    data.itemid = "";
+                //    data.description = "";
+                //}
+
+                if (data.item === "") {
+                    args.preserve = true;
+                    args.cancel = true;
+                    alert("Please select an item");
+                    return;
+                }
+
+                if (parseInt(data.quantity) <= 0) {
+                    args.cancel = true;
+                    alert("Quantity cannot be less than or equal to 0");
+                    return;
+                }
+
 
                 var taxCode = $updateRow.data('selected-tax-code');
                 if (!!taxCode) {
                     data.taxcodeid = taxCode.id;
                     data.taxcode = taxCode.itemid;
-                    data.taxrate = taxCode.rate +'%';
-                    //data.description = suggestion.salesdescription;
+                    data.taxrate = taxCode.rate + '%';
+                }
+                //else {
+                //    data.taxcodeid = "";
+                //    data.taxcode = "";
+                //    data.taxrate = "";
+                //}
+
+                if (!data.taxcode) {
+                    args.preserve = true;
+                    args.cancel = true;
+                    alert("Please select tax code");
+                    return;
+                }
+
+                if (data.price_level == "0") {
+                    args.preserve = true;
+                    args.cancel = true;
+                    alert("Please select price level");
+                    return;
                 }
 
             },
@@ -662,6 +585,7 @@ class CreateContractUIManager {
                 if (!!suggestion) {
                     args.item.item = suggestion.displayname;
                     args.item.itemid = suggestion.id;
+                    args.item.baseprice = suggestion.baseprice;
                     args.item.description = suggestion.salesdescription;
                 }
 
@@ -675,20 +599,29 @@ class CreateContractUIManager {
 
 
                 if (args.item.item === "") {
+                    args.preserve = true;
                     args.cancel = true;
                     alert("Please select an item");
                     return;
                 }
 
-
-                if (!args.item.taxcodeid) {
+                if (parseInt(args.item.quantity) <= 0) {
+                    args.preserve = true;
                     args.cancel = true;
-                    alert("Please select taxcode");
+                    alert("Quantity cannot be less than or equal to 0");
+                    return;
+                }
+
+                if (!args.item.taxcode) {
+                    args.preserve = true;
+                    args.cancel = true;
+                    alert("Please select tax code");
                     return;
                 }
 
 
                 if (args.item.price_level == "0") {
+                    args.preserve = true;
                     args.cancel = true;
                     alert("Please select price level");
                     return;
@@ -705,6 +638,7 @@ class CreateContractUIManager {
                 });
 
                 if (found === true) {
+                    args.preserve = true;
                     args.cancel = true;
                     alert("The selected item already exists. Please select another item.");
                 }
@@ -805,7 +739,7 @@ class CreateContractUIManager {
                 $priceTextbox.removeAttr('disabled');
 
                 if (!!suggestion) {
-                    $priceTextbox.val(suggestion.item_baseprice);
+                    $priceTextbox.val(suggestion.baseprice);
                 }
                 else {
                     $priceTextbox.val('');
@@ -821,23 +755,18 @@ class CreateContractUIManager {
 
                 if (!!suggestion && selectedPriceLevel != null) {
                     var discountPercent = Math.abs(parseFloat(selectedPriceLevel.discountpct || 0));
-                    var discount = (suggestion.item_baseprice / 100) * discountPercent;
-                    var discountedPrice = (suggestion.item_baseprice - discount).toFixed(2);
+                    var discount = (suggestion.baseprice / 100) * discountPercent;
+                    var discountedPrice = (suggestion.baseprice - discount).toFixed(2);
                     $priceTextbox.val(discountedPrice);
                 }
             }
 
 
             $priceTextbox.focus().trigger('blur')
-
-
         });
 
 
     }
-
-
-
 
 
     /**
@@ -874,7 +803,6 @@ class CreateContractUIManager {
     }
 
 
-
     /**
      * itemsPickerSource - fetch data from server based on provided query
      * @param query {string} the keyword which user has typed
@@ -902,14 +830,10 @@ class CreateContractUIManager {
     }
 
 
-
-
-
     /**
      * bindItemPicker - Bind item picker control with typeahead autocomplete
      */
     private bindTaxCodePicker($el) {
-        //var $el = $(this);
 
         if (!$el.data('itempicker_created')) {
 
@@ -927,7 +851,7 @@ class CreateContractUIManager {
                 display: (obj) => {
                     return obj.itemid;
                 },
-                source: (q,s,a)=> {
+                source: (q, s, a)=> {
                     this.taxcodePickerSource(q, s, a);
                 },
                 templates: {
@@ -936,11 +860,6 @@ class CreateContractUIManager {
                         'unable to find any items that match the current query',
                         '</div>'
                     ].join('\n')
-                    //   , suggestion: function (context) {
-                    //        var isPerson = context.isperson == 'T';
-                    //        var name = isPerson ? (context.firstname + ' ' + context.lastname) : context.companyname;
-                    //        return $('<div />').html(name);
-                    //    }
                 }
 
             };
@@ -949,6 +868,7 @@ class CreateContractUIManager {
             $el.bind('typeahead:change', function () {
                 console.log('typeahead:change: ', arguments);
                 var $this = $(this);
+                var $tr = $this.parents('tr:first');
 
                 var selectedId = $this.attr('data-selected-id');
                 var selectedText = $this.attr('data-selected-text');
@@ -959,11 +879,18 @@ class CreateContractUIManager {
                 console.log('val: ', val);
                 console.log('selectedText == val: ', selectedText == val);
 
-                // if it does not match,
-                // then remove the last selected value.
-                if (isMatched == false) {
-                    $this.typeahead('val', selectedText);
-                    alert('Selected item does not exist.');
+                if (!val) {
+                    $this.attr('data-selected-id', '');
+                    $this.attr('data-selected-text', '');
+                    $tr.data('selected-tax-code', null);
+                }
+                else {
+                    // if it does not match,
+                    // then remove the last selected value.
+                    if (isMatched == false) {
+                        $this.typeahead('val', selectedText);
+                        alert('Selected tax code does not exist.');
+                    }
                 }
 
             }).bind('typeahead:select', function (ev, suggestion, extra) {
@@ -989,7 +916,7 @@ class CreateContractUIManager {
 
 
                 $tr.data('selected-tax-code', suggestion);
-                $tr.find('.taxrate').html(suggestion.rate+'%');
+                $tr.find('.taxrate').html(suggestion.rate + '%');
             });
 
             $el.data('itempicker_created', true);
@@ -1002,7 +929,6 @@ class CreateContractUIManager {
      * bindItemPicker - Bind item picker control with typeahead autocomplete
      */
     private bindItemPicker($el) {
-        //var $el = $(this);
 
         if (!$el.data('itempicker_created')) {
 
@@ -1020,7 +946,7 @@ class CreateContractUIManager {
                 display: function (obj) {
                     return obj.displayname;
                 },
-                source: (q,s,a)=> {
+                source: (q, s, a)=> {
                     this.itemsPickerSource(q, s, a);
                 },
                 templates: {
@@ -1029,11 +955,6 @@ class CreateContractUIManager {
                         'unable to find any items that match the current query',
                         '</div>'
                     ].join('\n')
-                    //   , suggestion: function (context) {
-                    //        var isPerson = context.isperson == 'T';
-                    //        var name = isPerson ? (context.firstname + ' ' + context.lastname) : context.companyname;
-                    //        return $('<div />').html(name);
-                    //    }
                 }
 
             };
@@ -1041,9 +962,9 @@ class CreateContractUIManager {
             $el.typeahead(options, dataSet);
             $el.bind('typeahead:change', function () {
                 console.log('typeahead:change: ', arguments);
-                return;
-                var $this = $(this);
 
+                var $this = $(this);
+                var $tr = $this.parents('tr:first');
                 var selectedId = $this.attr('data-selected-id');
                 var selectedText = $this.attr('data-selected-text');
                 var val = $this.val();
@@ -1053,46 +974,52 @@ class CreateContractUIManager {
                 console.log('val: ', val);
                 console.log('selectedText == val: ', selectedText == val);
 
-                // if it does not match,
-                // then remove the last selected value.
-                if (isMatched == false) {
-                    $this.typeahead('val', selectedText);
-                    alert('Selected item does not exist.');
+                if (!val) {
+                    $this.attr('data-selected-id', '');
+                    $this.attr('data-selected-text', '');
+                    $tr.data('data-selected-suggestion', null);
+                }
+                else {
+                    // if it does not match,
+                    // then remove the last selected value.
+                    if (isMatched == false) {
+                        $this.typeahead('val', selectedText);
+                        alert('Selected item does not exist.');
+                    }
                 }
 
-            }).bind('typeahead:select', function (ev, suggestion, extra) {
+            }).bind('typeahead:select', (ev, suggestion) => {
 
-
-                var $this = $(this);
+                var $this = $(ev.target);
                 var $tr = $this.parents('tr:first');
-
 
                 console.log('typeahead:select: ', arguments, $this);
 
                 $this.attr('data-selected-id', suggestion.id);
                 $this.attr('data-selected-text', suggestion.displayname);
-
-                // only set modified class in case of item pickers inside grid
-                //if ($this.is ('.item-picker') === true) {
-                var origValue = $this.attr('data-orig-value');
-                if (origValue === suggestion.displayname) {
-                    $tr.removeClass('modified-item');
-                }
-                else {
-                    $tr.addClass('modified-item');
-                }
-                //}
-
-
                 $tr.data('data-selected-suggestion', suggestion);
-                var quantity = 1;
-                var listPriceId = 1;
-                var price = parseFloat(suggestion.baseprice).toFixed(2);
-                $tr.find('.description textarea').val(suggestion.salesdescription);
-                $tr.find('.quantity input').val(quantity);
-                $tr.find('.price input').val(price); //.focus().trigger('blur');
-                $tr.find('.quantity input').focus();
-                $tr.find('.price-level select').val(listPriceId).focus().trigger('change');
+
+                this._dataManager.getPriceLevels({recordType: suggestion.recordType, itemId: suggestion.id}, function(priceLevels){
+
+                    var $priceLevelDropdown = $tr.find('.price-level select');
+                    $priceLevelDropdown.empty();
+                    priceLevels.forEach(priceLevel=>{
+                        $("<option>")
+                            .attr("value", priceLevel.id)
+                            .text(priceLevel.name)
+                            .appendTo($priceLevelDropdown);
+                    });
+
+
+                    var quantity = 1; // default to 1
+                    var listPriceId = 1; // default to 1
+                    var price = parseFloat(suggestion.baseprice).toFixed(2);
+                    $tr.find('.description textarea').val(suggestion.salesdescription);
+                    $tr.find('.quantity input').val(quantity);
+                    $tr.find('.price input').val(price);
+                    $tr.find('.quantity input').focus();
+                    $tr.find('.price-level select').val(listPriceId).focus().trigger('change');
+                });
             });
 
             $el.data('itempicker_created', true);
@@ -1102,12 +1029,9 @@ class CreateContractUIManager {
     }
 
 
-    bindPrimaryContactDropdown($contactsDropdown){
-
-        //var $contactsDropdown = $('.primary-contact-dropdown');
+    bindPrimaryContactDropdown($contactsDropdown) {
 
         if (!$contactsDropdown.data('itempicker_created')) {
-
 
             var typeaheadOptions = {
                 hint: false,
@@ -1118,8 +1042,11 @@ class CreateContractUIManager {
                 name: 'primary-contacts',
                 limit: 500,
                 display: (obj) => {
-                    //var name = obj.firstname + ' ' + obj.lastname;
-                    return obj.entityid;
+                    var name = obj.entityid;
+                    if (!!obj.company && !!obj.company.text) {
+                        name = obj.company.text + ' : ' + obj.entityid;
+                    }
+                    return name;
                 },
                 source: (query, sync, async) => {
 
@@ -1160,25 +1087,34 @@ class CreateContractUIManager {
                 console.log('val: ', val);
                 console.log('text == val: ', text == val);
 
-                // if it does not match,
-                // then remove the last selected value.
-                if (isMatched == false) {
+                if (!val) {
                     $this.attr('data-selected-id', '');
                     $this.attr('data-selected-text', '');
-
                     $('.primary-contact-email-text').val('');
                 }
+                else {
 
-            }).bind('typeahead:select', function (ev, suggestion) {
+                    // if it does not match,
+                    // then remove the last selected value.
+                    if (isMatched == false) {
+                        $this.typeahead('val', selectedText);
+                        alert('Selected tax code does not exist.');
+                    }
+                }
+
+            }).bind('typeahead:select', function (ev, obj) {
                 console.log('typeahead:select: ', arguments);
 
-                var name = suggestion.firstname + ' ' + suggestion.lastname;
+                var name = obj.entityid;
+                if (!!obj.company && !!obj.company.text) {
+                    name = obj.company.text + ' : ' + obj.entityid;
+                }
 
                 var $this = $(this);
-                $this.attr('data-selected-id', suggestion.id);
-                $this.attr('data-selected-text', suggestion.entityid);
+                $this.attr('data-selected-id', obj.id);
+                $this.attr('data-selected-text', name);
 
-                $('.primary-contact-email-text').val(suggestion.email);
+                $('.primary-contact-email-text').val(obj.email);
             });
 
             $contactsDropdown.data('itempicker_created', true);
@@ -1189,8 +1125,6 @@ class CreateContractUIManager {
     }
 
     bindCustomerDropdown($customerDropdown) {
-
-        //var $customerDropdown = $('.customer-dropdown');
 
         if (!$customerDropdown.data('itempicker_created')) {
 
@@ -1260,7 +1194,7 @@ class CreateContractUIManager {
                     // then remove the last selected value.
                     if (isMatched == false) {
                         $this.typeahead('val', selectedText);
-                        alert('Selected item does not exist.');
+                        alert('Selected customer does not exist.');
                         //$this.attr('data-selected-id', '');
                     }
                 }
@@ -1288,7 +1222,7 @@ class CreateContractUIManager {
     }
 
 
-    bindDropdown(){
+    bindDropdown() {
 
         // fill partners dropdown
         this._dataManager.getVendors((result) => {
@@ -1301,18 +1235,16 @@ class CreateContractUIManager {
                     // add each item on UI
                     $.each(result.data, function (i, item) {
                         var name = item.isperson === 'T' ? (item.firstname + ' ' + item.lastname) : item.companyname;
-                        if ( !!name) {
+                        if (!!name) {
                             select.options[select.options.length] = new Option(name, item.id);
                         }
                     });
                 }
 
 
-
                 this.loaded();
             }, 10);
         });
-
 
         this._dataManager.getEmployees((result) => {
 
@@ -1334,7 +1266,6 @@ class CreateContractUIManager {
             }, 10);
         });
 
-
         this._dataManager.getDepartment((result) => {
 
             // make it async
@@ -1345,7 +1276,7 @@ class CreateContractUIManager {
                     // add each item on UI
                     $.each(result.data, function (i, item) {
                         var name = item.name.trim();
-                        if ( !!name) {
+                        if (!!name) {
                             select.options[select.options.length] = new Option(name, item.id);
                         }
                     });
@@ -1355,6 +1286,7 @@ class CreateContractUIManager {
             }, 10);
         });
 
+
         $(document.body).on('focusin', '.customer-dropdown', (ev)=> {
             this.bindCustomerDropdown($(ev.target));
         });
@@ -1362,9 +1294,6 @@ class CreateContractUIManager {
         $(document.body).on('focusin', '.primary-contact-dropdown', (ev)=> {
             this.bindPrimaryContactDropdown($(ev.target));
         });
-
-        //this.bindCustomerDropdown();
-        //this.bindPrimaryContactDropdown();
 
     }
 

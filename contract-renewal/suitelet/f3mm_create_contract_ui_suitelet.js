@@ -1,4 +1,3 @@
-// Declaration of all NetSuite SuiteScript 1.0 APIs
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="../dal/BaseTypeDAL.ts" />
 /// <reference path="../dal/CommonDAL.ts" />
@@ -6,10 +5,19 @@
 /// <reference path="../dal/FoldersDAL.ts" />
 /// <reference path="../_typescript-refs/f3.common.d.ts" />
 /**
- * CreateContractUI class that has the actual functionality of suitelet.
+ * Created by zshaikh on 11/18/2015.
+ * -
+ * Referenced By:
+ * -
+ * -
+ * Dependencies:
+ * -
+ * -
+ */
+/**
+ * CreateContractUISuitelet class that has the actual functionality of suitelet.
  * All business logic will be encapsulated in this class.
  */
-//import {ContractDAL} from '../dal/ContractDAL';
 var CreateContractUISuitelet = (function () {
     function CreateContractUISuitelet(request, response) {
         this.title = 'Create Contract';
@@ -48,7 +56,6 @@ var CreateContractUISuitelet = (function () {
             var uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
             var uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
             var uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
-            //var viewQuoteUrl = '';
             var editMode = request.getParameter('e');
             var contractId = request.getParameter('cid');
             var contract = null;
@@ -90,7 +97,6 @@ var CreateContractUISuitelet = (function () {
             indexPageValue = indexPageValue.replace('{{ contractInfo }}', JSON.stringify(contract));
             indexPageValue = indexPageValue.replace(/{{ viewContractUrl }}/gi, uiSuiteletUrl);
             indexPageValue = indexPageValue.replace(/{{ priceLevels }}/gi, JSON.stringify(priceLevels));
-            //indexPageValue = indexPageValue.replace(/{{ viewQuoteUrl }}/gi, viewQuoteUrl);
             if (standalone === true) {
                 response.write(indexPageValue);
             }

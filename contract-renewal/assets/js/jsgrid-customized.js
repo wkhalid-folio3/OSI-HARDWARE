@@ -4,6 +4,16 @@
  * Licensed under MIT (https://github.com/tabalinas/jsgrid/blob/master/LICENSE)
  */
 
+
+/*
+ * HACKS --- by Zain Shaikh
+ * Functions changed: insertItem, _createInsertButton
+ * Details: we had a scenario that when user tries to insert a new row,
+ * but there is some validation error raised from onItemInserting event (using args.cancel = true)
+ * so jsGrid regenerates the whole row and the data which was entered by user, is lost.
+ * to preserve data, we have done some customizaions in above mentioned functions.
+ */
+
 (function(window, $, undefined) {
 
     var JSGRID = "JSGrid",
@@ -1003,7 +1013,12 @@
                 item: insertingItem
             });
 
-            return this._controllerCall("insertItem", insertingItem, args.cancel, function(insertedItem) {
+            // HACK : changed by Zain, due to validation handling
+            if (args.preserve === true) {
+                return args;
+            }
+
+            return this._controllerCall("insertItem", insertingItem, args.cancel, function (insertedItem) {
                 insertedItem = insertedItem || insertingItem;
                 this._loadStrategy.finishInsert(insertedItem);
 
@@ -2082,8 +2097,13 @@
 
         _createInsertButton: function() {
             return this._createGridButton(this.insertButtonClass, this.insertButtonTooltip, function(grid) {
-                grid.insertItem();
-                grid.clearInsert();
+
+                // HACK : changed by Zain, due to validation handling
+                var insertResult = grid.insertItem();
+                if (insertResult.preserve !== true) {
+                    grid.clearInsert();
+                }
+
             });
         },
 

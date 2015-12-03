@@ -5,33 +5,36 @@
  * Created by zshaikh on 11/19/2015.
  */
 
-
+/**
+ * Responsible for communicating with server
+ * Also responsible for caching data returned from server
+ * All kinds of ajax requests are made through this class
+ * This class is initialized from UI Manager class
+ */
 class DataManager {
 
-    private _serverUrl = null;
-    private _type:string;
+    private _serverUrl:string = null;
+    private _viewType:string;
+    private _cacheTime:number = 0;
 
-    constructor(type:string){
-        this._type = type;
+    constructor(type:string) {
+        this._viewType = type;
+
+        var oneSecond = 1000;
+        var oneMinute = 60 * oneSecond;
+        var oneHour = 60 * oneMinute;
+        var oneDay = oneHour * 24;
+        this._cacheTime = oneDay;
+
+        this._serverUrl = window.apiSuiteletUrl;
+        this._serverUrl += '&type=' + this._viewType; // append type
     }
-
-    private getServerUrl () {
-
-        if (!this._serverUrl) {
-            this._serverUrl = window.apiSuiteletUrl;
-            this._serverUrl += '&type=' + this._type; // append type
-        }
-
-        return this._serverUrl;
-    }
-
 
     private getVendorsFromServer(callback) {
 
-        var suiteletUrl = this.getServerUrl();
-
-        return jQuery.get(suiteletUrl, {'action': 'get_vendors'}, function (result) {
-            console.log('getPartners(); // jquery complete: ', arguments);
+        var data = {'action': 'get_vendors'};
+        return jQuery.get(this._serverUrl, data, (result) => {
+            console.log('getVendorsFromServer(); // jquery complete: ', arguments);
 
             callback && callback(result);
 
@@ -41,50 +44,29 @@ class DataManager {
 
     private getEmployeesFromServer(callback) {
 
-        var suiteletUrl = this.getServerUrl();
-
-        return jQuery.get(suiteletUrl, {'action': 'get_employees'}, function (result) {
-            console.log('get_employees(); // jquery complete: ', arguments);
+        var data = {'action': 'get_employees'};
+        return jQuery.get(this._serverUrl, data, (result) => {
+            console.log('getEmployeesFromServer(); // jquery complete: ', arguments);
 
             callback && callback(result);
 
         });
 
     }
-
 
     private getDepartmentFromServer(callback) {
 
-        var suiteletUrl = this.getServerUrl();
-
-        return jQuery.get(suiteletUrl, {'action': 'get_departments'}, function (result) {
-            console.log('get_departments(); // jquery complete: ', arguments);
-
-            callback && callback(result);
-
-        });
-
-    }
-
-
-    private getPriceLevelsFromServer(callback) {
-
-        var suiteletUrl = this.getServerUrl();
-
-        return jQuery.get(suiteletUrl, {'action': 'get_pricelevels'}, function (result) {
-            console.log('get_departments(); // jquery complete: ', arguments);
+        var data = {'action': 'get_departments'};
+        return jQuery.get(this._serverUrl, data, (result) => {
+            console.log('getDepartmentFromServer(); // jquery complete: ', arguments);
 
             callback && callback(result);
 
         });
 
     }
-
 
     private getTaxCodesFromServer(params, callback) {
-
-        var suiteletUrl = this.getServerUrl();
-
 
         var options = {
             'action': 'get_taxcodes'
@@ -96,8 +78,8 @@ class DataManager {
 
         $.extend(options, filters);
 
-        return jQuery.get(suiteletUrl, options, function (result) {
-            console.log('getTaxCodes(); // jquery complete: ', arguments);
+        return jQuery.get(this._serverUrl, options, function (result) {
+            console.log('getTaxCodesFromServer(); // jquery complete: ', arguments);
 
             callback && callback(result);
 
@@ -105,13 +87,13 @@ class DataManager {
 
     }
 
-
-
     /**
-     * Description of method DataManager
-     * @param parameter
+     * Get tax codes from server
+     * @param {object} params parameters to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
      */
-    getTaxCodes (params, callback) {
+    getTaxCodes(params, callback) {
         try {
             var cacheKey = 'taxcodes';
             var data = $.jStorage.get(cacheKey);
@@ -120,19 +102,12 @@ class DataManager {
                 callback && callback(data);
             }
             else {
+                return this.getTaxCodesFromServer(params, (data) => {
 
-                return this.getTaxCodesFromServer(params, function (data) {
-
-                    $.jStorage.set(cacheKey, data);
+                    $.jStorage.set(cacheKey, data, {TTL: this._cacheTime});
 
                     callback && callback(data);
                 });
-                //return jQuery.get(suiteletUrl, options, function (result) {
-                //    console.log('getTaxCodes(); // jquery complete: ', arguments);
-                //
-                //    callback && callback(result);
-                //
-                //});
             }
 
         } catch (e) {
@@ -142,15 +117,14 @@ class DataManager {
         }
     }
 
-
     /**
-     * Description of method DataManager
-     * @param parameter
+     * Get Items from server
+     * @param {object} params parameters to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
      */
-    getItems (params, callback) {
+    getItems(params, callback) {
         try {
-
-            var suiteletUrl = this.getServerUrl();
 
             var options = {
                 'action': 'get_items'
@@ -162,7 +136,7 @@ class DataManager {
 
             $.extend(options, filters);
 
-            return jQuery.get(suiteletUrl, options, function (result) {
+            return jQuery.get(this._serverUrl, options, (result) => {
                 console.log('getItems(); // jquery complete: ', arguments);
 
                 callback && callback(result);
@@ -176,15 +150,14 @@ class DataManager {
         }
     }
 
-
     /**
-     * Get Partners from server
-     * @param callback {function} the callback function to invoke when data is fetched
-     * @returns {obj[]} returns an array of object of partner
+     * Get Vendors from cache or server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
      */
-    getVendors (callback) {
+    getVendors(callback) {
 
-        var cacheKey = 'partners';
+        var cacheKey = 'vendors';
         var data = $.jStorage.get(cacheKey);
 
         if (!!data) {
@@ -193,7 +166,7 @@ class DataManager {
         else {
             return this.getVendorsFromServer(function (data) {
 
-                $.jStorage.set(cacheKey, data);
+                $.jStorage.set(cacheKey, data, {TTL: this._cacheTime});
 
                 callback && callback(data);
             });
@@ -202,11 +175,11 @@ class DataManager {
     }
 
     /**
-     * Get Partners from server
-     * @param callback {function} the callback function to invoke when data is fetched
-     * @returns {obj[]} returns an array of object of partner
+     * Get Employees from cache or server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
      */
-    getEmployees (callback) {
+    getEmployees(callback) {
 
         var cacheKey = 'employees';
         var data = $.jStorage.get(cacheKey);
@@ -217,7 +190,7 @@ class DataManager {
         else {
             return this.getEmployeesFromServer(function (data) {
 
-                $.jStorage.set(cacheKey, data);
+                $.jStorage.set(cacheKey, data, {TTL: this._cacheTime});
 
                 callback && callback(data);
             });
@@ -225,45 +198,12 @@ class DataManager {
 
     }
 
-
     /**
-     * Get Partners from server
-     * @param callback {function} the callback function to invoke when data is fetched
-     * @returns {obj[]} returns an array of object of partner
+     * Get Departments from cache or server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
      */
-    getPriceLevels (callback?) : Promise<any> {
-
-        var cacheKey = 'price_levels';
-        var data = $.jStorage.get(cacheKey);
-
-        if (!!data) {
-
-            var promise = new Promise<any>((resolve, reject) => {
-                resolve(data);
-            });
-
-            callback && callback(data);
-            return promise;
-        }
-        else {
-            return this.getPriceLevelsFromServer(function (data) {
-
-                $.jStorage.set(cacheKey, data);
-
-                callback && callback(data);
-            });
-        }
-
-    }
-
-
-
-    /**
-     * Get Partners from server
-     * @param callback {function} the callback function to invoke when data is fetched
-     * @returns {obj[]} returns an array of object of partner
-     */
-    getDepartment (callback) {
+    getDepartment(callback) {
 
         var cacheKey = 'departments';
         var data = $.jStorage.get(cacheKey);
@@ -275,7 +215,7 @@ class DataManager {
         else {
             return this.getDepartmentFromServer(function (data) {
 
-                $.jStorage.set(cacheKey, data);
+                $.jStorage.set(cacheKey, data, {TTL: this._cacheTime});
 
                 callback && callback(data);
             });
@@ -287,10 +227,8 @@ class DataManager {
      * Description of method DataManager
      * @param parameter
      */
-    getPrimaryContacts (params, callback) {
+    getPrimaryContacts(params, callback) {
         try {
-
-            var suiteletUrl = this.getServerUrl();
 
             var options = {
                 'action': 'get_contacts'
@@ -302,7 +240,7 @@ class DataManager {
 
             $.extend(options, filters);
 
-            return jQuery.get(suiteletUrl, options, function (result) {
+            return jQuery.get(this._serverUrl, options, function (result) {
                 console.log('getPrimaryContacts(); // jquery complete: ', arguments);
 
                 callback && callback(result);
@@ -317,13 +255,13 @@ class DataManager {
     }
 
     /**
-     * Description of method DataManager
-     * @param parameter
+     * Get Customers from server
+     * @param {object} params parameters to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
      */
-    getCustomers (params, callback) {
+    getCustomers(params, callback) {
         try {
-
-            var suiteletUrl = this.getServerUrl();
 
             var options = {
                 'action': 'get_customers'
@@ -335,7 +273,7 @@ class DataManager {
 
             $.extend(options, filters);
 
-            return jQuery.get(suiteletUrl, options, function (result) {
+            return jQuery.get(this._serverUrl, options, (result) => {
                 console.log('getCustomers(); // jquery complete: ', arguments);
 
                 callback && callback(result);
@@ -349,12 +287,47 @@ class DataManager {
         }
     }
 
-
-
-    generateQuote(params, callback){
+    /**
+     * Get Price Levels from server for specific item id
+     * @param {object} params parameters to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
+    getPriceLevels(params, callback) {
         try {
 
-            var suiteletUrl = this.getServerUrl();
+            var options = {
+                'action': 'get_pricelevels'
+            };
+
+            var filters = {
+                'params': JSON.stringify(params)
+            };
+
+            $.extend(options, filters);
+
+            return jQuery.get(this._serverUrl, options, (result) => {
+                console.log('getPriceLevels(); // jquery complete: ', arguments);
+
+                callback && callback(result);
+
+            });
+
+        } catch (e) {
+            console.error('ERROR', 'Error during main DataManager.getCustomers()', e.toString());
+
+            callback && callback(null);
+        }
+    }
+
+    /**
+     * Generate Quote
+     * @param {object} params parameters to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
+    generateQuote(params, callback) {
+        try {
 
             var options = {
                 'action': 'generate_quote'
@@ -366,32 +339,35 @@ class DataManager {
 
             $.extend(options, filters);
 
-            return jQuery.get(suiteletUrl, options, function (result) {
-                console.log('getCustomers(); // jquery complete: ', arguments);
+            return jQuery.get(this._serverUrl, options, function (result) {
+                console.log('generateQuote(); // jquery complete: ', arguments);
 
                 callback && callback(result);
 
             });
 
         } catch (e) {
-            console.error('ERROR', 'Error during main DataManager.getCustomers()', e.toString());
+            console.error('ERROR', 'Error during main DataManager.generateQuote()', e.toString());
 
             callback && callback(null);
         }
     }
 
+    /**
+     * Submit contract information to server
+     * @param {object} data contract json object to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
+    submit(data, callback) {
 
-
-    submit(data, callback){
-
-        var suiteletUrl = this.getServerUrl();
         var options = {
             'action': 'submit'
         };
 
         $.extend(options, {'params': JSON.stringify(data)});
 
-        return jQuery.post(suiteletUrl, options, function (result) {
+        return jQuery.post(this._serverUrl, options, function (result) {
             console.log('submit(); // jquery complete: ', arguments);
 
             callback && callback(result);

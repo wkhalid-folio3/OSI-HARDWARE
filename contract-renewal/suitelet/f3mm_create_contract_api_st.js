@@ -1,31 +1,42 @@
-// Declaration of all NetSuite SuiteScript 1.0 APIs
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
+/// <reference path="../_typescript-refs/f3.common.d.ts" />
 /// <reference path="../dal/BaseTypeDAL.ts" />
 /// <reference path="../dal/ContractDAL.ts" />
-/// <reference path="../dal/FoldersDAL.ts" />
 /// <reference path="../dal/CommonDAL.ts" />
-/// <reference path="../_typescript-refs/f3.common.d.ts" />
 /**
  * Created by zshaikh on 11/19/2015.
- * TODO:
  * -
  * Referenced By:
  * -
  * -
  * Dependencies:
- * -
- * -
+ * - BaseTypeDAL.ts
+ * - ContractDAL.ts
+ * - CommonDAL.ts
  */
 /**
- * CreateContractAPI class that has the actual functionality of suitelet.
- * All business logic will be encapsulated in this class.
+ * This class is responsible for handling all REST API calls
+ * Following are the operations performed by this class:
+ *  - Create / Update Contract
+ *  - Generate Quote from Contract
+ *  - Get Customers
+ *  - Get Contacts
+ *  - Get Vendors
+ *  - Get Departments
+ *  - Get Employees
+ *  - Get Price Levels
+ *  - Get Tax Items
+ *  - Get Items (Inventory Item / Assembly Item / Kit Package / Group Item)
  */
 var CreateContractAPISuitelet = (function () {
     function CreateContractAPISuitelet(request, response) {
         this.main(request, response);
     }
     /**
-     * main method
+     * entry point for api call
+     * @param {nlobjRequest} request request object to get information about incoming request
+     * @param {nlobjResponse} response response object to write information to outgoing request
+     * @returns {void}
      */
     CreateContractAPISuitelet.prototype.main = function (request, response) {
         F3.Util.Utility.logDebug('CreateContractAPISuitelet.main();');
@@ -55,43 +66,43 @@ var CreateContractAPISuitelet = (function () {
                 result.message = 'success';
             }
             else if (action === 'get_contacts') {
-                var customers = commonDAL.getContacts(params);
-                result.data = customers;
+                var contacts = commonDAL.getContacts(params);
+                result.data = contacts;
                 result.status_code = 200;
                 result.status = 'OK';
                 result.message = 'success';
             }
             else if (action === 'get_vendors') {
-                var customers = commonDAL.getVendors(params);
-                result.data = customers;
+                var vendors = commonDAL.getVendors(params);
+                result.data = vendors;
                 result.status_code = 200;
                 result.status = 'OK';
                 result.message = 'success';
             }
             else if (action === 'get_departments') {
-                var customers = commonDAL.getDepartments(params);
-                result.data = customers;
+                var departments = commonDAL.getDepartments(params);
+                result.data = departments;
                 result.status_code = 200;
                 result.status = 'OK';
                 result.message = 'success';
             }
             else if (action === 'get_employees') {
-                var customers = commonDAL.getEmployees(params);
-                result.data = customers;
+                var employees = commonDAL.getEmployees(params);
+                result.data = employees;
                 result.status_code = 200;
                 result.status = 'OK';
                 result.message = 'success';
             }
             else if (action === 'get_pricelevels') {
-                var customers = commonDAL.getPriceLevels(params);
-                result.data = customers;
+                var priceLevels = commonDAL.getPriceLevels(params);
+                result.data = priceLevels;
                 result.status_code = 200;
                 result.status = 'OK';
                 result.message = 'success';
             }
             else if (action === 'get_taxcodes') {
-                var customers = commonDAL.getTaxItems(params);
-                result.data = customers;
+                var taxCodes = commonDAL.getTaxItems(params);
+                result.data = taxCodes;
                 result.status_code = 200;
                 result.status = 'OK';
                 result.message = 'success';
@@ -104,14 +115,16 @@ var CreateContractAPISuitelet = (function () {
                 result.message = 'success';
             }
             else if (action === 'generate_quote') {
-                var quote = contractDAL.generateQuote(params.contractId);
-                result.data = quote;
+                var quoteId = contractDAL.generateQuote(params.contractId);
+                result.data = {
+                    id: quoteId
+                };
                 result.status_code = 200;
                 result.status = 'OK';
                 result.message = 'success';
             }
             else if (action === 'submit') {
-                var createdId = contractDAL.create(params);
+                var createdId = contractDAL.updateOrCreate(params);
                 result.data = {
                     id: createdId
                 };

@@ -1,6 +1,6 @@
-// Declaration of all NetSuite SuiteScript 1.0 APIs
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="./BaseTypeDAL.ts" />
+
 /**
  * Created by zshaikh on 11/18/2015.
  */

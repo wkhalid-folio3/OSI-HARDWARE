@@ -1,4 +1,3 @@
-// Declaration of all NetSuite SuiteScript 1.0 APIs
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="../dal/BaseTypeDAL.ts" />
 /// <reference path="../dal/CommonDAL.ts" />
@@ -8,7 +7,6 @@
 
 /**
  * Created by zshaikh on 11/18/2015.
- * TODO:
  * -
  * Referenced By:
  * -
@@ -18,14 +16,10 @@
  * -
  */
 
-import CommandEvent = CommandEvent;
 /**
- * CreateContractUI class that has the actual functionality of suitelet.
+ * CreateContractUISuitelet class that has the actual functionality of suitelet.
  * All business logic will be encapsulated in this class.
  */
-
-//import {ContractDAL} from '../dal/ContractDAL';
-
 class CreateContractUISuitelet {
 
     private _contractDAL : ContractDAL;
@@ -79,7 +73,6 @@ class CreateContractUISuitelet {
             var uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
             var uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
             var uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
-            //var viewQuoteUrl = '';
 
             var editMode = request.getParameter('e');
             var contractId = request.getParameter('cid');
@@ -91,7 +84,6 @@ class CreateContractUISuitelet {
 
                 uiSuiteletUrl = uiSuiteletUrl + '&cid=' + contractId;
 
-
                 if (editMode == 't') {
                     this.title = 'Edit Contract';
                     this.type = 'edit';
@@ -101,12 +93,6 @@ class CreateContractUISuitelet {
                     this.title = 'View Contract';
                     this.type = 'view';
                 }
-
-
-                //var quotes = contract.sublists.quotes;
-                //if ( !!quotes && quotes.length > 0) {
-                //    viewQuoteUrl = nlapiResolveURL('RECORD', 'estimate', quotes[quotes.length -1].id, false);
-                //}
             }
 
             var standaloneParam = request.getParameter('standalone');
@@ -138,8 +124,6 @@ class CreateContractUISuitelet {
             indexPageValue = indexPageValue.replace('{{ contractInfo }}', JSON.stringify(contract));
             indexPageValue = indexPageValue.replace(/{{ viewContractUrl }}/gi, uiSuiteletUrl);
             indexPageValue = indexPageValue.replace(/{{ priceLevels }}/gi, JSON.stringify(priceLevels));
-            //indexPageValue = indexPageValue.replace(/{{ viewQuoteUrl }}/gi, viewQuoteUrl);
-
 
             if (standalone === true) {
                 response.write(indexPageValue);

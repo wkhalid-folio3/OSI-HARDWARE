@@ -1,4 +1,3 @@
-// Declaration of all NetSuite SuiteScript 1.0 APIs
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="./BaseTypeDAL.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17,31 +16,42 @@ var CommonDAL = (function (_super) {
     CommonDAL.prototype.getContacts = function (options) {
         var filters = [];
         var cols = [];
+        var queryFilters = [];
         cols.push(new nlobjSearchColumn('firstname').setSort());
         cols.push(new nlobjSearchColumn('lastname'));
         cols.push(new nlobjSearchColumn('entityid'));
+        cols.push(new nlobjSearchColumn('company'));
         cols.push(new nlobjSearchColumn('email'));
         if (!!options) {
             var query = options.query;
             if (F3.Util.Utility.isBlankOrNull(query) == false) {
-                //filters.push(['firstname', 'startswith', query]);
-                //filters.push('or');
-                //filters.push(['lastname', 'contains', query]);
-                //filters.push('or');
-                //filters.push(['companyname', 'startswith', query]);
-                //filters.push('or');
-                //filters.push(['email', 'contains', query]);
-                //filters.push('or');
-                filters.push(['entityid', 'startswith', query]);
+                var queryToSearch = null;
+                var splittedQuery = query.split(':');
+                if (splittedQuery.length > 1) {
+                    queryToSearch = splittedQuery[1].trim();
+                }
+                else {
+                    queryToSearch = query.trim();
+                }
+                //queryFilters.push(['firstname', 'startswith', query]);
+                //queryFilters.push('or');
+                //queryFilters.push(['lastname', 'contains', query]);
+                //queryFilters.push('or');
+                //queryFilters.push(['companyname', 'startswith', query]);
+                //queryFilters.push('or');
+                //queryFilters.push(['email', 'contains', query]);
+                //queryFilters.push('or');
+                queryFilters.push(['entityid', 'contains', queryToSearch]);
             }
         }
-        var x = [];
-        x.push(['isinactive', 'is', 'F']);
-        x.push('and');
-        x.push(filters);
+        filters.push(['isinactive', 'is', 'F']);
+        if (queryFilters.length > 0) {
+            filters.push('and');
+            filters.push(queryFilters);
+        }
         // serialize data
         var jsonConverterTimer = F3.Util.StopWatch.start('Convert objects to json manually.');
-        var result = this.getAll(x, cols, 'contact');
+        var result = this.getAll(filters, cols, 'contact');
         jsonConverterTimer.stop();
         return result;
     };
@@ -63,13 +73,9 @@ var CommonDAL = (function (_super) {
      * Get all partners from db
      */
     CommonDAL.prototype.getPriceLevels = function (options) {
-        var filters = [];
-        var cols = [];
-        cols.push(new nlobjSearchColumn('name').setSort());
-        cols.push(new nlobjSearchColumn('discountpct'));
-        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
-        var result = this.getAll(filters, cols, 'pricelevel');
-        return result;
+        var record = nlapiLoadRecord(options.recordType, options.itemId);
+        var priceLevels = this.getSublistItems(record, 'price1');
+        return priceLevels;
     };
     /**
      * Get all partners from db
@@ -144,6 +150,7 @@ var CommonDAL = (function (_super) {
     CommonDAL.prototype.getCustomers = function (options) {
         var filters = [];
         var cols = [];
+        var queryFilters = [];
         cols.push(new nlobjSearchColumn('isperson'));
         cols.push(new nlobjSearchColumn('firstname'));
         cols.push(new nlobjSearchColumn('lastname'));
@@ -153,34 +160,36 @@ var CommonDAL = (function (_super) {
         if (!!options) {
             var query = options.query;
             if (F3.Util.Utility.isBlankOrNull(query) == false) {
-                var splittedQuery = query.split(' ');
-                if (!!splittedQuery) {
-                    for (var i in splittedQuery) {
-                        var q = splittedQuery[i];
-                        if (!!q) {
-                            filters.push(['firstname', 'startswith', q]);
-                            filters.push('or');
-                            filters.push(['lastname', 'startswith', q]);
-                            filters.push('or');
-                        }
-                    }
-                }
+                //var splittedQuery = query.split(' ');
+                //if(!!splittedQuery) {
+                //    for (var i in splittedQuery) {
+                //        var q = splittedQuery[i];
+                //        if ( !! q ) {
+                //            filters.push(['firstname', 'startswith', q]);
+                //            filters.push('or');
+                //            filters.push(['lastname', 'startswith', q]);
+                //            filters.push('or');
+                //        }
+                //    }
+                //}
                 //filters.push(['lastname', 'contains', query]);
                 //filters.push('or');
-                //filters.push(['companyname', 'startswith', query]);
+                queryFilters.push(['companyname', 'startswith', query]);
                 //filters.push('or');
+                //filters.push(['formul', 'startswith', query]);
                 //filters.push(['email', 'contains', query]);
-                //filters.push('or');
-                filters.push(['entityid', 'startswith', query]);
+                queryFilters.push('or');
+                queryFilters.push(['entityid', 'startswith', query]);
             }
         }
-        var x = [];
-        x.push(['isinactive', 'is', 'F']);
-        x.push('and');
-        x.push(filters);
+        filters.push(['isinactive', 'is', 'F']);
+        if (queryFilters.length > 0) {
+            filters.push('and');
+            filters.push(queryFilters);
+        }
         // serialize data
         var jsonConverterTimer = F3.Util.StopWatch.start('Convert objects to json manually.');
-        var result = this.getAll(x, cols, 'customer');
+        var result = this.getAll(filters, cols, 'customer');
         jsonConverterTimer.stop();
         return result;
     };
