@@ -1,21 +1,19 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
-/// <reference path="../dal/BaseTypeDAL.ts" />
-/// <reference path="../dal/CommonDAL.ts" />
-/// <reference path="../dal/ContractDAL.ts" />
-/// <reference path="../dal/FoldersDAL.ts" />
+/// <reference path="../dal/f3mm_common_dal.ts" />
+/// <reference path="../dal/f3mm_contract_dal.ts" />
+/// <reference path="../dal/f3mm_folders_dal.ts" />
 /// <reference path="../_typescript-refs/f3.common.d.ts" />
 /**
  * Created by zshaikh on 11/18/2015.
  * -
- * Referenced By:
- * -
- * -
  * Dependencies:
- * -
+ * - f3mm_common_dal.ts
+ * - f3mm_contract_dal.ts
+ * - f3mm_folders_dal.ts
  * -
  */
 /**
- * This class is responsible for creating html of Create Contract Screen
+ * This class is responsible for creating html of Create, Edit & View Contract Screen
  */
 var CreateContractUISuitelet = (function () {
     function CreateContractUISuitelet(request, response) {
@@ -30,26 +28,68 @@ var CreateContractUISuitelet = (function () {
         this.main(request, response);
     }
     /**
-     * Get file id
+     * Get HTML template for Create / View / Edit Screen
      */
-    CreateContractUISuitelet.prototype.getHtmlTemplateFileId = function () {
+    CreateContractUISuitelet.prototype.getHtmlTemplate = function () {
         var assetsFolderId = this._assetsFolderId;
         var files = this._foldersDAL.getFiles(assetsFolderId);
         var found = null;
+        var templateName = 'create_contract.html';
+        var templateFile = null;
+        var html = null;
         files.forEach(function (file) {
-            if (file.name == "create_contract.html") {
+            if (file.name == templateName) {
                 found = file;
             }
         });
-        return found.internalid;
+        if (!!found) {
+            templateFile = nlapiLoadFile(found.internalid);
+            html = templateFile.getValue();
+        }
+        return html;
     };
+    /**
+     * Parse HTML Template and replace variables with required data
+     */
+    CreateContractUISuitelet.prototype.parseHtmlTemplate = function (html, data) {
+        var files = this.getDependencyFiles();
+        var suiteletScriptId = 'customscript_f3mm_create_contract_api_st';
+        var suiteletDeploymentId = 'customdeploy_f3mm_create_contract_api_st';
+        var apiSuiteletUrl = nlapiResolveURL('SUITELET', suiteletScriptId, suiteletDeploymentId, false);
+        var priceLevels = this._commonDAL.getPriceLevels();
+        html = html || '';
+        priceLevels.forEach(function (priceLevel) {
+            priceLevel.id = parseInt(priceLevel.id);
+        });
+        for (var i in files) {
+            var fileInfo = files[i];
+            html = html.replace('{{ ' + fileInfo.name + ' }}', fileInfo.url);
+        }
+        html = html.replace('{{ type }}', this.type);
+        html = html.replace('{{ title }}', this.title);
+        html = html.replace('{{ apiSuiteletUrl }}', apiSuiteletUrl);
+        html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
+        html = html.replace('{{ contractInfo }}', JSON.stringify(data.contract));
+        html = html.replace(/{{ viewContractUrl }}/gi, data.uiSuiteletUrl);
+        html = html.replace(/{{ priceLevels }}/gi, JSON.stringify(priceLevels));
+        return html;
+    };
+    /**
+     * Load all dependant asset files like js and css
+     */
     CreateContractUISuitelet.prototype.getDependencyFiles = function () {
         var assetsFolderId = this._assetsFolderId;
         var files = this._foldersDAL.getFiles(assetsFolderId, true);
         return files;
     };
     /**
-     * main method
+     * Entry point for Request. Operations:
+     *  - Process request
+     *  - load contract information
+     *  - load html template
+     *  - Gather other required data
+     *  - Merge contract information and other required data with html
+     *  - send response
      */
     CreateContractUISuitelet.prototype.main = function (request, response) {
         F3.Util.Utility.logDebug('CreateContractUISuitelet.main()', 'Start');
@@ -77,34 +117,20 @@ var CreateContractUISuitelet = (function () {
             var standaloneParam = request.getParameter('standalone');
             var standalone = standaloneParam == 'T' || standaloneParam == '1';
             var standaloneClass = (standalone ? 'page-standalone' : 'page-inline');
-            var suiteletScriptId = 'customscript_f3mm_create_contract_api_st';
-            var suiteletDeploymentId = 'customdeploy_f3mm_create_contract_api_st';
-            var apiSuiteletUrl = nlapiResolveURL('SUITELET', suiteletScriptId, suiteletDeploymentId, false);
-            var priceLevels = this._commonDAL.getPriceLevels();
-            priceLevels.forEach(function (priceLevel) {
-                priceLevel.id = parseInt(priceLevel.id);
+            var htmlTemplate = this.getHtmlTemplate();
+            var processedHtml = this.parseHtmlTemplate(htmlTemplate, {
+                standaloneClass: standaloneClass,
+                uiSuiteletUrl: uiSuiteletUrl,
+                contract: contract
             });
-            var data = nlapiLoadFile(this.getHtmlTemplateFileId());
-            var files = this.getDependencyFiles();
-            var indexPageValue = data.getValue();
-            for (var i in files) {
-                var fileInfo = files[i];
-                indexPageValue = indexPageValue.replace('{{ ' + fileInfo.name + ' }}', fileInfo.url);
-            }
-            indexPageValue = indexPageValue.replace('{{ type }}', this.type);
-            indexPageValue = indexPageValue.replace('{{ title }}', this.title);
-            indexPageValue = indexPageValue.replace('{{ apiSuiteletUrl }}', apiSuiteletUrl);
-            indexPageValue = indexPageValue.replace(/{{ standaloneClass }}/gi, standaloneClass);
-            indexPageValue = indexPageValue.replace('{{ contractInfo }}', JSON.stringify(contract));
-            indexPageValue = indexPageValue.replace(/{{ viewContractUrl }}/gi, uiSuiteletUrl);
-            indexPageValue = indexPageValue.replace(/{{ priceLevels }}/gi, JSON.stringify(priceLevels));
+            // no need to create NetSuite form if standalone parameter is trur
             if (standalone === true) {
-                response.write(indexPageValue);
+                response.write(processedHtml);
             }
             else {
                 var form = nlapiCreateForm(this.title);
                 var htmlField = form.addField('inlinehtml', 'inlinehtml', '');
-                htmlField.setDefaultValue(indexPageValue);
+                htmlField.setDefaultValue(processedHtml);
                 response.writePage(form);
             }
         }
