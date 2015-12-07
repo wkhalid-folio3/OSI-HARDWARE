@@ -45,7 +45,7 @@ var BaseDAL = (function () {
         var arr = [];
         try {
             filters = filters ? filters : [];
-            columns = columns ? columns : this.getSearchColumns();
+            columns = columns ? columns : this.getFields();
             internalId = internalId || this.internalId;
             recs = nlapiSearchRecord(internalId, null, filters, columns);
             if (recs && recs.length > 0) {
@@ -59,10 +59,10 @@ var BaseDAL = (function () {
         return arr;
     };
     /**
-     * Gets all column of current class to perform search
-     * @returns {nlobjSearchColumn[]} array of columns
+     * Gets all fields of current class to perform search
+     * @returns {nlobjSearchColumn[]} array of fields
      */
-    BaseDAL.prototype.getSearchColumns = function () {
+    BaseDAL.prototype.getFields = function () {
         var cols = [];
         for (var key in this.fields) {
             var field = this.fields[key];
@@ -92,7 +92,10 @@ var BaseDAL = (function () {
                 var val = record.getLineItemValue(key, field, i);
                 var text = record.getLineItemText(key, field, i);
                 if (!!text && val != text) {
-                    lineItem[name] = { text: text, value: val };
+                    lineItem[name] = {
+                        text: text,
+                        value: val
+                    };
                 }
                 else {
                     lineItem[name] = val;

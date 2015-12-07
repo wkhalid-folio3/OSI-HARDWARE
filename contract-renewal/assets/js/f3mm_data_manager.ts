@@ -1,6 +1,5 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
 /// <reference path="../../_typescript-refs/es6-promise.d.ts" />
-
 /**
  * Created by zshaikh on 11/19/2015.
  * -
@@ -12,8 +11,6 @@
  * - jstorage.js
  * -
  */
-
-
 /**
  * Responsible for communicating with server
  * Also responsible for caching data returned from server
@@ -22,11 +19,11 @@
  */
 class DataManager {
 
-    private _serverUrl:string = null;
-    private _viewType:string;
-    private _cacheTime:number = 0;
+    private _serverUrl: string = null;
+    private _viewType: string;
+    private _cacheTime: number = 0;
 
-    constructor(type:string) {
+    constructor(type: string) {
         this._viewType = type;
 
         var oneSecond = 1000;
@@ -46,7 +43,9 @@ class DataManager {
      */
     private getVendorsFromServer(callback) {
 
-        var data = {'action': 'get_vendors'};
+        var data = {
+            'action': 'get_vendors'
+        };
         return jQuery.get(this._serverUrl, data, (result) => {
             console.log('getVendorsFromServer(); // jquery complete: ', arguments);
 
@@ -63,7 +62,9 @@ class DataManager {
      */
     private getEmployeesFromServer(callback) {
 
-        var data = {'action': 'get_employees'};
+        var data = {
+            'action': 'get_employees'
+        };
         return jQuery.get(this._serverUrl, data, (result) => {
             console.log('getEmployeesFromServer(); // jquery complete: ', arguments);
 
@@ -80,7 +81,9 @@ class DataManager {
      */
     private getDepartmentFromServer(callback) {
 
-        var data = {'action': 'get_departments'};
+        var data = {
+            'action': 'get_departments'
+        };
         return jQuery.get(this._serverUrl, data, (result) => {
             console.log('getDepartmentFromServer(); // jquery complete: ', arguments);
 
@@ -108,7 +111,7 @@ class DataManager {
 
         $.extend(options, filters);
 
-        return jQuery.get(this._serverUrl, options, function (result) {
+        return jQuery.get(this._serverUrl, options, function(result) {
             console.log('getTaxCodesFromServer(); // jquery complete: ', arguments);
 
             callback && callback(result);
@@ -130,11 +133,12 @@ class DataManager {
 
             if (!!data) {
                 callback && callback(data);
-            }
-            else {
+            } else {
                 return this.getTaxCodesFromServer(params, (data) => {
 
-                    $.jStorage.set(cacheKey, data, {TTL: this._cacheTime});
+                    $.jStorage.set(cacheKey, data, {
+                        TTL: this._cacheTime
+                    });
 
                     callback && callback(data);
                 });
@@ -192,11 +196,12 @@ class DataManager {
 
         if (!!data) {
             callback && callback(data);
-        }
-        else {
-            return this.getVendorsFromServer(function (data) {
+        } else {
+            return this.getVendorsFromServer(function(data) {
 
-                $.jStorage.set(cacheKey, data, {TTL: this._cacheTime});
+                $.jStorage.set(cacheKey, data, {
+                    TTL: this._cacheTime
+                });
 
                 callback && callback(data);
             });
@@ -216,11 +221,12 @@ class DataManager {
 
         if (!!data) {
             callback && callback(data);
-        }
-        else {
-            return this.getEmployeesFromServer(function (data) {
+        } else {
+            return this.getEmployeesFromServer(function(data) {
 
-                $.jStorage.set(cacheKey, data, {TTL: this._cacheTime});
+                $.jStorage.set(cacheKey, data, {
+                    TTL: this._cacheTime
+                });
 
                 callback && callback(data);
             });
@@ -241,11 +247,12 @@ class DataManager {
         if (!!data) {
             callback && callback(data);
             return data;
-        }
-        else {
-            return this.getDepartmentFromServer(function (data) {
+        } else {
+            return this.getDepartmentFromServer(function(data) {
 
-                $.jStorage.set(cacheKey, data, {TTL: this._cacheTime});
+                $.jStorage.set(cacheKey, data, {
+                    TTL: this._cacheTime
+                });
 
                 callback && callback(data);
             });
@@ -270,7 +277,7 @@ class DataManager {
 
             $.extend(options, filters);
 
-            return jQuery.get(this._serverUrl, options, function (result) {
+            return jQuery.get(this._serverUrl, options, function(result) {
                 console.log('getPrimaryContacts(); // jquery complete: ', arguments);
 
                 callback && callback(result);
@@ -369,7 +376,7 @@ class DataManager {
 
             $.extend(options, filters);
 
-            return jQuery.get(this._serverUrl, options, function (result) {
+            return jQuery.get(this._serverUrl, options, function(result) {
                 console.log('generateQuote(); // jquery complete: ', arguments);
 
                 callback && callback(result);
@@ -395,9 +402,11 @@ class DataManager {
             'action': 'submit'
         };
 
-        $.extend(options, {'params': JSON.stringify(data)});
+        $.extend(options, {
+            'params': JSON.stringify(data)
+        });
 
-        return jQuery.post(this._serverUrl, options, function (result) {
+        return jQuery.post(this._serverUrl, options, function(result) {
             console.log('submit(); // jquery complete: ', arguments);
 
             callback && callback(result);

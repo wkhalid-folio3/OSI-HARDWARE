@@ -36,7 +36,9 @@ var DataManager = (function () {
      * @returns {void}
      */
     DataManager.prototype.getVendorsFromServer = function (callback) {
-        var data = { 'action': 'get_vendors' };
+        var data = {
+            'action': 'get_vendors'
+        };
         return jQuery.get(this._serverUrl, data, function (result) {
             console.log('getVendorsFromServer(); // jquery complete: ', arguments);
             callback && callback(result);
@@ -48,7 +50,9 @@ var DataManager = (function () {
      * @returns {void}
      */
     DataManager.prototype.getEmployeesFromServer = function (callback) {
-        var data = { 'action': 'get_employees' };
+        var data = {
+            'action': 'get_employees'
+        };
         return jQuery.get(this._serverUrl, data, function (result) {
             console.log('getEmployeesFromServer(); // jquery complete: ', arguments);
             callback && callback(result);
@@ -60,7 +64,9 @@ var DataManager = (function () {
      * @returns {void}
      */
     DataManager.prototype.getDepartmentFromServer = function (callback) {
-        var data = { 'action': 'get_departments' };
+        var data = {
+            'action': 'get_departments'
+        };
         return jQuery.get(this._serverUrl, data, function (result) {
             console.log('getDepartmentFromServer(); // jquery complete: ', arguments);
             callback && callback(result);
@@ -101,7 +107,9 @@ var DataManager = (function () {
             }
             else {
                 return this.getTaxCodesFromServer(params, function (data) {
-                    $.jStorage.set(cacheKey, data, { TTL: _this._cacheTime });
+                    $.jStorage.set(cacheKey, data, {
+                        TTL: _this._cacheTime
+                    });
                     callback && callback(data);
                 });
             }
@@ -149,7 +157,9 @@ var DataManager = (function () {
         }
         else {
             return this.getVendorsFromServer(function (data) {
-                $.jStorage.set(cacheKey, data, { TTL: this._cacheTime });
+                $.jStorage.set(cacheKey, data, {
+                    TTL: this._cacheTime
+                });
                 callback && callback(data);
             });
         }
@@ -167,7 +177,9 @@ var DataManager = (function () {
         }
         else {
             return this.getEmployeesFromServer(function (data) {
-                $.jStorage.set(cacheKey, data, { TTL: this._cacheTime });
+                $.jStorage.set(cacheKey, data, {
+                    TTL: this._cacheTime
+                });
                 callback && callback(data);
             });
         }
@@ -186,7 +198,9 @@ var DataManager = (function () {
         }
         else {
             return this.getDepartmentFromServer(function (data) {
-                $.jStorage.set(cacheKey, data, { TTL: this._cacheTime });
+                $.jStorage.set(cacheKey, data, {
+                    TTL: this._cacheTime
+                });
                 callback && callback(data);
             });
         }
@@ -299,7 +313,9 @@ var DataManager = (function () {
         var options = {
             'action': 'submit'
         };
-        $.extend(options, { 'params': JSON.stringify(data) });
+        $.extend(options, {
+            'params': JSON.stringify(data)
+        });
         return jQuery.post(this._serverUrl, options, function (result) {
             console.log('submit(); // jquery complete: ', arguments);
             callback && callback(result);

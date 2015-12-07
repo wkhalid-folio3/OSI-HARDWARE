@@ -1,13 +1,11 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
-
 /**
  * Created by zshaikh on 11/26/2015.
  */
-
 /**
  * A Custom jQuery Validation function for validating typeahead components
  */
-var typeaheadValidationMessage : string = 'This field is required.';
+var typeaheadValidationMessage: string = 'This field is required.';
 
 $.validator.addMethod('requiredTypeahead', (value, element, param) => {
     var isValid: boolean = false;
@@ -20,8 +18,7 @@ $.validator.addMethod('requiredTypeahead', (value, element, param) => {
     // if value is empty then field is not valid
     if (!val) {
         isValid = false;
-    }
-    else {
+    } else {
         // if selectedText matches value then field is valid.
         isValid = selectedText == val;
     }

@@ -1,10 +1,10 @@
-/// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
-/// <reference path="./f3mm_base_dal.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+/// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
+/// <reference path="./f3mm_base_dal.ts" />
 /**
  * Created by zshaikh on 11/18/2015.
  * -
@@ -16,11 +16,10 @@ var __extends = (this && this.__extends) || function (d, b) {
  * -
  */
 /**
- * This class is responsing for performing DB operations related to File / Folder Search
+ * This class is responsible for performing DB operations related to File / Folder Search
  * Following are the responsibilities of this class:
- *  - Load Contracts from Database
- *  - Update / Create Contracts along with its line items
- *  - Generate Quote from Contract
+ *  - Gets files withing specified folderId
+ *  - Gets files with specified file ids
  */
 var FoldersDAL = (function (_super) {
     __extends(FoldersDAL, _super);
@@ -49,6 +48,7 @@ var FoldersDAL = (function (_super) {
         cols.push(new nlobjSearchColumn('filetype', 'file'));
         cols.push(new nlobjSearchColumn('parent'));
         var result = this.getAll(filters, cols);
+        F3.Util.Utility.logDebug('FoldersDAL.getFiles()', JSON.stringify(result));
         return result;
     };
     /**

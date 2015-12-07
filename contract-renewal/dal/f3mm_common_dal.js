@@ -1,10 +1,10 @@
-/// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
-/// <reference path="./f3mm_base_dal.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+/// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
+/// <reference path="./f3mm_base_dal.ts" />
 /**
  * Created by zshaikh on 11/19/2015.
  * -

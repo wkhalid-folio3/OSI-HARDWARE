@@ -3,7 +3,6 @@
 /// <reference path="../dal/f3mm_base_dal.ts" />
 /// <reference path="../dal/f3mm_contract_dal.ts" />
 /// <reference path="../dal/f3mm_common_dal.ts" />
-
 /**
  * Created by zshaikh on 11/19/2015.
  * -
@@ -12,7 +11,6 @@
  * - f3mm_contract_dal.ts
  * - f3mm_common_dal.ts
  */
-
 /**
  * IResult interface
  * - Restricts developer to only output data of type IResult
@@ -41,7 +39,7 @@ interface IResult {
  */
 class CreateContractAPISuitelet {
 
-    constructor(request:nlobjRequest, response:nlobjResponse) {
+    constructor(request: nlobjRequest, response: nlobjResponse) {
         this.main(request, response);
     }
 
@@ -51,7 +49,7 @@ class CreateContractAPISuitelet {
      * @param {nlobjResponse} response response object to write information to outgoing request
      * @returns {void}
      */
-    main (request:nlobjRequest, response:nlobjResponse) {
+    main(request: nlobjRequest, response: nlobjResponse) {
 
         F3.Util.Utility.logDebug('CreateContractAPISuitelet.main();', null);
         var mainRequestTimer = F3.Util.StopWatch.start('CreateContractAPISuitelet.main();');
@@ -67,7 +65,7 @@ class CreateContractAPISuitelet {
         F3.Util.Utility.logDebug('CreateContractAPISuitelet.main(); // action = ', action);
         F3.Util.Utility.logDebug('CreateContractAPISuitelet.main(); // params = ', JSON.stringify(params));
 
-        var result:IResult = this.executeAction(action, params);
+        var result: IResult = this.executeAction(action, params);
         var json = JSON.stringify(result);
         F3.Util.Utility.logDebug('Response: ', json);
 
@@ -82,12 +80,12 @@ class CreateContractAPISuitelet {
     }
 
     /**
-     * Responsing for executing action
+     * Responsible for executing action
      * @param {string} action the string representation of action to execute
-     * @param {object} params json represntation of params object to pass to executing action
+     * @param {object} params json representation of params object to pass to executing action
      * @returns {IResult} returns json representation of result of executed action
      */
-    private executeAction(action:string, params: {}) : IResult{
+    private executeAction(action: string, params: {}): IResult {
 
         var commonDAL = new CommonDAL();
         var contractDAL = new ContractDAL();
@@ -104,7 +102,7 @@ class CreateContractAPISuitelet {
             var executedActionResult = null;
             var actionExecuted = true;
 
-            switch(action) {
+            switch (action) {
                 case 'get_customers':
                     executedActionResult = commonDAL.getCustomers(params);
                     break;
@@ -140,20 +138,18 @@ class CreateContractAPISuitelet {
                     break;
             }
 
-            if ( actionExecuted === true) {
+            if (actionExecuted === true) {
                 result.data = executedActionResult;
                 result.status_code = 200;
                 result.status = 'OK';
                 result.message = 'success';
-            }
-            else {
+            } else {
                 result.status_code = 400;
                 result.status = 'Bad Request';
                 result.message = "invalid parameters";
             }
 
-        }
-        catch (ex) {
+        } catch (ex) {
             F3.Util.Utility.logException('CreateContractAPISuitelet.executeAction();', ex.toString());
 
             result.status_code = 500;

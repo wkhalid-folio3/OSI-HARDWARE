@@ -1,5 +1,4 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
-
 /**
  * Created by zshaikh on 11/20/2015.
  * -
@@ -16,12 +15,16 @@ class JsonHelper {
      * @param {string[]?} columnNames array of column names
      * @returns {object[]} json representation of search result object
      */
-    private static getJsonObject (row: nlobjSearchResult, cols: nlobjSearchColumn[], columnNames? : string[]) : {} {
+    private static getJsonObject(row: nlobjSearchResult, cols: nlobjSearchColumn[], columnNames ? : string[]): {} {
 
         var obj = null;
         if (row) {
-            obj = {id: row.getId(), recordType: row.getRecordType()};
-            var nm = null, item, val, text;
+            obj = {
+                id: row.getId(),
+                recordType: row.getRecordType()
+            };
+            var nm = null,
+                item, val, text;
             if (!!cols) {
                 for (var x = 0; x < cols.length; x++) {
                     item = cols[x];
@@ -30,9 +33,11 @@ class JsonHelper {
                     text = row.getText(item);
 
                     if (!!text && val != text) {
-                        obj[nm] = {text: text, value: val};
-                    }
-                    else {
+                        obj[nm] = {
+                            text: text,
+                            value: val
+                        };
+                    } else {
                         obj[nm] = val;
                     }
                 }
@@ -47,11 +52,14 @@ class JsonHelper {
      * @param {nlobjRecord} record record object to convert
      * @returns {object} json representation of record
      */
-    static getJsonForFullRecord (record: nlobjRecord) : {} {
+    static getJsonForFullRecord(record: nlobjRecord): {} {
 
         var result = null;
         if (!!record) {
-            result = {id: record.getId(), recordType: record.getRecordType()};
+            result = {
+                id: record.getId(),
+                recordType: record.getRecordType()
+            };
 
             // serialize body fields
             var allFields = record.getAllFields();
@@ -60,13 +68,15 @@ class JsonHelper {
             for (var index in allFields) {
                 var field = allFields[index];
                 var name = field;
-                var val:any = record.getFieldValue(field);
-                var text:any = record.getFieldText(field);
+                var val: any = record.getFieldValue(field);
+                var text: any = record.getFieldText(field);
 
                 if (!!text && val != text) {
-                    result[name] = {text: text, value: val};
-                }
-                else {
+                    result[name] = {
+                        text: text,
+                        value: val
+                    };
+                } else {
                     result[name] = val;
                 }
             }
@@ -96,7 +106,7 @@ class JsonHelper {
      * @param {nlobjSearchResult[]} records array of search result
      * @returns {object[]} json representation of search result array
      */
-    static getJsonArray (records: nlobjSearchResult[]) : {}[] {
+    static getJsonArray(records: nlobjSearchResult[]): {}[] {
 
         var result = [];
         if (!!records && records.length > 0) {
@@ -121,8 +131,7 @@ class JsonHelper {
                         label = label.trim().replace(/ /gi, '_');
 
                         nm = label;
-                    }
-                    else {
+                    } else {
                         nm = item.getName();
                     }
                     columnNames.push(nm);

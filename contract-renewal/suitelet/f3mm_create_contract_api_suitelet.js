@@ -49,9 +49,9 @@ var CreateContractAPISuitelet = (function () {
         mainRequestTimer.stop();
     };
     /**
-     * Responsing for executing action
+     * Responsible for executing action
      * @param {string} action the string representation of action to execute
-     * @param {object} params json represntation of params object to pass to executing action
+     * @param {object} params json representation of params object to pass to executing action
      * @returns {IResult} returns json representation of result of executed action
      */
     CreateContractAPISuitelet.prototype.executeAction = function (action, params) {

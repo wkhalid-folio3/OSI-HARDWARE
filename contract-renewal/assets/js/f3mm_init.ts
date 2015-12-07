@@ -1,6 +1,5 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
 /// <reference path="./f3mm_ui_manager.ts" />
-
 /**
  * Created by zshaikh on 11/18/2015.
  * -
@@ -9,7 +8,6 @@
  * - underscore-min.js
  * -
  */
-
 /**
  * Application entry point.
  */

@@ -142,7 +142,9 @@ var CreateContractUIManager = (function () {
         }
         $button.val('Generating...');
         this.showLoading();
-        var data = { contractId: this._contractInfo.id };
+        var data = {
+            contractId: this._contractInfo.id
+        };
         this._dataManager.generateQuote(data, function (result) {
             if (!!result.data && !!result.data.id) {
                 $button.val('Generated!');
@@ -402,25 +404,27 @@ var CreateContractUIManager = (function () {
      * @returns {object[]} returns array of fields
      */
     CreateContractUIManager.prototype.prepareGridFields = function () {
-        var gridFields = [
-            { title: "Item <span class='mandatory'>*</span>", name: "item", type: "text", width: 150, css: "item" },
-            {
+        var gridFields = [{
+                title: "Item <span class='mandatory'>*</span>",
+                name: "item",
+                type: "text",
+                width: 150,
+                css: "item"
+            }, {
                 title: "Description",
                 name: "description",
                 type: "textarea",
                 width: 150,
                 css: "description",
                 editing: false
-            },
-            {
+            }, {
                 title: "Quantity  <span class='mandatory'>*</span>",
                 name: "quantity",
                 type: "number",
                 width: 50,
                 css: "quantity",
                 min: 0
-            },
-            {
+            }, {
                 title: "Price Level <span class='mandatory'>*</span>",
                 name: "price_level",
                 type: "select",
@@ -429,17 +433,26 @@ var CreateContractUIManager = (function () {
                 width: 80,
                 css: "price-level",
                 items: this._priceLevels
-            },
-            { title: "Price", name: "price", type: "decimal_number", width: 50, css: "price" },
-            { title: "Amount", name: "amount", type: "decimal_number", width: 50, css: "amount", editing: false },
-            {
+            }, {
+                title: "Price",
+                name: "price",
+                type: "decimal_number",
+                width: 50,
+                css: "price"
+            }, {
+                title: "Amount",
+                name: "amount",
+                type: "decimal_number",
+                width: 50,
+                css: "amount",
+                editing: false
+            }, {
                 title: "Tax Code <span class='mandatory'>*</span>",
                 name: "taxcode",
                 type: "text",
                 width: 150,
                 css: "taxcode"
-            },
-            {
+            }, {
                 title: "Tax",
                 name: "taxrate",
                 type: "decimal_number",
@@ -447,10 +460,13 @@ var CreateContractUIManager = (function () {
                 css: "taxrate",
                 editing: false,
                 inserting: false
-            }
-        ];
+            }];
         if (this._viewType != 'view') {
-            gridFields.push({ type: "control", modeSwitchButton: false, editButton: false });
+            gridFields.push({
+                type: "control",
+                modeSwitchButton: false,
+                editButton: false
+            });
         }
         return gridFields;
     };
@@ -460,7 +476,10 @@ var CreateContractUIManager = (function () {
      */
     CreateContractUIManager.prototype.bindItemsGrid = function () {
         var _this = this;
-        this._priceLevels = [{ id: 0, name: '' }];
+        this._priceLevels = [{
+                id: 0,
+                name: ''
+            }];
         var contactItems = this.prepareGridData();
         var gridFields = this.prepareGridFields();
         var inserting = true;
@@ -751,7 +770,9 @@ var CreateContractUIManager = (function () {
         var _this = this;
         console.log(this);
         setTimeout(function () {
-            _this._dataManager.getItems({ query: query }, function (items) {
+            _this._dataManager.getItems({
+                query: query
+            }, function (items) {
                 try {
                     async(items.data);
                 }

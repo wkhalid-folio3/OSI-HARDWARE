@@ -1,7 +1,6 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="./f3mm_base_dal.ts" />
 /// <reference path="./f3mm_common_dal.ts" />
-
 /**
  * Created by zshaikh on 11/18/2015.
  * -
@@ -13,7 +12,6 @@
  * - f3mm_base_dal.ts
  * -
  */
-
 /**
  * This class handles all operations related to Contracts.
  * Following are the responsibilities of this class:
@@ -22,23 +20,65 @@
  *  - Generate Quote from Contract
  */
 class ContractDAL extends BaseDAL {
-    internalId:string = 'customrecord_f3mm_contract';
+    internalId: string = 'customrecord_f3mm_contract';
 
     fields = {
-        id: {id: 'internalid', type: 'number'},
-        customer: {id: 'custrecord_f3mm_customer', type: 'list'},
-        primaryContact: {id: 'custrecord_f3mm_primary_contact', type: 'list'},
-        primaryContactEmail: {id: 'custrecord_f3mm_primary_contact_email', type: 'text'},
-        contractVendor: {id: 'custrecord_f3mm_contract_vendor', type: 'list'},
-        totalQuantitySeats: {id: 'custrecord_f3mm_total_qty_seats', type: 'number'},
-        startDate: {id: 'custrecord_f3mm_start_date', type: 'date'},
-        endDate: {id: 'custrecord_f3mm_end_date', type: 'date'},
-        memo: {id: 'custrecord_f3mm_memo', type: 'text'},
-        salesRep: {id: 'custrecord_f3mm_sales_rep', type: 'list'},
-        department: {id: 'custrecord_f3mm_department', type: 'list'},
-        contractNumber: {id: 'custrecord_f3mm_contract_number', type: 'text'},
-        status: {id: 'custrecord_f3mm_status', type: 'list'},
-        poNumber: {id: 'custrecord_f3mm_po_number', type: 'text'}
+        id: {
+            id: 'internalid',
+            type: 'number'
+        },
+        customer: {
+            id: 'custrecord_f3mm_customer',
+            type: 'list'
+        },
+        primaryContact: {
+            id: 'custrecord_f3mm_primary_contact',
+            type: 'list'
+        },
+        primaryContactEmail: {
+            id: 'custrecord_f3mm_primary_contact_email',
+            type: 'text'
+        },
+        contractVendor: {
+            id: 'custrecord_f3mm_contract_vendor',
+            type: 'list'
+        },
+        totalQuantitySeats: {
+            id: 'custrecord_f3mm_total_qty_seats',
+            type: 'number'
+        },
+        startDate: {
+            id: 'custrecord_f3mm_start_date',
+            type: 'date'
+        },
+        endDate: {
+            id: 'custrecord_f3mm_end_date',
+            type: 'date'
+        },
+        memo: {
+            id: 'custrecord_f3mm_memo',
+            type: 'text'
+        },
+        salesRep: {
+            id: 'custrecord_f3mm_sales_rep',
+            type: 'list'
+        },
+        department: {
+            id: 'custrecord_f3mm_department',
+            type: 'list'
+        },
+        contractNumber: {
+            id: 'custrecord_f3mm_contract_number',
+            type: 'text'
+        },
+        status: {
+            id: 'custrecord_f3mm_status',
+            type: 'list'
+        },
+        poNumber: {
+            id: 'custrecord_f3mm_po_number',
+            type: 'text'
+        }
     };
 
     /**
@@ -52,8 +92,12 @@ class ContractDAL extends BaseDAL {
         var contract = this.get(id);
         var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
         var itemIds = contractItems.map(ci => parseInt(ci.custrecord_f3mm_ci_item.value));
-        var items = commonDAL.getItems({itemIds: itemIds});
-        var quotes = commonDAL.getQuotes({contractId: id});
+        var items = commonDAL.getItems({
+            itemIds: itemIds
+        });
+        var quotes = commonDAL.getQuotes({
+            contractId: id
+        });
 
         contract.sublists.quotes = quotes;
 
@@ -77,51 +121,63 @@ class ContractDAL extends BaseDAL {
      */
     generateQuote(params) {
 
-        var contractId = params.contractId;
-        var contract = this.getWithDetails(contractId);
-        var quote = nlapiCreateRecord('estimate');
+        var result: {
+            id: any
+        } = null;
 
-        var tranDate = new Date();
-        var expectedClosingDate = new Date();
-        expectedClosingDate.setDate(expectedClosingDate.getDate() + 7); // add 7 days
+        try {
+            var contractId = params.contractId;
+            var contract = this.getWithDetails(contractId);
+            var quote = nlapiCreateRecord('estimate');
 
-        // TODO : need to set due date base on customer requirement
-        //var dueDate = new Date();
-        //dueDate.setDate(dueDate.getDate() + 7); // add 7 days
+            var tranDate = new Date();
+            var expectedClosingDate = new Date();
+            expectedClosingDate.setDate(expectedClosingDate.getDate() + 7); // add 7 days
 
-        quote.setFieldValue('expectedclosedate', nlapiDateToString(expectedClosingDate)); // mandatory field
-        quote.setFieldValue('trandate', nlapiDateToString(tranDate)); // mandatory field
-        quote.setFieldValue('duedate', nlapiDateToString(tranDate)); // mandatory field
+            // TODO : need to set due date base on customer requirement
+            //var dueDate = new Date();
+            //dueDate.setDate(dueDate.getDate() + 7); // add 7 days
 
-        // entityStatuses for references
-        var proposalStatusId = "10";
-        quote.setFieldValue('entitystatus', proposalStatusId); // proposal
-        quote.setFieldValue('salesrep', contract[this.fields.salesRep.id].value);
-        quote.setFieldValue('entity', contract[this.fields.customer.id].value);
-        quote.setFieldValue('custbody_f3mm_quote_contract', contractId); // attach contract record
-        quote.setFieldValue('department', contract[this.fields.department.id].value);
+            quote.setFieldValue('expectedclosedate', nlapiDateToString(expectedClosingDate)); // mandatory field
+            quote.setFieldValue('trandate', nlapiDateToString(tranDate)); // mandatory field
+            quote.setFieldValue('duedate', nlapiDateToString(tranDate)); // mandatory field
 
-        quote.setFieldValue('custbody_estimate_end_user', contract[this.fields.primaryContact.id].value);
-        quote.setFieldValue('custbody_end_user_email', contract[this.fields.primaryContactEmail.id]);
-        quote.setFieldValue('memo', contract[this.fields.memo.id]);
+            // entityStatuses for references
+            var proposalStatusId = "10";
+            quote.setFieldValue('entitystatus', proposalStatusId); // proposal
+            quote.setFieldValue('salesrep', contract[this.fields.salesRep.id].value);
+            quote.setFieldValue('entity', contract[this.fields.customer.id].value);
+            quote.setFieldValue('custbody_f3mm_quote_contract', contractId); // attach contract record
+            quote.setFieldValue('department', contract[this.fields.department.id].value);
 
-        var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
-        if (!!contractItems) {
-            contractItems.forEach(contractItem=> {
-                quote.selectNewLineItem('item');
-                quote.setCurrentLineItemValue('item', 'item', contractItem.custrecord_f3mm_ci_item.value);
-                quote.setCurrentLineItemValue('item', 'quantity', contractItem.custrecord_f3mm_ci_quantity);
-                quote.setCurrentLineItemValue('item', 'price', contractItem.custrecord_f3mm_ci_price_level.value);
-                quote.setCurrentLineItemValue('item', 'rate', contractItem.custrecord_f3mm_ci_price);
-                quote.setCurrentLineItemValue('item', 'taxcode', contractItem.custrecord_f3mm_ci_taxcode.value);
-                quote.commitLineItem('item');
-            });
+            quote.setFieldValue('custbody_estimate_end_user', contract[this.fields.primaryContact.id].value);
+            quote.setFieldValue('custbody_end_user_email', contract[this.fields.primaryContactEmail.id]);
+            quote.setFieldValue('memo', contract[this.fields.memo.id]);
+
+            var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
+            if (!!contractItems) {
+                contractItems.forEach(contractItem => {
+                    quote.selectNewLineItem('item');
+                    quote.setCurrentLineItemValue('item', 'item', contractItem.custrecord_f3mm_ci_item.value);
+                    quote.setCurrentLineItemValue('item', 'quantity', contractItem.custrecord_f3mm_ci_quantity);
+                    quote.setCurrentLineItemValue('item', 'price', contractItem.custrecord_f3mm_ci_price_level.value);
+                    quote.setCurrentLineItemValue('item', 'rate', contractItem.custrecord_f3mm_ci_price);
+                    quote.setCurrentLineItemValue('item', 'taxcode', contractItem.custrecord_f3mm_ci_taxcode.value);
+                    quote.commitLineItem('item');
+                });
+            }
+
+            var quoteId = nlapiSubmitRecord(quote);
+
+            result = {
+                id: quoteId
+            };
+
+        } catch (e) {
+            F3.Util.Utility.logException('ContractDAL.generateQuote', e.toString());
         }
 
-
-        var quoteId = nlapiSubmitRecord(quote);
-
-        return {id: quoteId};
+        return result;
     }
 
     /**
@@ -129,9 +185,9 @@ class ContractDAL extends BaseDAL {
      * @param {object} contract json object containing data for contract
      * @returns {object} prepared record object to insert in db
      */
-    private prepareDataToUpsert (contract: any) {
+    private prepareDataToUpsert(contract: any) {
 
-        var record:any = {};
+        var record: any = {};
         record.id = contract.id;
         record[this.fields.customer.id] = contract.customer;
         record[this.fields.primaryContact.id] = contract.primary_contact;
@@ -181,7 +237,9 @@ class ContractDAL extends BaseDAL {
      * @param {object} contract json object containing data for contract
      * @returns {number} id of created / updated contract
      */
-    updateOrCreate(contract) {
+    updateOrCreate(contract): {
+        id: any
+    } {
 
         if (!contract) {
             throw new Error("contract cannot be null.");
@@ -191,7 +249,9 @@ class ContractDAL extends BaseDAL {
         var record = this.prepareDataToUpsert(contract);
 
         var id = this.upsert(record, removeExistingLineItems);
-
-        return {id: id};
+        var result = {
+            id: id
+        };
+        return result;
     }
 }

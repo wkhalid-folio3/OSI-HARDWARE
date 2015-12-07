@@ -1,6 +1,5 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="./f3mm_base_dal.ts" />
-
 /**
  * Created by zshaikh on 11/18/2015.
  * -
@@ -11,17 +10,15 @@
  * - f3mm_base_dal.ts
  * -
  */
-
 /**
- * This class is responsing for performing DB operations related to File / Folder Search
+ * This class is responsible for performing DB operations related to File / Folder Search
  * Following are the responsibilities of this class:
- *  - Load Contracts from Database
- *  - Update / Create Contracts along with its line items
- *  - Generate Quote from Contract
+ *  - Gets files withing specified folderId
+ *  - Gets files with specified file ids
  */
 class FoldersDAL extends BaseDAL {
 
-    internalId:string = 'folder';
+    internalId: string = 'folder';
 
     /**
      * Gets files withing specified folderId
@@ -29,15 +26,17 @@ class FoldersDAL extends BaseDAL {
      * @param {boolean} recursive default to false
      * @returns {object[]} array of files object
      */
-    getFiles(folderId: number, recursive: boolean = false) : {}[] {
+    getFiles(folderId: number, recursive: boolean = false): {}[] {
 
         var filters = [];
         var cols = [];
 
         filters.push(['internalid', 'anyof', folderId]);
-        if( recursive === true) {
+        if (recursive === true) {
             filters.push('or');
             filters.push(['parent', 'anyof', folderId]);
+            //filters.push('or');
+            //filters.push(['folder', 'file', 'anyof', folderId]);
         }
 
         cols.push(new nlobjSearchColumn('name', 'file'));
@@ -48,6 +47,8 @@ class FoldersDAL extends BaseDAL {
 
         var result = this.getAll(filters, cols);
 
+        F3.Util.Utility.logDebug('FoldersDAL.getFiles()', JSON.stringify(result));
+
         return result;
     }
 
@@ -56,7 +57,7 @@ class FoldersDAL extends BaseDAL {
      * @param {string[]} fileIds array of file ids
      * @returns {object[]} array of files object
      */
-    getMedia (fileIds: string[]) : {}[] {
+    getMedia(fileIds: string[]): {}[] {
 
         var filters = [];
         var cols = [];

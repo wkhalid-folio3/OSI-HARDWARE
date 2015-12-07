@@ -1,5 +1,4 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
-
 /**
  * Reference: https://github.com/hongymagic/jQuery.serializeObject
  * Use internal $.serializeArray to get list of form elements which is
@@ -15,12 +14,12 @@
  * them yourself.
  *
  */
-(function($){
-    $.fn.serializeObject = function () {
+(function($) {
+    $.fn.serializeObject = function() {
         "use strict";
 
         var result = {};
-        var extend = function (i, element) {
+        var extend = function(i, element) {
 
             // CUSTOM HANDLING: added data-key handling to preserve names
             var name = element.name;

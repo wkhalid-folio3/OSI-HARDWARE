@@ -1,6 +1,5 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="./f3mm_base_dal.ts" />
-
 /**
  * Created by zshaikh on 11/19/2015.
  * -
@@ -12,7 +11,6 @@
  * - f3mm_contract_dal.ts
  * -
  */
-
 /**
  * This class handles all common operations related to searching records in database
  * Following are the responsibilities of this class:
@@ -35,7 +33,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of contacts searched from database
      */
-    getContacts(options?) {
+    getContacts(options ? ) {
 
         var filters = [];
         var cols = [];
@@ -52,10 +50,9 @@ class CommonDAL extends BaseDAL {
             if (F3.Util.Utility.isBlankOrNull(query) == false) {
                 var queryToSearch = null;
                 var splittedQuery = query.split(':');
-                if ( splittedQuery.length > 1) {
+                if (splittedQuery.length > 1) {
                     queryToSearch = splittedQuery[1].trim();
-                }
-                else {
+                } else {
                     queryToSearch = query.trim();
                 }
 
@@ -83,7 +80,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of employees searched from database
      */
-    getEmployees(options?) {
+    getEmployees(options ? ) {
 
         var filters = [];
         var cols = [];
@@ -105,7 +102,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of price levels fetched from database
      */
-    getPriceLevels(options?) {
+    getPriceLevels(options ? ) {
         var record = nlapiLoadRecord(options.recordType, options.itemId);
         var priceLevels = this.getSublistItems(record, 'price1');
         return priceLevels;
@@ -177,7 +174,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of vendors
      */
-    getVendors(options?) {
+    getVendors(options ? ) {
 
         var filters = [];
         var cols = [];
@@ -199,7 +196,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of departments
      */
-    getDepartments(options?) {
+    getDepartments(options ? ) {
 
         var filters = [];
         var cols = [];
@@ -218,7 +215,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of searched customers
      */
-    getCustomers(options?) {
+    getCustomers(options ? ) {
 
         var filters = [];
         var cols = [];
@@ -241,7 +238,7 @@ class CommonDAL extends BaseDAL {
 
         filters.push(['isinactive', 'is', 'F']);
 
-        if ( queryFilters.length > 0) {
+        if (queryFilters.length > 0) {
             filters.push('and');
             filters.push(queryFilters);
         }
@@ -260,7 +257,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of tax groups and tax codes merged
      */
-    getTaxItems(options?) {
+    getTaxItems(options ? ) {
         var taxGroups = this.getTaxGroups(options);
         var taxCodes = this.getTaxCodes(options);
 
@@ -288,7 +285,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of searched tax groups
      */
-    getTaxGroups(options?) {
+    getTaxGroups(options ? ) {
 
         var filters = [];
         var cols = [];
@@ -320,7 +317,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of searched tax codes
      */
-    getTaxCodes(options?) {
+    getTaxCodes(options ? ) {
 
         var filters = [];
         var cols = [];

@@ -1,7 +1,6 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="../_typescript-refs/f3.common.d.ts" />
 /// <reference path="../helpers/f3mm_json_helper.ts" />
-
 /**
  * Created by zshaikh on 11/18/2015.
  * -
@@ -14,7 +13,6 @@
  * - f3_common.js
  * -
  */
-
 /**
  * This is generic class, responsible for communication with Database
  * Following are the Responsibilities of this class:
@@ -23,7 +21,7 @@
  *  - Insert / Update Records
  */
 class BaseDAL {
-    internalId:string;
+    internalId: string;
     fields: {};
 
     /**
@@ -31,7 +29,7 @@ class BaseDAL {
      * @param {string} id id of record to load
      * @returns {object} json representation of record
      */
-    get (id: string) : any {
+    get(id: string): any {
         var record = nlapiLoadRecord(this.internalId, id);
 
         var json = JsonHelper.getJsonForFullRecord(record);
@@ -46,14 +44,14 @@ class BaseDAL {
      * @param {string?} internalId optional parameter, if null then internal id of this calss will be used
      * @returns {object[]} json representation of records
      */
-    getAll (filters: nlobjSearchFilter[], columns: nlobjSearchColumn[], internalId?: string) : {}[] {
+    getAll(filters: nlobjSearchFilter[], columns: nlobjSearchColumn[], internalId ? : string): {}[] {
 
         var recs = null;
         var arr = [];
 
         try {
             filters = filters ? filters : [];
-            columns = columns ? columns : this.getSearchColumns();
+            columns = columns ? columns : this.getFields();
 
             internalId = internalId || this.internalId;
             recs = nlapiSearchRecord(internalId, null, filters, columns);
@@ -61,8 +59,7 @@ class BaseDAL {
             if (recs && recs.length > 0) {
                 arr = JsonHelper.getJsonArray(recs);
             }
-        }
-        catch (e) {
+        } catch (e) {
             F3.Util.Utility.logException('BaseDAL.getAll', e.toString());
             throw e;
         }
@@ -72,10 +69,10 @@ class BaseDAL {
 
 
     /**
-     * Gets all column of current class to perform search
-     * @returns {nlobjSearchColumn[]} array of columns
+     * Gets all fields of current class to perform search
+     * @returns {nlobjSearchColumn[]} array of fields
      */
-    getSearchColumns () : nlobjSearchColumn[] {
+    private getFields(): nlobjSearchColumn[] {
         var cols = [];
 
         for (var key in this.fields) {
@@ -95,7 +92,7 @@ class BaseDAL {
      * @param {string} key sublist key to get items of.
      * @returns {object} json representation of record
      */
-    getSublistItems(record: nlobjRecord, key: string){
+    getSublistItems(record: nlobjRecord, key: string) {
         var sublistItems = [];
         var lineItemCount = record.getLineItemCount(key);
 
@@ -107,14 +104,16 @@ class BaseDAL {
             // iterate over columns
             for (var j in fields) {
                 var field = fields[j];
-                var name:string = field;
-                var val:any = record.getLineItemValue(key, field, i);
-                var text:any = record.getLineItemText(key, field, i);
+                var name: string = field;
+                var val: any = record.getLineItemValue(key, field, i);
+                var text: any = record.getLineItemText(key, field, i);
 
                 if (!!text && val != text) {
-                    lineItem[name] = {text: text, value: val};
-                }
-                else {
+                    lineItem[name] = {
+                        text: text,
+                        value: val
+                    };
+                } else {
                     lineItem[name] = val;
                 }
             }
@@ -131,7 +130,7 @@ class BaseDAL {
      * @param {boolean?} removeExistingLineItems default to false
      * @returns {number} id of the inserted or updated record
      */
-    upsert (record, removeExistingLineItems?: boolean) {
+    upsert(record, removeExistingLineItems ? : boolean) {
 
         F3.Util.Utility.logDebug('BaseDAL.upsert(); // item = ', JSON.stringify(record));
 
@@ -141,12 +140,10 @@ class BaseDAL {
         try {
 
             if (!!record) {
-
                 // either load or create record
                 if (F3.Util.Utility.isBlankOrNull(record.id)) {
                     dbRecord = nlapiCreateRecord(this.internalId);
-                }
-                else {
+                } else {
                     dbRecord = nlapiLoadRecord(this.internalId, record.id);
                 }
 
@@ -159,8 +156,7 @@ class BaseDAL {
                         if (key == 'sublists' && !!itemData) {
                             // update line items
                             this.upsertLineItems(dbRecord, itemData, removeExistingLineItems);
-                        }
-                        else {
+                        } else {
                             dbRecord.setFieldValue(key, itemData);
                         }
                     }
@@ -170,8 +166,7 @@ class BaseDAL {
 
                 F3.Util.Utility.logDebug('BaseDAL.upsert(); // id = ', id);
             }
-        }
-        catch (e) {
+        } catch (e) {
             F3.Util.Utility.logException('BaseDAL.upsert', e.toString());
             throw e;
         }
@@ -187,7 +182,7 @@ class BaseDAL {
      * @param {boolean?} removeExistingLineItems default to false
      * @returns {void}
      */
-    private upsertLineItems(dbRecord, itemData, removeExistingLineItems?: boolean) {
+    private upsertLineItems(dbRecord, itemData, removeExistingLineItems ? : boolean) {
 
         itemData.forEach(sublist => {
 
@@ -207,8 +202,7 @@ class BaseDAL {
                 var linenum = dbRecord.findLineItemValue(sublist.internalId, sublist.keyField, lineitem[sublist.keyField]);
                 if (linenum > -1) {
                     dbRecord.selectLineItem(sublist.internalId, linenum);
-                }
-                else {
+                } else {
                     dbRecord.selectNewLineItem(sublist.internalId);
                 }
 

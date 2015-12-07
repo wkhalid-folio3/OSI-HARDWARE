@@ -19,7 +19,10 @@ var JsonHelper = (function () {
     JsonHelper.getJsonObject = function (row, cols, columnNames) {
         var obj = null;
         if (row) {
-            obj = { id: row.getId(), recordType: row.getRecordType() };
+            obj = {
+                id: row.getId(),
+                recordType: row.getRecordType()
+            };
             var nm = null, item, val, text;
             if (!!cols) {
                 for (var x = 0; x < cols.length; x++) {
@@ -28,7 +31,10 @@ var JsonHelper = (function () {
                     val = row.getValue(item);
                     text = row.getText(item);
                     if (!!text && val != text) {
-                        obj[nm] = { text: text, value: val };
+                        obj[nm] = {
+                            text: text,
+                            value: val
+                        };
                     }
                     else {
                         obj[nm] = val;
@@ -46,7 +52,10 @@ var JsonHelper = (function () {
     JsonHelper.getJsonForFullRecord = function (record) {
         var result = null;
         if (!!record) {
-            result = { id: record.getId(), recordType: record.getRecordType() };
+            result = {
+                id: record.getId(),
+                recordType: record.getRecordType()
+            };
             // serialize body fields
             var allFields = record.getAllFields();
             // iterate over columns of body fields
@@ -56,7 +65,10 @@ var JsonHelper = (function () {
                 var val = record.getFieldValue(field);
                 var text = record.getFieldText(field);
                 if (!!text && val != text) {
-                    result[name] = { text: text, value: val };
+                    result[name] = {
+                        text: text,
+                        value: val
+                    };
                 }
                 else {
                     result[name] = val;

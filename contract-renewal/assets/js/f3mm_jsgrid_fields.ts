@@ -1,15 +1,13 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
-
 /**
  * Created by zshaikh on 11/18/2015.
  */
-
 /**
  * Customized handling for min attribute on number field of JSGrid
  */
 ((jsGrid, $, undefined) => {
     var NumberField = jsGrid.NumberField;
-    NumberField.prototype._createTextBox = function(){
+    NumberField.prototype._createTextBox = function() {
         var $input = $("<input>").attr("type", "number");
 
         if (typeof this.min !== 'undefined') {
