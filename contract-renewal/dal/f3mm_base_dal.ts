@@ -44,17 +44,23 @@ class BaseDAL {
      * @param {string?} internalId optional parameter, if null then internal id of this calss will be used
      * @returns {object[]} json representation of records
      */
-    getAll(filters: nlobjSearchFilter[], columns: nlobjSearchColumn[], internalId ? : string): {}[] {
+    getAll(filters: nlobjSearchFilter[], columns: nlobjSearchColumn[], internalId ? : string, options?: any): {}[] {
 
         var recs = null;
         var arr = [];
 
         try {
             filters = filters ? filters : [];
-            columns = columns ? columns : this.getFields();
-
+            columns = columns ? columns : this.getFields(options);
             internalId = internalId || this.internalId;
-            recs = nlapiSearchRecord(internalId, null, filters, columns);
+            options = options || {};
+
+            var search = nlapiCreateSearch(internalId, filters, columns);
+            var searchResults = search.runSearch();
+            var resultIndex = options.startIndex || 0;
+            var resultStep = options.pageSize || 1000;
+            var resultSet = searchResults.getResults(resultIndex, resultIndex + resultStep);
+            recs = resultSet;
 
             if (recs && recs.length > 0) {
                 arr = JsonHelper.getJsonArray(recs);
@@ -72,13 +78,17 @@ class BaseDAL {
      * Gets all fields of current class to perform search
      * @returns {nlobjSearchColumn[]} array of fields
      */
-    private getFields(): nlobjSearchColumn[] {
+    private getFields(options?: any): nlobjSearchColumn[] {
         var cols = [];
 
         for (var key in this.fields) {
             var field = this.fields[key];
             var fieldName = field.id || field.toString();
             var searchCol = new nlobjSearchColumn(fieldName, null, null);
+            if(options.sortFields && options.sortFields[fieldName]) {
+                var order = options.sortFields[fieldName];
+                searchCol.setSort(order == "desc"); // true: desc, false: asc
+            }
             cols.push(searchCol);
         }
 

@@ -317,3 +317,16 @@ textarea:disabled,
 .view-horizontal .form-group {
     margin-bottom: 10px;
 }
+
+.contracts-container tr.jsgrid-header-row,
+.contracts-container th.jsgrid-header-sortable,
+.contracts-container th.jsgrid-control-field{
+    background-color: #E5E5E5 !important
+}
+
+.contracts-container .jsgrid-edit-row .input-group-addon {
+    background-color: transparent;
+    border: 0;
+    padding: 4px;
+    height: auto;
+}

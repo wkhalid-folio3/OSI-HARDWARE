@@ -4,7 +4,7 @@
  * Created by zshaikh on 11/19/2015.
  * -
  * Referenced By:
- * - f3mm_ui_manager.ts
+ * - f3mm_create_contract_ui_manager.ts
  * -
  * Dependencies:
  * - jquery-1.11.0.min.js
@@ -116,6 +116,32 @@ var DataManager = (function () {
         }
         catch (e) {
             console.error('ERROR', 'Error during main DataManager.getTaxCodes()', e.toString());
+            callback && callback(null);
+        }
+    };
+    /**
+     * Search Contracts from server
+     * @param {object} params parameters to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
+    DataManager.prototype.searchContracts = function (params, callback) {
+        try {
+            var options = {
+                'action': 'get_contracts'
+            };
+            var filters = {
+                'params': JSON.stringify(params)
+            };
+            $.extend(options, filters);
+            return jQuery.get(this._serverUrl, options).then(function (result) {
+                console.log('getItems(); // jquery complete: ', arguments);
+                callback && callback(result);
+                return result;
+            });
+        }
+        catch (e) {
+            console.error('ERROR', 'Error during main DataManager.getItems()', e.toString());
             callback && callback(null);
         }
     };

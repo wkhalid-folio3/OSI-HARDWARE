@@ -103,6 +103,9 @@ class CreateContractAPISuitelet {
             var actionExecuted = true;
 
             switch (action) {
+                case 'get_contracts':
+                    executedActionResult = contractDAL.search(params);
+                    break;
                 case 'get_customers':
                     executedActionResult = commonDAL.getCustomers(params);
                     break;

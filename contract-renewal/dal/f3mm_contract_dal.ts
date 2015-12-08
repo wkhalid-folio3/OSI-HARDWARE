@@ -114,6 +114,22 @@ class ContractDAL extends BaseDAL {
         return contract;
     }
 
+    search(params) {
+        var result = {
+            total: 0,
+            records: null
+        };
+
+        result.records = super.getAll(null, null, null, params);
+
+        // count records
+        var columns = [new nlobjSearchColumn('internalid', null, 'count').setLabel('total')];
+        var count = super.getAll(null, columns)[0];
+        result.total = count.total;
+
+        return result;
+    }
+
     /**
      * Generates a Quote from Contract. the contract is loaded based on specified contractId parameter.
      * @param {string} contractId id of the contract to generate contract from

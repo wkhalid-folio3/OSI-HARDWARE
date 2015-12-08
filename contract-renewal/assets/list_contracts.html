@@ -1,14 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>List Contracts</title>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
+          integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ=="
+          crossorigin="anonymous"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ bootstrap-datepicker3.min.css }}"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ jsgrid.min.css }}"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ jsgrid-theme.min.css }}"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ styles.css }}"/>
+
+    <title>{{ title }}</title>
 </head>
-<body>
+<body class="{{ standaloneClass }}">
+
+    <!-- we need following class on both elements. body is used for standalone, below div is used for inline in netsuite -->
+    <div class="{{ standaloneClass }}">
+        <div class="f3mm-contract-renewal container-fluid">
+
+            <!-- Contracts Grid -->
+            <!--<div class="panel panel-primary">-->
+                <!--<div class="panel-heading">-->
+                    <!--Contracts-->
+                <!--</div>-->
+            <!--</div>-->
+            <div class="contracts-container">
+                <div id="jsGrid"></div>
+            </div>
+
+        </div>
+    </div>
 
 
-Contracts
+    <!-- Loading Div -->
+    <div class="contract-loading-backdrop modal-backdrop fade in"></div>
+    <div class="contract-loading in">
+        <div class="contract-loading-text"><img src="{{ loading.gif }}"/></div>
+    </div>
 
+
+    <!-- All Scripts should go below -->
+    <script>
+        window.$ = (window.NS && window.NS.jQuery) || window.jQuery;
+        window.pageType = '{{ type }}';
+        window.apiSuiteletUrl = '{{ apiSuiteletUrl }}';
+    </script>
+    <script type="text/javascript"> window.$ || document.write('<script src="{{ jquery-1.11.0.min.js }}">\x3C/script>')</script>
+    <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"
+            integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ=="
+            crossorigin="anonymous"></script>
+    <script type="text/javascript" src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+    <script type="text/javascript" src="{{ jstorage.js }}"></script>
+    <script type="text/javascript" src="{{ typeahead.jquery.min.js }}"></script>
+    <script type="text/javascript" src="{{ bootstrap-datepicker.min.js }}"></script>
+    <script type="text/javascript" src="{{ underscore-min.js }}"></script>
+    <script type="text/javascript" src="{{ jsgrid_customized.js }}"></script>
+    <script type="text/javascript" src="{{ f3mm_jquery_validation.js }}"></script>
+    <script type="text/javascript" src="{{ f3mm_jquery_plugins.js }}"></script>
+    <script type="text/javascript" src="{{ f3mm_jsgrid_fields.js }}"></script>
+    <script type="text/javascript" src="{{ f3mm_data_manager.js }}"></script>
+    <script type="text/javascript" src="{{ f3mm_list_contracts_ui_manager.js }}"></script>
+    <script type="text/javascript" src="{{ f3mm_init.js }}"></script>
 
 </body>
 </html>

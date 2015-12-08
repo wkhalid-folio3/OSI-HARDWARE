@@ -40,14 +40,20 @@ var BaseDAL = (function () {
      * @param {string?} internalId optional parameter, if null then internal id of this calss will be used
      * @returns {object[]} json representation of records
      */
-    BaseDAL.prototype.getAll = function (filters, columns, internalId) {
+    BaseDAL.prototype.getAll = function (filters, columns, internalId, options) {
         var recs = null;
         var arr = [];
         try {
             filters = filters ? filters : [];
-            columns = columns ? columns : this.getFields();
+            columns = columns ? columns : this.getFields(options);
             internalId = internalId || this.internalId;
-            recs = nlapiSearchRecord(internalId, null, filters, columns);
+            options = options || {};
+            var search = nlapiCreateSearch(internalId, filters, columns);
+            var searchResults = search.runSearch();
+            var resultIndex = options.startIndex || 0;
+            var resultStep = options.pageSize || 1000;
+            var resultSet = searchResults.getResults(resultIndex, resultIndex + resultStep);
+            recs = resultSet;
             if (recs && recs.length > 0) {
                 arr = JsonHelper.getJsonArray(recs);
             }
@@ -62,12 +68,16 @@ var BaseDAL = (function () {
      * Gets all fields of current class to perform search
      * @returns {nlobjSearchColumn[]} array of fields
      */
-    BaseDAL.prototype.getFields = function () {
+    BaseDAL.prototype.getFields = function (options) {
         var cols = [];
         for (var key in this.fields) {
             var field = this.fields[key];
             var fieldName = field.id || field.toString();
             var searchCol = new nlobjSearchColumn(fieldName, null, null);
+            if (options.sortFields && options.sortFields[fieldName]) {
+                var order = options.sortFields[fieldName];
+                searchCol.setSort(order == "desc"); // true: desc, false: asc
+            }
             cols.push(searchCol);
         }
         return cols;

@@ -62,14 +62,16 @@ var ListContractsUISuitelet = (function (_super) {
                 standaloneClass: standaloneClass
             });
             F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this: ', JSON.stringify(this));
-            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this.title: ', this.parseHtmlTemplate);
+            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // typeof this: ', typeof (this));
+            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this instanceof ListContractsUISuitelet: ', this instanceof ListContractsUISuitelet);
+            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this.parseHtmlTemplate: ', this.parseHtmlTemplate);
             F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this.title: ', this.title);
             // no need to create NetSuite form if standalone parameter is true
             if (standalone === true) {
                 response.write(processedHtml);
             }
             else {
-                var form = nlapiCreateForm(this.title || '');
+                var form = nlapiCreateForm(this.title || 'Contracts');
                 var htmlField = form.addField('inlinehtml', 'inlinehtml', '');
                 htmlField.setDefaultValue(processedHtml);
                 response.writePage(form);

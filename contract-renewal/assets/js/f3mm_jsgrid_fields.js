@@ -41,4 +41,30 @@
     });
     jsGrid.fields.decimal_number = jsGrid.DecimalNumberField = DecimalNumberField;
 })(jsGrid, jQuery);
+/**
+ * A Custom Field for JSGrid to support decimal numbers
+ */
+(function (jsGrid, $, undefined) {
+    var TextField = jsGrid.TextField;
+    function DateField(config) {
+        TextField.call(this, config);
+    }
+    DateField.prototype = new TextField({
+        sorter: "date",
+        align: "right",
+        filterValue: function () {
+            return parseFloat(parseFloat(this.filterControl.val() || 0).toFixed(2));
+        },
+        insertValue: function () {
+            return parseFloat(this.insertControl.val() || 0).toFixed(2);
+        },
+        editValue: function () {
+            return parseFloat(this.editControl.val() || 0).toFixed(2);
+        },
+        _createTextBox: function () {
+            return $("<input>").attr("type", "number").attr("step", "0.01");
+        }
+    });
+    jsGrid.fields.date = jsGrid.DateField = DateField;
+})(jsGrid, jQuery);
 //# sourceMappingURL=f3mm_jsgrid_fields.js.map
