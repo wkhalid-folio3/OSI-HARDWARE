@@ -36,7 +36,6 @@ var CreateContractUIManager = (function () {
     function CreateContractUIManager() {
         this._loadedCount = 0;
         this._viewType = window.pageType;
-        this._priceLevels = window.priceLevels;
         this._contractInfo = window.contractInfo;
         this._dataManager = new DataManager(this._viewType);
         this.setViewMode();
@@ -325,9 +324,7 @@ var CreateContractUIManager = (function () {
                     price: item.price,
                     quantity: item.quantity,
                     item_description: item.description,
-                    price_level: item.price_level,
-                    tax_code: item.taxcodeid,
-                    tax_rate: item.taxrate
+                    price_level: item.price_level
                 });
             });
             if (serializedData.items.length <= 0) {
@@ -379,21 +376,22 @@ var CreateContractUIManager = (function () {
             var contractItemsInfo = this._contractInfo.sublists.recmachcustrecord_f3mm_ci_contract;
             if (!!contractItemsInfo) {
                 contractItemsInfo.forEach(function (contractItem) {
-                    var priceLevel = contractItem.custrecord_f3mm_ci_price_level;
-                    var taxCode = contractItem.custrecord_f3mm_ci_taxcode;
-                    contactItems.push({
-                        item: contractItem.custrecord_f3mm_ci_item.text,
-                        itemid: contractItem.custrecord_f3mm_ci_item.value,
-                        baseprice: contractItem.custrecord_f3mm_ci_item.baseprice,
-                        quantity: contractItem.custrecord_f3mm_ci_quantity,
-                        price: contractItem.custrecord_f3mm_ci_price,
-                        amount: contractItem.custrecord_f3mm_ci_amount,
-                        description: contractItem.custrecord_f3mm_ci_item_description,
-                        price_level: parseInt((priceLevel && priceLevel.value) || "0"),
-                        taxcode: taxCode && taxCode.text,
-                        taxcodeid: taxCode && taxCode.value,
-                        taxrate: contractItem.custrecord_f3mm_ci_taxrate
-                    });
+                    // only add if item is not null
+                    if (!!contractItem.custrecord_f3mm_ci_item) {
+                        var priceLevel = contractItem.custrecord_f3mm_ci_price_level;
+                        //var taxCode = contractItem.custrecord_f3mm_ci_taxcode;
+                        contactItems.push({
+                            item: contractItem.custrecord_f3mm_ci_item.text,
+                            itemid: contractItem.custrecord_f3mm_ci_item.value,
+                            baseprice: contractItem.custrecord_f3mm_ci_item.baseprice,
+                            quantity: contractItem.custrecord_f3mm_ci_quantity,
+                            price: contractItem.custrecord_f3mm_ci_price,
+                            amount: contractItem.custrecord_f3mm_ci_amount,
+                            description: contractItem.custrecord_f3mm_ci_item_description,
+                            price_level: (priceLevel && priceLevel.value) || "0",
+                            priceLevels: contractItem.custrecord_f3mm_ci_item.priceLevels // used for dropdown
+                        });
+                    }
                 });
             }
         }
@@ -427,12 +425,17 @@ var CreateContractUIManager = (function () {
             }, {
                 title: "Price Level <span class='mandatory'>*</span>",
                 name: "price_level",
-                type: "select",
-                textField: "name",
-                valueField: "id",
+                type: "custom_select",
+                textField: "pricelevelname",
+                valueField: "pricelevel",
                 width: 80,
                 css: "price-level",
-                items: this._priceLevels
+                items: null,
+                filtering: false,
+                getItems: function (item) {
+                    console.log('getItems(); ', item);
+                    return (item || {}).priceLevels;
+                }
             }, {
                 title: "Price",
                 name: "price",
@@ -446,21 +449,8 @@ var CreateContractUIManager = (function () {
                 width: 50,
                 css: "amount",
                 editing: false
-            }, {
-                title: "Tax Code <span class='mandatory'>*</span>",
-                name: "taxcode",
-                type: "text",
-                width: 150,
-                css: "taxcode"
-            }, {
-                title: "Tax",
-                name: "taxrate",
-                type: "decimal_number",
-                width: 50,
-                css: "taxrate",
-                editing: false,
-                inserting: false
-            }];
+            }
+        ];
         if (this._viewType != 'view') {
             gridFields.push({
                 type: "control",
@@ -476,10 +466,6 @@ var CreateContractUIManager = (function () {
      */
     CreateContractUIManager.prototype.bindItemsGrid = function () {
         var _this = this;
-        this._priceLevels = [{
-                id: 0,
-                name: ''
-            }];
         var contactItems = this.prepareGridData();
         var gridFields = this.prepareGridFields();
         var inserting = true;
@@ -524,9 +510,9 @@ var CreateContractUIManager = (function () {
         $grid.on('focusin', '.jsgrid-insert-row input:first, .jsgrid-edit-row input:first', function (ev) {
             _this.bindItemPicker($(ev.target));
         });
-        $grid.on('focusin', '.jsgrid-insert-row .taxcode input, .jsgrid-edit-row .taxcode input', function (ev) {
-            _this.bindTaxCodePicker($(ev.target));
-        });
+        //$grid.on('focusin', '.jsgrid-insert-row .taxcode input, .jsgrid-edit-row .taxcode input', (ev) => {
+        //    this.bindTaxCodePicker($(ev.target));
+        //});
         $grid.on('blur', gridRowClass.join(', '), this.onPriceOrQuantityChanged.bind(this));
         $grid.on('change', '.jsgrid-insert-row .price-level select', this.onPriceLevelChangedInInsertRow.bind(this));
         $grid.on('change', '.jsgrid-edit-row .price-level select', this.onPriceLevelChangedInEditRow.bind(this));
@@ -561,23 +547,28 @@ var CreateContractUIManager = (function () {
             alert("Quantity cannot be less than or equal to 0");
             return;
         }
-        var taxCode = $updateRow.data('selected-tax-code');
-        if (!!taxCode) {
-            data.taxcodeid = taxCode.id;
-            data.taxcode = taxCode.itemid;
-            data.taxrate = taxCode.rate + '%';
-        }
-        if (!data.taxcode) {
-            args.preserve = true;
-            args.cancel = true;
-            alert("Please select tax code");
-            return;
-        }
+        //var taxCode = $updateRow.data('selected-tax-code');
+        //if (!!taxCode) {
+        //    data.taxcodeid = taxCode.id;
+        //    data.taxcode = taxCode.itemid;
+        //    data.taxrate = taxCode.rate + '%';
+        //}
+        //
+        //if (!data.taxcode) {
+        //    args.preserve = true;
+        //    args.cancel = true;
+        //    alert("Please select tax code");
+        //    return;
+        //}
         if (data.price_level == "0") {
             args.preserve = true;
             args.cancel = true;
             alert("Please select price level");
             return;
+        }
+        else {
+            // make it string
+            data.price_level = data.price_level + "";
         }
     };
     /**
@@ -589,18 +580,20 @@ var CreateContractUIManager = (function () {
         console.log('onItemInserting:', args);
         var $row = $('.jsgrid-insert-row');
         var suggestion = $row.data('data-selected-suggestion');
+        var priceLevels = $row.data('price-levels');
+        args.item.priceLevels = priceLevels;
         if (!!suggestion) {
             args.item.item = suggestion.displayname;
             args.item.itemid = suggestion.id;
             args.item.baseprice = suggestion.baseprice;
             args.item.description = suggestion.salesdescription;
         }
-        var taxCode = $row.data('selected-tax-code');
-        if (!!taxCode) {
-            args.item.taxcodeid = taxCode.id;
-            args.item.taxcode = taxCode.itemid;
-            args.item.taxrate = taxCode.rate + '%';
-        }
+        //var taxCode = $row.data('selected-tax-code');
+        //if (!!taxCode) {
+        //    args.item.taxcodeid = taxCode.id;
+        //    args.item.taxcode = taxCode.itemid;
+        //    args.item.taxrate = taxCode.rate + '%';
+        //}
         if (args.item.item === "") {
             args.preserve = true;
             args.cancel = true;
@@ -613,12 +606,12 @@ var CreateContractUIManager = (function () {
             alert("Quantity cannot be less than or equal to 0");
             return;
         }
-        if (!args.item.taxcode) {
-            args.preserve = true;
-            args.cancel = true;
-            alert("Please select tax code");
-            return;
-        }
+        //if (!args.item.taxcode) {
+        //    args.preserve = true;
+        //    args.cancel = true;
+        //    alert("Please select tax code");
+        //    return;
+        //}
         if (args.item.price_level == "0") {
             args.preserve = true;
             args.cancel = true;
@@ -670,6 +663,7 @@ var CreateContractUIManager = (function () {
         var $priceLevelDropdown = $(ev.target);
         var $row = $priceLevelDropdown.parents('tr:first');
         var $priceTextbox = $row.find('.price input');
+        var priceLevels = $row.data('price-levels');
         var suggestion = $row.data('data-selected-suggestion');
         var selectedPriceLevelId = $priceLevelDropdown.val();
         var price = $priceTextbox.val();
@@ -684,12 +678,11 @@ var CreateContractUIManager = (function () {
         }
         else {
             $priceTextbox.attr('disabled', 'disabled');
-            var priceLevels = this._priceLevels;
             var selectedPriceLevel = _.find(priceLevels, function (priceLevel) {
-                return priceLevel.id == selectedPriceLevelId;
+                return priceLevel.pricelevel == selectedPriceLevelId;
             });
             if (!!suggestion && selectedPriceLevel != null) {
-                var discountPercent = Math.abs(parseFloat(selectedPriceLevel.discountpct || 0));
+                var discountPercent = Math.abs(parseFloat(selectedPriceLevel.discount || 0));
                 var discount = (suggestion.baseprice / 100) * discountPercent;
                 var discountedPrice = (suggestion.baseprice - discount).toFixed(2);
                 $priceTextbox.val(discountedPrice);
@@ -707,6 +700,7 @@ var CreateContractUIManager = (function () {
         var $priceLevelDropdown = $(ev.target);
         var $row = $priceLevelDropdown.parents('tr:first');
         var $priceTextbox = $row.find('.price input');
+        //var priceLevels = $row.data('price-levels');
         var jsGridItem = $row.prev().data('JSGridItem');
         var suggestion = jsGridItem;
         var selectedPriceLevelId = $priceLevelDropdown.val();
@@ -722,12 +716,12 @@ var CreateContractUIManager = (function () {
         }
         else {
             $priceTextbox.attr('disabled', 'disabled');
-            var priceLevels = this._priceLevels;
+            var priceLevels = jsGridItem.priceLevels;
             var selectedPriceLevel = _.find(priceLevels, function (priceLevel) {
-                return priceLevel.id == selectedPriceLevelId;
+                return priceLevel.pricelevel == selectedPriceLevelId;
             });
             if (!!suggestion && selectedPriceLevel != null) {
-                var discountPercent = Math.abs(parseFloat(selectedPriceLevel.discountpct || 0));
+                var discountPercent = Math.abs(parseFloat(selectedPriceLevel.discount || 0));
                 var discount = (suggestion.baseprice / 100) * discountPercent;
                 var discountedPrice = (suggestion.baseprice - discount).toFixed(2);
                 $priceTextbox.val(discountedPrice);
@@ -735,31 +729,38 @@ var CreateContractUIManager = (function () {
         }
         $priceTextbox.focus().trigger('blur');
     };
-    /**
-     * itemsPickerSource - fetch data from server based on provided query
-     * @param {string} query the keyword which user has typed
-     * @param {function} sync  the callback method to invoke synchronously
-     * @param {function} async  the callback method to invoke asynchronously
-     */
-    CreateContractUIManager.prototype.taxcodePickerSource = function (query, sync, async) {
-        var _this = this;
-        console.log(this);
-        setTimeout(function () {
-            // {query: query}
-            _this._dataManager.getTaxCodes(null, function (items) {
-                try {
-                    var loweredCaseQuery = query.toLowerCase();
-                    var filteredItems = _.filter(items.data, function (item) {
-                        return item.itemid.toLowerCase().indexOf(loweredCaseQuery) == 0;
-                    });
-                    async(filteredItems);
-                }
-                catch (e) {
-                    console.error('ERROR', 'Error during async binding.', e.toString());
-                }
-            });
-        }, 10);
-    };
+    ///**
+    // * itemsPickerSource - fetch data from server based on provided query
+    // * @param {string} query the keyword which user has typed
+    // * @param {function} sync  the callback method to invoke synchronously
+    // * @param {function} async  the callback method to invoke asynchronously
+    // */
+    //private taxcodePickerSource(query, sync, async) {
+    //
+    //    console.log(this);
+    //
+    //    setTimeout(() => {
+    //
+    //        // {query: query}
+    //        this._dataManager.getTaxCodes(null, function(items) {
+    //
+    //            try {
+    //
+    //                var loweredCaseQuery = query.toLowerCase();
+    //                var filteredItems = _.filter(items.data, item => {
+    //                    return item.itemid.toLowerCase().indexOf(loweredCaseQuery) == 0
+    //                });
+    //
+    //                async(filteredItems);
+    //            } catch (e) {
+    //                console.error('ERROR', 'Error during async binding.', e.toString());
+    //            }
+    //
+    //        });
+    //
+    //    }, 10);
+    //
+    //}
     /**
      * itemsPickerSource - fetch data from server based on provided query
      * @param {string} query the keyword which user has typed
@@ -782,84 +783,99 @@ var CreateContractUIManager = (function () {
             });
         }, 10);
     };
-    /**
-     * Binds typeahead autocomplete component with Tax Code control
-     * @param {object} $el jQuery element
-     */
-    CreateContractUIManager.prototype.bindTaxCodePicker = function ($el) {
-        var _this = this;
-        if (!$el.data('itempicker_created')) {
-            console.log('bind item picker control.', $el);
-            var options = {
-                hint: false,
-                minLength: 0,
-                highlight: true
-            };
-            var dataSet = {
-                name: 'TaxCodes',
-                limit: 500,
-                display: function (obj) {
-                    return obj.itemid;
-                },
-                source: function (q, s, a) {
-                    _this.taxcodePickerSource(q, s, a);
-                },
-                templates: {
-                    empty: [
-                        '<div class="empty-message">',
-                        'unable to find any items that match the current query',
-                        '</div>'
-                    ].join('\n')
-                }
-            };
-            $el.typeahead(options, dataSet);
-            $el.bind('typeahead:change', function () {
-                console.log('typeahead:change: ', arguments);
-                var $this = $(this);
-                var $tr = $this.parents('tr:first');
-                var selectedId = $this.attr('data-selected-id');
-                var selectedText = $this.attr('data-selected-text');
-                var val = $this.val();
-                var isMatched = selectedText == val;
-                console.log('selectedText: ', selectedText);
-                console.log('val: ', val);
-                console.log('selectedText == val: ', selectedText == val);
-                if (!val) {
-                    $this.attr('data-selected-id', '');
-                    $this.attr('data-selected-text', '');
-                    $tr.data('selected-tax-code', null);
-                }
-                else {
-                    // if it does not match,
-                    // then remove the last selected value.
-                    if (isMatched == false) {
-                        $this.typeahead('val', selectedText);
-                        alert('Selected tax code does not exist.');
-                    }
-                }
-            }).bind('typeahead:select', function (ev, suggestion, extra) {
-                var $this = $(this);
-                var $tr = $this.parents('tr:first');
-                console.log('typeahead:select: ', arguments, $this);
-                $this.attr('data-selected-id', suggestion.id);
-                $this.attr('data-selected-text', suggestion.itemid);
-                // only set modified class in case of item pickers inside grid
-                //if ($this.is ('.item-picker') === true) {
-                var origValue = $this.attr('data-orig-value');
-                if (origValue === suggestion.itemid) {
-                    $tr.removeClass('modified-item');
-                }
-                else {
-                    $tr.addClass('modified-item');
-                }
-                //}
-                $tr.data('selected-tax-code', suggestion);
-                $tr.find('.taxrate').html(suggestion.rate + '%');
-            });
-            $el.data('itempicker_created', true);
-            $el.focus();
-        }
-    };
+    ///**
+    // * Binds typeahead autocomplete component with Tax Code control
+    // * @param {object} $el jQuery element
+    // */
+    //private bindTaxCodePicker($el) {
+    //
+    //    if (!$el.data('itempicker_created')) {
+    //
+    //        console.log('bind item picker control.', $el);
+    //
+    //        var options = {
+    //            hint: false,
+    //            minLength: 0,
+    //            highlight: true
+    //        };
+    //
+    //        var dataSet = {
+    //            name: 'TaxCodes',
+    //            limit: 500,
+    //            display: (obj) => {
+    //                return obj.itemid;
+    //            },
+    //            source: (q, s, a) => {
+    //                this.taxcodePickerSource(q, s, a);
+    //            },
+    //            templates: {
+    //                empty: [
+    //                    '<div class="empty-message">',
+    //                    'unable to find any items that match the current query',
+    //                    '</div>'
+    //                ].join('\n')
+    //            }
+    //
+    //        };
+    //
+    //        $el.typeahead(options, dataSet);
+    //        $el.bind('typeahead:change', function() {
+    //            console.log('typeahead:change: ', arguments);
+    //            var $this = $(this);
+    //            var $tr = $this.parents('tr:first');
+    //
+    //            var selectedId = $this.attr('data-selected-id');
+    //            var selectedText = $this.attr('data-selected-text');
+    //            var val = $this.val();
+    //            var isMatched = selectedText == val;
+    //
+    //            console.log('selectedText: ', selectedText);
+    //            console.log('val: ', val);
+    //            console.log('selectedText == val: ', selectedText == val);
+    //
+    //            if (!val) {
+    //                $this.attr('data-selected-id', '');
+    //                $this.attr('data-selected-text', '');
+    //                $tr.data('selected-tax-code', null);
+    //            } else {
+    //                // if it does not match,
+    //                // then remove the last selected value.
+    //                if (isMatched == false) {
+    //                    $this.typeahead('val', selectedText);
+    //                    alert('Selected tax code does not exist.');
+    //                }
+    //            }
+    //
+    //        }).bind('typeahead:select', function(ev, suggestion, extra) {
+    //
+    //            var $this = $(this);
+    //            var $tr = $this.parents('tr:first');
+    //
+    //            console.log('typeahead:select: ', arguments, $this);
+    //
+    //            $this.attr('data-selected-id', suggestion.id);
+    //            $this.attr('data-selected-text', suggestion.itemid);
+    //
+    //            // only set modified class in case of item pickers inside grid
+    //            //if ($this.is ('.item-picker') === true) {
+    //            var origValue = $this.attr('data-orig-value');
+    //            if (origValue === suggestion.itemid) {
+    //                $tr.removeClass('modified-item');
+    //            } else {
+    //                $tr.addClass('modified-item');
+    //            }
+    //            //}
+    //
+    //
+    //            $tr.data('selected-tax-code', suggestion);
+    //            $tr.find('.taxrate').html(suggestion.rate + '%');
+    //        });
+    //
+    //        $el.data('itempicker_created', true);
+    //
+    //        $el.focus();
+    //    }
+    //}
     /**
      * Binds typeahead autocomplete component with item picker control
      * @param {object} $el jQuery element
@@ -925,18 +941,21 @@ var CreateContractUIManager = (function () {
                 _this._dataManager.getPriceLevels({
                     recordType: suggestion.recordType,
                     itemId: suggestion.id
-                }, function (priceLevels) {
+                }, function (result) {
+                    var priceLevels = result.data;
                     var $priceLevelDropdown = $tr.find('.price-level select');
                     $priceLevelDropdown.empty();
-                    priceLevels.forEach(function (priceLevel) {
+                    _.each(priceLevels, function (priceLevel) {
+                        console.log(priceLevel);
                         $("<option>")
-                            .attr("value", priceLevel.id)
-                            .text(priceLevel.name)
+                            .attr("value", priceLevel.pricelevel)
+                            .text(priceLevel.pricelevelname)
                             .appendTo($priceLevelDropdown);
                     });
                     var quantity = 1; // default to 1
                     var listPriceId = 1; // default to 1
                     var price = parseFloat(suggestion.baseprice).toFixed(2);
+                    $tr.data('price-levels', priceLevels);
                     $tr.find('.description textarea').val(suggestion.salesdescription);
                     $tr.find('.quantity input').val(quantity);
                     $tr.find('.price input').val(price);

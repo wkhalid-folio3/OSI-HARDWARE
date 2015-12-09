@@ -94,26 +94,47 @@ var ContractDAL = (function (_super) {
      * @returns {object} json representation of contract obejct along with contract items and quotes
      */
     ContractDAL.prototype.getWithDetails = function (id) {
-        var commonDAL = new CommonDAL();
-        var contract = this.get(id);
-        var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
-        var itemIds = contractItems.map(function (ci) { return parseInt(ci.custrecord_f3mm_ci_item.value); });
-        var items = commonDAL.getItems({
-            itemIds: itemIds
-        });
-        var quotes = commonDAL.getQuotes({
-            contractId: id
-        });
-        contract.sublists.quotes = quotes;
-        contractItems.forEach(function (contractItem) {
-            var itemId = contractItem.custrecord_f3mm_ci_item.value;
-            var foundItem = items.filter(function (item) { return item.id == itemId; })[0];
-            if (!!foundItem) {
-                contractItem.custrecord_f3mm_ci_item.baseprice = foundItem.baseprice;
-                contractItem.custrecord_f3mm_ci_item.displayname = foundItem.displayname;
-                contractItem.custrecord_f3mm_ci_item.itemid = foundItem.itemid;
+        var contract = null;
+        try {
+            var commonDAL = new CommonDAL();
+            contract = this.get(id);
+            var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
+            var items = [];
+            var itemIds = contractItems
+                .filter(function (ci) { return !!ci.custrecord_f3mm_ci_item; })
+                .map(function (ci) { return parseInt(ci.custrecord_f3mm_ci_item.value); });
+            if (itemIds && itemIds.length) {
+                items = commonDAL.getItems({
+                    itemIds: itemIds
+                });
+                items.forEach(function (item) {
+                    item.priceLevels = commonDAL.getPriceLevels({
+                        recordType: item.recordType,
+                        itemId: item.id
+                    });
+                });
             }
-        });
+            var quotes = commonDAL.getQuotes({
+                contractId: id
+            });
+            contract.sublists.quotes = quotes;
+            contractItems.forEach(function (contractItem) {
+                if (!!contractItem.custrecord_f3mm_ci_item) {
+                    var itemId = contractItem.custrecord_f3mm_ci_item.value;
+                    var foundItem = items.filter(function (item) { return item.id == itemId; })[0];
+                    if (!!foundItem) {
+                        contractItem.custrecord_f3mm_ci_item.baseprice = foundItem.baseprice;
+                        contractItem.custrecord_f3mm_ci_item.displayname = foundItem.displayname;
+                        contractItem.custrecord_f3mm_ci_item.itemid = foundItem.itemid;
+                        contractItem.custrecord_f3mm_ci_item.priceLevels = foundItem.priceLevels;
+                    }
+                }
+            });
+        }
+        catch (ex) {
+            F3.Util.Utility.logException('ContractDAL.getWithDetails(id); // id = ' + id, ex);
+            throw ex;
+        }
         return contract;
     };
     ContractDAL.prototype.search = function (params) {
@@ -166,7 +187,7 @@ var ContractDAL = (function (_super) {
                     quote.setCurrentLineItemValue('item', 'quantity', contractItem.custrecord_f3mm_ci_quantity);
                     quote.setCurrentLineItemValue('item', 'price', contractItem.custrecord_f3mm_ci_price_level.value);
                     quote.setCurrentLineItemValue('item', 'rate', contractItem.custrecord_f3mm_ci_price);
-                    quote.setCurrentLineItemValue('item', 'taxcode', contractItem.custrecord_f3mm_ci_taxcode.value);
+                    //quote.setCurrentLineItemValue('item', 'taxcode', contractItem.custrecord_f3mm_ci_taxcode.value);
                     quote.commitLineItem('item');
                 });
             }
@@ -215,14 +236,36 @@ var ContractDAL = (function (_super) {
                 lineitem['custrecord_f3mm_ci_amount'] = item.amount;
                 lineitem['custrecord_f3mm_ci_item_description'] = item.item_description || '';
                 lineitem['custrecord_f3mm_ci_price_level'] = item.price_level;
-                lineitem['custrecord_f3mm_ci_taxcode'] = item.tax_code;
-                lineitem['custrecord_f3mm_ci_taxrate'] = item.tax_rate;
+                //lineitem['custrecord_f3mm_ci_taxcode'] = item.tax_code;
+                //lineitem['custrecord_f3mm_ci_taxrate'] = item.tax_rate;
                 contractItemsSublist.lineitems.push(lineitem);
             });
             record['sublists'] = [];
             record['sublists'].push(contractItemsSublist);
         }
         return record;
+    };
+    /**
+     * Create/Update a Contract based on json data passed
+     * @param {object} contract json object containing data for contract
+     * @returns {number} id of created / updated contract
+     */
+    ContractDAL.prototype.update = function (contract) {
+        if (!contract) {
+            throw new Error("contract cannot be null.");
+        }
+        var record = {};
+        record.id = contract.id;
+        record[this.fields.primaryContact.id] = contract.custrecord_f3mm_primary_contact.value;
+        record[this.fields.primaryContactEmail.id] = contract.custrecord_f3mm_primary_contact_email;
+        record[this.fields.startDate.id] = contract.custrecord_f3mm_start_date;
+        record[this.fields.endDate.id] = contract.custrecord_f3mm_end_date;
+        record[this.fields.contractNumber.id] = contract.custrecord_f3mm_contract_number;
+        var id = this.upsert(record);
+        var result = {
+            id: id
+        };
+        return result;
     };
     /**
      * Create/Update a Contract based on json data passed

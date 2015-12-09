@@ -32,6 +32,10 @@ class ListContractsUISuitelet extends BaseUISuitelet {
         var suiteletDeploymentId = 'customdeploy_f3mm_create_contract_api_st';
         var apiSuiteletUrl = nlapiResolveURL('SUITELET', suiteletScriptId, suiteletDeploymentId, false);
 
+        var createSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
+        var createSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
+        var createSuiteletUrl = nlapiResolveURL('SUITELET', createSuiteletScriptId, createSuiteletDeploymentId, false);
+
         html = html || '';
 
         for (var i in files) {
@@ -41,6 +45,7 @@ class ListContractsUISuitelet extends BaseUISuitelet {
 
         html = html.replace('{{ title }}', this.title);
         html = html.replace('{{ apiSuiteletUrl }}', apiSuiteletUrl);
+        html = html.replace('{{ createSuiteletUrl }}', createSuiteletUrl);
         html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
 
         return html;

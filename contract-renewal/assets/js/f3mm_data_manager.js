@@ -347,6 +347,24 @@ var DataManager = (function () {
             callback && callback(result);
         });
     };
+    /**
+     * Update specific properties of contract
+     * @param {object} data contract json object to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
+    DataManager.prototype.updateContract = function (data, callback) {
+        var options = {
+            'action': 'update_contract'
+        };
+        $.extend(options, {
+            'params': JSON.stringify(data)
+        });
+        return jQuery.post(this._serverUrl, options, function (result) {
+            console.log('updateContract(); // jquery complete: ', arguments);
+            callback && callback(result);
+        });
+    };
     return DataManager;
 })();
 //# sourceMappingURL=f3mm_data_manager.js.map

@@ -417,18 +417,23 @@ var ListContractsUIManager = (function () {
      */
     ListContractsUIManager.prototype.prepareGridFields = function () {
         var gridFields = [{
-                title: "",
-                name: "internalid",
+                title: "&nbsp;",
+                name: "",
                 type: "text",
+                sortting: false,
+                editing: false,
+                inserting: false,
+                filtering: false,
                 width: 70,
-                itemTemplate: function () {
+                itemTemplate: function (value) {
+                    var viewUrl = window.createSuiteletUrl + '&cid=' + value;
+                    var editUrl = window.createSuiteletUrl + '&e=t&cid=' + value;
                     var $links = $('<div />');
-                    $links.append('<a href="#">View</a>');
+                    $links.append('<a href="' + editUrl + '">Edit</a>');
                     $links.append('&nbsp; | &nbsp;');
-                    $links.append('<a href="#">Edit</a>');
+                    $links.append('<a href="' + viewUrl + '">View</a>');
                     return $links;
-                },
-                editing: false
+                }
             }, {
                 title: "ID",
                 name: "internalid",
@@ -574,6 +579,7 @@ var ListContractsUIManager = (function () {
             },
             onDataLoaded: this.loaded.bind(this),
             onItemUpdating: this.onGridItemUpdating.bind(this),
+            onItemUpdated: this.onGridItemUpdated.bind(this),
             fields: gridFields
         });
         $grid.on('focusin', '.jsgrid-edit-row .primary-contact', function (ev) {
@@ -588,11 +594,31 @@ var ListContractsUIManager = (function () {
      * @param {object} args contains json object of item and html element of grid row
      * @returns {void}
      */
+    ListContractsUIManager.prototype.onGridItemUpdated = function (args) {
+        var _this = this;
+        console.log('onGridItemUpdated: ', JSON.stringify(args.item));
+        var item = {
+            id: args.item.id,
+            custrecord_f3mm_start_date: args.item.custrecord_f3mm_start_date,
+            custrecord_f3mm_end_date: args.item.custrecord_f3mm_end_date,
+            custrecord_f3mm_contract_number: args.item.custrecord_f3mm_contract_number,
+            custrecord_f3mm_primary_contact: args.item.custrecord_f3mm_primary_contact,
+            custrecord_f3mm_primary_contact_email: args.item.custrecord_f3mm_primary_contact_email
+        };
+        this.showLoading();
+        this._dataManager.updateContract(item, function (result) {
+            console.log('updated: // ', result);
+            _this.hideLoading();
+        });
+    };
+    /**
+     * Invoked by JSGrid whenever any item is updating in the grid
+     * @param {object} args contains json object of item and html element of grid row
+     * @returns {void}
+     */
     ListContractsUIManager.prototype.onGridItemUpdating = function (args) {
         console.log('onItemUpdating: ', JSON.stringify(args.item));
         var data = args.item;
-        //data.price = parseFloat(data.price).toFixed(2);
-        //data.amount = parseFloat(args.row.next().find('.amount').html()).toFixed(2);
         var $updateRow = args.row.next();
         var suggestion = $updateRow.data('data-selected-suggestion');
         console.log('onItemUpdating: ', JSON.stringify(suggestion));
@@ -613,6 +639,24 @@ var ListContractsUIManager = (function () {
             args.preserve = true;
             args.cancel = true;
             alert("Please select an item");
+            return;
+        }
+        if (!data.custrecord_f3mm_contract_number) {
+            args.preserve = true;
+            args.cancel = true;
+            alert("Please enter contract number");
+            return;
+        }
+        if (!data.custrecord_f3mm_start_date) {
+            args.preserve = true;
+            args.cancel = true;
+            alert("Please select Start Date");
+            return;
+        }
+        if (!data.custrecord_f3mm_end_date) {
+            args.preserve = true;
+            args.cancel = true;
+            alert("Please select End Date");
             return;
         }
         //

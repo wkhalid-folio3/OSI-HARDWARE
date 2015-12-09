@@ -18,6 +18,86 @@
     <div class="{{ standaloneClass }}">
         <div class="f3mm-contract-renewal container-fluid">
 
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            Filters
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- div for create / edit screen -->
+            <div class="form-horizontal">
+
+                <div class="row">
+                    <!-- first column in primary information section -->
+                    <div class="col-sm-4">
+                        <div class="row">
+                            <div class="col-sm-8">
+
+                                <div class="form-group">
+                                    <label for="contract_number" class="control-label">Contract # <span
+                                            class="mandatory">*</span></label>
+
+                                    <div class="">
+                                        <input type="text" class="form-control contract-number-text"
+                                               id="contract_number"
+                                               name="contract_number"/>
+                                    </div>
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <div class="form-group">
+                                    <label for="start_date" class="control-label">Start Date <span
+                                            class="mandatory">*</span></label>
+                                    <div class="">
+                                        <div class="input-group date">
+                                            <input type="text" class="form-control start-date-text"
+                                                   id="start_date"
+                                                   name="start_date"/>
+                                            <span class="input-group-addon"><i
+                                                    class="glyphicon glyphicon-calendar"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="end_date" class="control-label">End Date <span
+                                            class="mandatory">*</span></label>
+                                    <div class="">
+                                        <div class="input-group date">
+                                            <input type="text" class="form-control end-date-text"
+                                                   id="end_date"
+                                                   name="end_date"/>
+                                            <span class="input-group-addon"><i
+                                                    class="glyphicon glyphicon-calendar"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="row">
+                            <div class="col-sm-8">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Contracts Grid -->
             <!--<div class="panel panel-primary">-->
                 <!--<div class="panel-heading">-->
@@ -25,6 +105,15 @@
                 <!--</div>-->
             <!--</div>-->
             <div class="contracts-container">
+                <div class="toolbar">
+                    <div class="form-inline">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox"> SHOW INACTIVES
+                        </label>
+                    </div>
+                    </div>
+                </div>
                 <div id="jsGrid"></div>
             </div>
 
@@ -44,6 +133,7 @@
         window.$ = (window.NS && window.NS.jQuery) || window.jQuery;
         window.pageType = '{{ type }}';
         window.apiSuiteletUrl = '{{ apiSuiteletUrl }}';
+        window.createSuiteletUrl = '{{ createSuiteletUrl }}';
     </script>
     <script type="text/javascript"> window.$ || document.write('<script src="{{ jquery-1.11.0.min.js }}">\x3C/script>')</script>
     <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"

@@ -90,7 +90,7 @@ class JsonHelper {
 
                 var key = lineItemGroups[lineItemIndex];
 
-                var sublistItems = this.getSublistItems(record, key);
+                var sublistItems = JsonHelper.getSublistItemsJson(record, key);
 
                 result.sublists[key] = sublistItems;
             }
@@ -98,6 +98,46 @@ class JsonHelper {
         }
 
         return result;
+    }
+
+
+
+    /**
+     * Convert sublist items of specific record to json format
+     * @param {nlobjRecord} record record object to convert
+     * @param {string} key sublist key to get items of.
+     * @returns {object} json representation of record
+     */
+    static getSublistItemsJson(record: nlobjRecord, key: string) {
+        var sublistItems = [];
+        var lineItemCount = record.getLineItemCount(key);
+
+        // iterate over child record items of type `key`
+        for (var i = 1; i <= lineItemCount; i++) {
+            var lineItem = {};
+            var fields = record.getAllLineItemFields(key);
+
+            // iterate over columns
+            for (var j in fields) {
+                var field = fields[j];
+                var name: string = field;
+                var val: any = record.getLineItemValue(key, field, i);
+                var text: any = record.getLineItemText(key, field, i);
+
+                if (!!text && val != text) {
+                    lineItem[name] = {
+                        text: text,
+                        value: val
+                    };
+                } else {
+                    lineItem[name] = val;
+                }
+            }
+
+            sublistItems.push(lineItem);
+        }
+
+        return sublistItems;
     }
 
 

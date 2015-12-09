@@ -104,7 +104,7 @@ class CommonDAL extends BaseDAL {
      */
     getPriceLevels(options ? ) {
         var record = nlapiLoadRecord(options.recordType, options.itemId);
-        var priceLevels = this.getSublistItems(record, 'price1');
+        var priceLevels = JsonHelper.getSublistItemsJson(record, 'price1');
         return priceLevels;
     }
 
@@ -114,22 +114,27 @@ class CommonDAL extends BaseDAL {
      * @returns {object[]} array of quotes fetched from database
      */
     getQuotes(options) {
-
+        var result = null;
         var filters = [];
         var cols = [];
 
-        cols.push(new nlobjSearchColumn('tranid').setSort());
-        cols.push(new nlobjSearchColumn('trandate'));
+        try {
+            cols.push(new nlobjSearchColumn('tranid').setSort());
+            cols.push(new nlobjSearchColumn('trandate'));
 
-        if (!!options) {
-            var contractId = options.contractId;
-            if (F3.Util.Utility.isBlankOrNull(contractId) == false) {
-                filters.push(new nlobjSearchFilter('custbody_f3mm_quote_contract', null, 'anyof', contractId));
+            if (!!options) {
+                var contractId = options.contractId;
+                if (F3.Util.Utility.isBlankOrNull(contractId) == false) {
+                    filters.push(new nlobjSearchFilter('custbody_f3mm_quote_contract', null, 'anyof', [contractId]));
+                }
             }
-        }
 
-        // load data from db
-        var result = this.getAll(filters, cols, 'estimate');
+            // load data from db
+            result = this.getAll(filters, cols, 'estimate');
+        } catch (ex) {
+            F3.Util.Utility.logException('CommonDAL.getQuotes()', ex);
+            throw ex;
+        }
 
         return result;
     }
@@ -143,28 +148,34 @@ class CommonDAL extends BaseDAL {
 
         var filters = [];
         var cols = [];
+        var result = null;
 
-        cols.push(new nlobjSearchColumn('displayname').setSort());
-        cols.push(new nlobjSearchColumn('baseprice'));
-        cols.push(new nlobjSearchColumn('salesdescription'));
-        cols.push(new nlobjSearchColumn('itemid'));
+        try {
+            cols.push(new nlobjSearchColumn('displayname').setSort());
+            cols.push(new nlobjSearchColumn('baseprice'));
+            cols.push(new nlobjSearchColumn('salesdescription'));
+            cols.push(new nlobjSearchColumn('itemid'));
 
-        if (!!options) {
-            var query = options.query;
-            if (F3.Util.Utility.isBlankOrNull(query) == false) {
-                filters.push(new nlobjSearchFilter('displayname', null, 'startswith', query));
+            if (!!options) {
+                var query = options.query;
+                if (F3.Util.Utility.isBlankOrNull(query) == false) {
+                    filters.push(new nlobjSearchFilter('displayname', null, 'startswith', query));
+                }
+
+                var itemIds = options.itemIds;
+                if (!!itemIds && itemIds.length > 0) {
+                    filters.push(new nlobjSearchFilter('internalid', null, 'anyof', itemIds));
+                }
             }
 
-            var itemIds = options.itemIds;
-            if (!!itemIds) {
-                filters.push(new nlobjSearchFilter('internalid', null, 'anyof', itemIds));
-            }
+            filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
+
+            // load data from db
+            result = this.getAll(filters, cols, 'item');
+        } catch (ex) {
+            F3.Util.Utility.logException('CommonDAL.getItems()', ex);
+            throw ex;
         }
-
-        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
-
-        // load data from db
-        var result = this.getAll(filters, cols, 'item');
 
         return result;
     }

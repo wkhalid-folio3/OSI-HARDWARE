@@ -97,6 +97,9 @@ var CreateContractAPISuitelet = (function () {
                 case 'generate_quote':
                     executedActionResult = contractDAL.generateQuote(params);
                     break;
+                case 'update_contract':
+                    executedActionResult = contractDAL.update(params);
+                    break;
                 case 'submit':
                     executedActionResult = contractDAL.updateOrCreate(params);
                     break;
