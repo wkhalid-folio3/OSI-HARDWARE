@@ -1,8 +1,3 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="./f3mm_base_dal.ts" />
 /// <reference path="./f3mm_common_dal.ts" />
@@ -17,6 +12,11 @@ var __extends = (this && this.__extends) || function (d, b) {
  * - f3mm_base_dal.ts
  * -
  */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 /**
  * This class handles all operations related to Contracts.
  * Following are the responsibilities of this class:
@@ -85,6 +85,10 @@ var ContractDAL = (function (_super) {
             poNumber: {
                 id: 'custrecord_f3mm_po_number',
                 type: 'text'
+            },
+            deleted: {
+                id: 'custrecord_f3mm_deleted',
+                type: 'checkbox'
             }
         };
     }
@@ -98,6 +102,11 @@ var ContractDAL = (function (_super) {
         try {
             var commonDAL = new CommonDAL();
             contract = this.get(id);
+            if (contract[this.fields.deleted.id] == 'T') {
+                var err = new Error('the record is deleted');
+                F3.Util.Utility.logException('ContractDAL.getWithDetails(id); // id = ' + id, err);
+                return null;
+            }
             var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
             var items = [];
             var itemIds = contractItems
@@ -137,15 +146,39 @@ var ContractDAL = (function (_super) {
         }
         return contract;
     };
+    /**
+     * Search contracts with specified filters
+     * @param {object} params json object contain filters data
+     * @returns {object[]} array of json representation of contract objects
+     */
     ContractDAL.prototype.search = function (params) {
         var result = {
             total: 0,
             records: null
         };
-        result.records = _super.prototype.getAll.call(this, null, null, null, params);
+        var filters = [];
+        if (!F3.Util.Utility.isBlankOrNull(params.contract_number)) {
+            filters.push(new nlobjSearchFilter(this.fields.contractNumber.id, null, 'contains', params.contract_number));
+        }
+        if (!F3.Util.Utility.isBlankOrNull(params.status)) {
+            filters.push(new nlobjSearchFilter(this.fields.status.id, null, 'anyof', params.status));
+        }
+        if (!F3.Util.Utility.isBlankOrNull(params.customer)) {
+            filters.push(new nlobjSearchFilter(this.fields.customer.id, null, 'anyof', params.customer));
+        }
+        if (!F3.Util.Utility.isBlankOrNull(params.start_date)) {
+            filters.push(new nlobjSearchFilter(this.fields.startDate.id, null, 'onorafter', params.start_date));
+        }
+        if (!F3.Util.Utility.isBlankOrNull(params.end_date)) {
+            filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, 'onorbefore', params.end_date));
+        }
+        // exclude deleted & inactive records
+        filters.push(new nlobjSearchFilter('isinactive', null, 'is', params.isinactive == true ? 'T' : 'F'));
+        filters.push(new nlobjSearchFilter(this.fields.deleted.id, null, 'is', 'F'));
+        result.records = _super.prototype.getAll.call(this, filters, null, null, params);
         // count records
         var columns = [new nlobjSearchColumn('internalid', null, 'count').setLabel('total')];
-        var count = _super.prototype.getAll.call(this, null, columns)[0];
+        var count = _super.prototype.getAll.call(this, filters, columns)[0];
         result.total = count.total;
         return result;
     };
@@ -244,6 +277,24 @@ var ContractDAL = (function (_super) {
             record['sublists'].push(contractItemsSublist);
         }
         return record;
+    };
+    /**
+     * Delete Contract
+     * @param {object} contract json object containing data for contract
+     * @returns {number} id of created / updated contract
+     */
+    ContractDAL.prototype.delete = function (contract) {
+        if (!contract) {
+            throw new Error("contract cannot be null.");
+        }
+        var record = {};
+        record.id = contract.id;
+        record[this.fields.deleted.id] = 'T';
+        var id = this.upsert(record);
+        var result = {
+            id: id
+        };
+        return result;
     };
     /**
      * Create/Update a Contract based on json data passed

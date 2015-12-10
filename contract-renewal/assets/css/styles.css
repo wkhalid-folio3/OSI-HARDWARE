@@ -253,7 +253,7 @@ textarea {
 }
 
 .form-control {
-    height: 24px !important;
+    height: 24px;
     line-height: 24px !important;
     font-size: 12px;
     border-radius: 0;
@@ -319,8 +319,9 @@ textarea:disabled,
 }
 
 .contracts-container tr.jsgrid-header-row,
+.contracts-container tr.jsgrid-header-row th,
 .contracts-container th.jsgrid-header-sortable,
-.contracts-container th.jsgrid-control-field{
+.contracts-container th.jsgrid-control-field {
     background-color: #E5E5E5 !important
 }
 
@@ -329,4 +330,11 @@ textarea:disabled,
     border: 0;
     padding: 4px;
     height: auto;
+}
+
+
+.contracts-listing-page .toolbar {
+    background-color: #E0E6EF;
+    padding: 12px;
+    border-bottom: 1px solid #CECECE;
 }

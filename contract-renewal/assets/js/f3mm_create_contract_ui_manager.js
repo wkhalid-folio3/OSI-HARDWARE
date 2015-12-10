@@ -190,7 +190,7 @@ var CreateContractUIManager = (function () {
         var compiledTemplate = _.template(viewTemplate);
         var htmlMarkup = compiledTemplate(contract);
         $('.view-horizontal').html(htmlMarkup);
-        if (contract.custrecord_f3mm_status.value == "1") {
+        if (contract.custrecord_f3mm_status && contract.custrecord_f3mm_status.value == "1") {
             $('.btn-generate-quote').attr('disabled', 'disabled');
         }
         else {
@@ -617,6 +617,10 @@ var CreateContractUIManager = (function () {
             args.cancel = true;
             alert("Please select price level");
             return;
+        }
+        else {
+            // make it string
+            args.item.price_level = args.item.price_level + "";
         }
         var existingData = $('#jsGrid').data().JSGrid.data;
         var found = false;

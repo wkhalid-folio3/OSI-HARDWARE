@@ -173,7 +173,7 @@ class DataManager {
             $.extend(options, filters);
 
             return jQuery.get(this._serverUrl, options).then((result) => {
-                console.log('getItems(); // jquery complete: ', arguments);
+                console.log('searchContracts(); // jquery complete: ', arguments);
 
                 callback && callback(result);
                 return result;
@@ -449,6 +449,30 @@ class DataManager {
 
         });
 
+    }
+
+
+    /**
+     * Delete contract
+     * @param {object} data contract json object to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
+    deleteContract(data, callback) {
+        var options = {
+            'action': 'delete_contract'
+        };
+
+        $.extend(options, {
+            'params': JSON.stringify(data)
+        });
+
+        return jQuery.post(this._serverUrl, options, function(result) {
+            console.log('deleteContract(); // jquery complete: ', arguments);
+
+            callback && callback(result);
+
+        });
     }
 
 

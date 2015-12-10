@@ -37,6 +37,9 @@ var CreateContractUISuitelet = (function (_super) {
         var suiteletScriptId = 'customscript_f3mm_create_contract_api_st';
         var suiteletDeploymentId = 'customdeploy_f3mm_create_contract_api_st';
         var apiSuiteletUrl = nlapiResolveURL('SUITELET', suiteletScriptId, suiteletDeploymentId, false);
+        var contractListingScriptId = 'customscript_f3mm_list_contracts_ui_st';
+        var contractListingDeploymentId = 'customdeploy_f3mm_list_contracts_ui_st';
+        var contractListingUrl = nlapiResolveURL('SUITELET', contractListingScriptId, contractListingDeploymentId, false);
         html = html || '';
         for (var i in files) {
             var fileInfo = files[i];
@@ -48,6 +51,7 @@ var CreateContractUISuitelet = (function (_super) {
         html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
         html = html.replace('{{ contractInfo }}', JSON.stringify(data.contract));
         html = html.replace(/{{ viewContractUrl }}/gi, data.uiSuiteletUrl);
+        html = html.replace(/{{ contractListingUrl }}/gi, contractListingUrl);
         return html;
     };
     /**
@@ -71,6 +75,9 @@ var CreateContractUISuitelet = (function (_super) {
             if (!!contractId) {
                 contract = this._contractDAL.getWithDetails(contractId);
                 F3.Util.Utility.logDebug('CreateContractUISuitelet.main() // contract: ', JSON.stringify(contract));
+                if (!contract) {
+                    throw new Error('that record does not exist.');
+                }
                 uiSuiteletUrl = uiSuiteletUrl + '&cid=' + contractId;
                 if (editMode == 't') {
                     this.title = 'Edit Contract';
@@ -82,6 +89,10 @@ var CreateContractUISuitelet = (function (_super) {
                     this.type = 'view';
                 }
             }
+            else {
+                this.title = 'Create Contract';
+                this.type = 'create';
+            }
             var standaloneParam = request.getParameter('standalone');
             var standalone = standaloneParam == 'T' || standaloneParam == '1';
             var standaloneClass = (standalone ? 'page-standalone' : 'page-inline');
@@ -92,7 +103,7 @@ var CreateContractUISuitelet = (function (_super) {
                 uiSuiteletUrl: uiSuiteletUrl,
                 contract: contract
             });
-            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this: ', JSON.stringify(this));
+            F3.Util.Utility.logDebug('CreateContractUISuitelet.main(); // this: ', JSON.stringify(this));
             F3.Util.Utility.logDebug('CreateContractUISuitelet.main(); // this.title: ', this.title);
             // no need to create NetSuite form if standalone parameter is true
             if (standalone === true) {

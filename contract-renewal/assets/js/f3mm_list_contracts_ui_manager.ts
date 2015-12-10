@@ -49,15 +49,14 @@ class ListContractsUIManager {
 
         //this.setViewMode();
 
-        //this.bindDropdown();
+        this.bindDropdown();
 
         this.bindContractsGrid();
 
-        //this.bindDatePicker();
+        this.initDatePicker($('.input-group.date'));
 
-        //this.applyValidation();
-
-        //$('.btn-generate-quote').on('click', this.generateQuote.bind(this));
+        $('.btn-apply-filter').on('click', this.filter.bind(this));
+        $('.form-inline :checkbox').on('click', this.filter.bind(this));
     }
 
     /**
@@ -74,60 +73,6 @@ class ListContractsUIManager {
     private hideLoading() {
         var $loading = $('.contract-loading-backdrop,.contract-loading');
         $loading.removeClass('in').hide();
-    }
-
-    /**
-     * Apply validation on form elements
-     */
-    private applyValidation() {
-
-        var $form = $(".f3mm-contract-renewal").parents('form:first');
-        $form.removeAttr('onsubmit');
-        $form.validate({
-            rules: {
-                contract_number: {
-                    required: true
-                },
-                customer: {
-                    requiredTypeahead: true
-                },
-                primary_contact: {
-                    requiredTypeahead: true
-                },
-                department: {
-                    required: true
-                },
-                vendor: {
-                    required: true
-                },
-                sales_rep: {
-                    required: true
-                },
-                status: {
-                    required: true
-                },
-                end_date: {
-                    required: true
-                },
-                start_date: {
-                    required: true
-                }
-            },
-            errorPlacement: ($error, $element) => {
-                var $parent = $element.parent();
-                var isGroup = $parent.is('.input-group');
-
-                if (isGroup === true) {
-                    $parent.after($error);
-                } else {
-                    $element.after($error);
-                }
-            },
-            submitHandler: (form) => {
-                this.submit();
-                return false;
-            }
-        });
     }
 
     /**
@@ -148,35 +93,6 @@ class ListContractsUIManager {
         }
     }
 
-    /**
-     * Generate Quote when user clicks on Generate Quote button
-     * @param {Event} ev the event object injected by browser containing the event information
-     */
-    private generateQuote(ev) {
-        var $button = $(ev.target);
-
-        if ($button.attr('disabled') == 'disabled') {
-            return false;
-        }
-
-        $button.val('Generating...');
-
-        this.showLoading();
-        var data = {
-            contractId: this._contractInfo.id
-        };
-        this._dataManager.generateQuote(data, (result) => {
-
-            if (!!result.data && !!result.data.id) {
-                $button.val('Generated!');
-                var viewRecordUrl = nlapiResolveURL('RECORD', 'estimate', result.data.id, false);
-                window.location.href = viewRecordUrl;
-            } else {
-                alert(result.message);
-                this.hideLoading();
-            }
-        });
-    }
 
     /**
      * Loaded function called when the page is loaded completely from server.
@@ -295,20 +211,6 @@ class ListContractsUIManager {
         }
     }
 
-    ///**
-    // * Binds Date Picker component with specific fields
-    // * @returns {void}
-    // */
-    //private bindDatePicker() {
-    //    if (this._viewType !== 'view') {
-    //        $('.input-group.date').not('[disabled]').datepicker({
-    //            format: "m/d/yyyy",
-    //            clearBtn: true,
-    //            autoclose: true
-    //        });
-    //    }
-    //}
-
     /**
      * bindDatePicker - Bind date picker control with textboxes
      */
@@ -330,7 +232,10 @@ class ListContractsUIManager {
         e.preventDefault();
     }
 
-
+    /**
+     * Initialize date picker on ui element
+     * @returns {void}
+     */
     private initDatePicker($el) {
         if (!$el.data('datepicker_created')) {
             console.log('register date picker control.');
@@ -354,17 +259,17 @@ class ListContractsUIManager {
 
     /**
      * Validates if selected customer and selected primary contact is valid or not
-     * @returns {bool}
+     * @returns {bool} false if no fields are validated
      */
     private validateFields(): any {
 
         var $customerDropdown = $('.customer-dropdown');
         var customerText = $customerDropdown.val();
         var customerId = $customerDropdown.attr('data-selected-id');
-
-        var $primaryContactDropdown = $('.primary-contact-dropdown');
-        var primaryContactText = $primaryContactDropdown.val();
-        var primaryContactId = $primaryContactDropdown.attr('data-selected-id');
+        //
+        //var $primaryContactDropdown = $('.primary-contact-dropdown');
+        //var primaryContactText = $primaryContactDropdown.val();
+        //var primaryContactId = $primaryContactDropdown.attr('data-selected-id');
 
         // validate customer
         if (!customerId && customerText != "") {
@@ -373,124 +278,124 @@ class ListContractsUIManager {
             return false;
         }
 
-        // validate customer
-        if (!primaryContactId && primaryContactText != "") {
-            alert('Selected End User is not valid!');
-            $primaryContactDropdown.focus();
-            return false;
-        }
+        //// validate customer
+        //if (!primaryContactId && primaryContactText != "") {
+        //    alert('Selected End User is not valid!');
+        //    $primaryContactDropdown.focus();
+        //    return false;
+        //}
 
         return {
-            customerId: customerId,
-            primaryContactId: primaryContactId
+            customerId: customerId
+            //,primaryContactId: primaryContactId
         };
     }
 
     /**
-     * Submits contract information (extracted from ui elements) to server
+     * Search contracts based on the filters passed
+     * @returns {Promise} promise object which will be resolved/rejected in future
+     */
+    search(filter) {
+        console.log('filter: ', filter);
+        var promise = $.Deferred();
+        var startIndex = (filter.pageIndex - 1) * filter.pageSize;
+        var sortField = filter.sortField;
+
+        var serializedData = $('.form-horizontal :input, .form-inline :input').serializeObject();
+        var validated = this.validateFields();
+
+        // if not valid then return
+        if (validated === false) {
+            return;
+        }
+
+        var options: any = {
+            startIndex: startIndex,
+            pageSize: filter.pageSize,
+            sortFields: {}
+        };
+
+        $.extend(options, serializedData);
+
+        if (!!sortField) {
+            var rootFieldLength = sortField.indexOf('.');
+            sortField = sortField.substring(0, rootFieldLength > -1 ? rootFieldLength : sortField.length);
+            options.sortFields[sortField] = filter.sortOrder;
+        }
+
+        if (!!validated.customerId) {
+            options.customer = validated.customerId;
+        }
+
+        if (options.isinactive == "on") {
+            options.isinactive = true;
+        }
+
+        this._dataManager.searchContracts(options, result=> {
+            console.log('result: ', result);
+            var data = this.prepareGridData(result.data.records);
+            console.log('data: ', data);
+            //d.resolve(data);
+
+            var label = '1 record';
+            if (result.data.total != 1) {
+                label = result.data.total + ' records';
+            }
+            $('.total_records_label').html(label);
+
+            promise.resolve({
+                data: data,
+                itemsCount: result.data.total
+            });
+        });
+
+        return promise.promise();
+    }
+
+    private voidSelected() {
+        var $chceckboxes = $("#jsGrid").find('.jsgrid-grid-body .select-item :checkbox');
+        var selectedContracts = $chceckboxes.map(function () {
+            return $(this).data('contract-id');
+        });
+
+        console.log($chceckboxes)
+    }
+
+    /**
+     * Filter records based on the filter elements' values on ui
      * @returns {void}
      */
-    submit() {
-
-        try {
-
-            var validated = this.validateFields();
-
-            // if not valid then return
-            if (validated === false) {
-                return;
-            }
-
-            var serializedData = $('.form-horizontal :input').serializeObject();
-
-            if (!!this._contractInfo) {
-                serializedData.id = this._contractInfo.id;
-            }
-
-            if (!!validated.customerId) {
-                serializedData.customer = validated.customerId;
-            }
-
-            if (!!validated.primaryContactId) {
-                serializedData.primary_contact = validated.primaryContactId;
-            }
-
-            serializedData.items = [];
-            var items = $('#jsGrid').data().JSGrid.data;
-            $.each(items, function(index, item) {
-                serializedData.items.push({
-                    item_id: item.itemid,
-                    amount: item.amount,
-                    price: item.price,
-                    quantity: item.quantity,
-                    item_description: item.description,
-                    price_level: item.price_level,
-                    tax_code: item.taxcodeid,
-                    tax_rate: item.taxrate
-                });
-            });
-
-
-            if (serializedData.items.length <= 0) {
-                alert('You must enter at least one line item for this transaction.');
-                return;
-            }
-
-            console.log('serializedData: ', serializedData);
-
-            this.showLoading();
-
-            this._dataManager.submit(serializedData, (result) => {
-
-                console.log('submit success:', result);
-
-                if (!!result.data) {
-                    var uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
-                    var uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
-                    var uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
-                    uiSuiteletUrl = uiSuiteletUrl + '&cid=' + result.data.id;
-
-                    window.location.href = uiSuiteletUrl;
-                } else {
-                    alert(result.message);
-                    this.hideLoading();
-                }
-
-            });
-
-        } catch (e) {
-            console.error('ERROR', 'Error during main onSubmit', e.toString());
-            alert('Error during record submission.');
-            this.hideLoading();
-        }
+    filter() {
+        $('#jsGrid').jsGrid("search");
     }
+
 
     /**
      * Prepares items data before binding with the grid
      * @returns {object[]} returns array of objects containing contract items data
      */
     private prepareGridData(contractsInfo): any[] {
-        var contacts = [];
-
-        if (!!contractsInfo) {
-            contractsInfo.forEach(contract => {
-                contacts.push({
-                    customer: contract.custrecord_f3mm_customer.text,
-                    customerId: contract.custrecord_f3mm_customer.value,
-                    primaryContact: contract.custrecord_f3mm_primary_contact.text,
-                    primaryContactId: contract.custrecord_f3mm_primary_contact.value,
-                    primaryContactEmail: contract.custrecord_f3mm_primary_contact_email,
-                    contractNumber: contract.custrecord_f3mm_contract_number,
-                    vendor: contract.custrecord_f3mm_contract_vendor.text,
-                    vendorId: contract.custrecord_f3mm_contract_vendor.value,
-                    totalQtySeats: contract.custrecord_f3mm_total_qty_seats,
-                    startDate: contract.custrecord_f3mm_start_date,
-                    endDate: contract.custrecord_f3mm_end_date,
-                    memo: contract.custrecord_f3mm_memo,
-                    firstItemDescription: contract.custrecord_f3mm_memo
-                });
-            });
-        }
+        //var contacts = [];
+        //
+        //if (!!contractsInfo) {
+        //    contractsInfo.forEach(contract => {
+        //        contacts.push({
+        //            customer: contract.custrecord_f3mm_customer.text,
+        //            customerId: contract.custrecord_f3mm_customer.value,
+        //            primaryContact: contract.custrecord_f3mm_primary_contact.text,
+        //            primaryContactId: contract.custrecord_f3mm_primary_contact.value,
+        //            primaryContactEmail: contract.custrecord_f3mm_primary_contact_email,
+        //            contractNumber: contract.custrecord_f3mm_contract_number,
+        //            vendor: contract.custrecord_f3mm_contract_vendor.text,
+        //            vendorId: contract.custrecord_f3mm_contract_vendor.value,
+        //            totalQtySeats: contract.custrecord_f3mm_total_qty_seats,
+        //            startDate: contract.custrecord_f3mm_start_date,
+        //            endDate: contract.custrecord_f3mm_end_date,
+        //            memo: contract.custrecord_f3mm_memo,
+        //            firstItemDescription: contract.custrecord_f3mm_memo
+        //        });
+        //    });
+        //}
 
         return contractsInfo;
     }
@@ -503,14 +408,32 @@ class ListContractsUIManager {
 
         var gridFields = [{
             title: "&nbsp;",
-            name: "",
+            name: "internalid",
+            type: "checkbox",
+            sortting: false,
+            editing: false,
+            inserting: false,
+            filtering: false,
+            sorting: false,
+            width: 25,
+            css: 'select-item',
+            headerTemplate: function () {
+                return $("<input>").attr("type", "checkbox").addClass('select-all');
+            },
+            itemTemplate: function (_, item) {
+                return $("<input>").attr("type", "checkbox").data('contract-id', _);
+            }
+        }, {
+            title: "&nbsp;",
+            name: "internalid",
             type: "text",
             sortting: false,
             editing: false,
             inserting: false,
             filtering: false,
+            sorting: false,
             width: 70,
-            itemTemplate: function(value) {
+            itemTemplate: function (value) {
                 var viewUrl = window.createSuiteletUrl + '&cid=' + value;
                 var editUrl = window.createSuiteletUrl + '&e=t&cid=' + value;
                 var $links = $('<div />');
@@ -521,13 +444,13 @@ class ListContractsUIManager {
 
                 return $links;
             }
-        },{
+        }, {
             title: "ID",
             name: "internalid",
             type: "text",
             width: 20,
             editing: false
-        },{
+        }, {
             title: "Company Name",
             name: "custrecord_f3mm_customer.text",
             type: "text",
@@ -586,7 +509,7 @@ class ListContractsUIManager {
             name: "custrecord_f3mm_end_date",
             type: "text",
             width: 70,
-            editTemplate: function(_, item) {
+            editTemplate: function (_, item) {
 
                 var $html = $('<div class="input-group input-group-sm date start-date">' +
                     '<input type="text" class="form-control" />' +
@@ -630,7 +553,6 @@ class ListContractsUIManager {
             name: ''
         }];
 
-        //var contracts = this.prepareGridData();
         var gridFields = this.prepareGridFields();
         var inserting = false;
         var editing = true;
@@ -650,38 +572,8 @@ class ListContractsUIManager {
             pageSize: 10,
             pageButtonCount: 5,
             controller: {
-                loadData: (filter) => {
-
-                    console.log('filter: ', filter);
-                    var promise = $.Deferred();
-                    var startIndex = (filter.pageIndex - 1) * filter.pageSize;
-                    var sortField = filter.sortField;
-
-                    var options: any = {
-                        startIndex: startIndex,
-                        pageSize: filter.pageSize,
-                        sortFields: {}
-                    };
-
-                    if (!!sortField) {
-                        var rootFieldLength = sortField.indexOf('.');
-                        sortField = sortField.substring(0, rootFieldLength > -1 ? rootFieldLength : sortField.length);
-                        options.sortFields[sortField] = filter.sortOrder;
-                    }
-
-                    this._dataManager.searchContracts(options, result=> {
-                        console.log('result: ', result);
-                        var data = this.prepareGridData(result.data.records);
-                        console.log('data: ', data);
-                        //d.resolve(data);
-                        promise.resolve({
-                            data: data,
-                            itemsCount: result.data.total
-                        });
-                    });
-
-                    return promise.promise();
-                }
+                deleteItem: this.deleteContract.bind(this),
+                loadData: this.search.bind(this)
             },
             onDataLoaded: this.loaded.bind(this),
             onItemUpdating: this.onGridItemUpdating.bind(this),
@@ -697,6 +589,52 @@ class ListContractsUIManager {
             this.bindDatePicker(ev);
         });
 
+        $grid.on('click', '.select-all', this.selectAll.bind(this));
+        $('.btn-void').on('click', this.voidSelected.bind(this));
+
+
+    }
+
+    private selectAll(ev) {
+        console.log('selectAll: ', ev);
+
+        var $input = $(ev.target);
+        //var $grid = $input.parents('table:first');
+        var $allCheckboxes = $("#jsGrid").find('tbody .select-item :checkbox');
+
+        console.log('$allCheckboxes: ', $allCheckboxes);
+
+        var checked = $input.is(':checked');
+        $allCheckboxes.prop('checked', checked);
+
+        ev.cancelBubble = true;
+        ev.stopPropagation();
+        //ev.preventDefault();
+    }
+
+
+    /**
+     * Invoked by JSGrid whenever any item is updating in the grid
+     * @param {object} args contains json object of item and html element of grid row
+     * @returns {void}
+     */
+    private deleteContract(args) {
+        console.log('deleteContract: ', JSON.stringify(args));
+        var promise = $.Deferred();
+
+        var item = {
+            id: args.id
+        };
+
+        this.showLoading();
+        this._dataManager.deleteContract(item, result=> {
+            console.log('deleted: // ', result);
+
+            promise.resolve();
+            this.hideLoading();
+        });
+
+        return promise.promise();
     }
 
     /**
@@ -762,7 +700,6 @@ class ListContractsUIManager {
         }
 
 
-
         if (!data.custrecord_f3mm_contract_number) {
             args.preserve = true;
             args.cancel = true;
@@ -815,7 +752,6 @@ class ListContractsUIManager {
     }
 
 
-
     /**
      * itemsPickerSource - fetch data from server based on provided query
      * @param {string} query the keyword which user has typed
@@ -830,7 +766,7 @@ class ListContractsUIManager {
 
             this._dataManager.getItems({
                 query: query
-            }, function(items) {
+            }, function (items) {
 
                 try {
                     async(items.data);
@@ -863,7 +799,7 @@ class ListContractsUIManager {
             var dataSet = {
                 name: 'Items',
                 limit: 500,
-                display: function(obj) {
+                display: function (obj) {
                     return obj.displayname;
                 },
                 source: (q, s, a) => {
@@ -880,7 +816,7 @@ class ListContractsUIManager {
             };
 
             $el.typeahead(options, dataSet);
-            $el.bind('typeahead:change', function() {
+            $el.bind('typeahead:change', function () {
                 console.log('typeahead:change: ', arguments);
 
                 var $this = $(this);
@@ -921,7 +857,7 @@ class ListContractsUIManager {
                 this._dataManager.getPriceLevels({
                     recordType: suggestion.recordType,
                     itemId: suggestion.id
-                }, function(priceLevels) {
+                }, function (priceLevels) {
 
                     var $priceLevelDropdown = $tr.find('.price-level select');
                     $priceLevelDropdown.empty();
@@ -997,7 +933,7 @@ class ListContractsUIManager {
             };
 
             $contactsDropdown.typeahead(typeaheadOptions, contactsDataset);
-            $contactsDropdown.bind('typeahead:change', function(ev, val) {
+            $contactsDropdown.bind('typeahead:change', function (ev, val) {
                 console.log('typeahead:change: ', arguments);
 
                 var $this = $(this);
@@ -1028,7 +964,7 @@ class ListContractsUIManager {
                     }
                 }
 
-            }).bind('typeahead:select', function(ev, obj) {
+            }).bind('typeahead:select', function (ev, obj) {
                 console.log('typeahead:select: ', arguments);
 
                 var name = obj.entityid;
@@ -1105,7 +1041,7 @@ class ListContractsUIManager {
             };
 
             $customerDropdown.typeahead(typeaheadOptions, customerDataset);
-            $customerDropdown.bind('typeahead:change', function(ev, val) {
+            $customerDropdown.bind('typeahead:change', function (ev, val) {
                 console.log('typeahead:change: ', arguments);
 
                 var $this = $(this);
@@ -1132,10 +1068,9 @@ class ListContractsUIManager {
                     }
                 }
 
-            }).bind('typeahead:select', function(ev, suggestion) {
+            }).bind('typeahead:select', function (ev, suggestion) {
                 console.log('typeahead:select: ', arguments);
 
-                var name = suggestion.isperson === 'T' ? (suggestion.firstname + ' ' + suggestion.lastname) : suggestion.companyname;
                 var text = suggestion.entityid;
                 if (!!suggestion.altname) {
                     text = text + ' ' + suggestion.altname;
@@ -1159,76 +1094,13 @@ class ListContractsUIManager {
      */
     bindDropdown() {
 
-        // fill partners dropdown
-        this._dataManager.getVendors((result) => {
-
-            // make it async
-            setTimeout(() => {
-                var select = document.getElementById('vendor');
-                if (result.status_code === 200) {
-
-                    // add each item on UI
-                    $.each(result.data, function(i, item) {
-                        var name = item.isperson === 'T' ? (item.firstname + ' ' + item.lastname) : item.companyname;
-                        if (!!name) {
-                            select.options[select.options.length] = new Option(name, item.id);
-                        }
-                    });
-                }
-
-
-                this.loaded();
-            }, 10);
-        });
-
-        this._dataManager.getEmployees((result) => {
-
-            // make it async
-            setTimeout(() => {
-                var select = document.getElementById('sales_rep');
-                if (result.status_code === 200) {
-
-                    // add each item on UI
-                    $.each(result.data, function(i, item) {
-                        var name = (item.firstname + ' ' + item.lastname).trim();
-                        if (!!name) {
-                            select.options[select.options.length] = new Option(name, item.id);
-                        }
-                    });
-                }
-
-                this.loaded();
-            }, 10);
-        });
-
-        this._dataManager.getDepartment((result) => {
-
-            // make it async
-            setTimeout(() => {
-                var select = document.getElementById('department');
-                if (result.status_code === 200) {
-
-                    // add each item on UI
-                    $.each(result.data, function(i, item) {
-                        var name = item.name.trim();
-                        if (!!name) {
-                            select.options[select.options.length] = new Option(name, item.id);
-                        }
-                    });
-                }
-
-                this.loaded();
-            }, 10);
-        });
-
-
         $(document.body).on('focusin', '.customer-dropdown', (ev) => {
             this.bindCustomerDropdown($(ev.target));
         });
 
-        $(document.body).on('focusin', '.primary-contact-dropdown', (ev) => {
-            this.bindPrimaryContactDropdown($(ev.target));
-        });
+        //$(document.body).on('focusin', '.primary-contact-dropdown', (ev) => {
+        //    this.bindPrimaryContactDropdown($(ev.target));
+        //});
 
     }
 

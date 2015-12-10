@@ -46,8 +46,8 @@ var ListContractsUISuitelet = (function (_super) {
             html = html.replace('{{ ' + fileInfo.name + ' }}', fileInfo.url);
         }
         html = html.replace('{{ title }}', this.title);
-        html = html.replace('{{ apiSuiteletUrl }}', apiSuiteletUrl);
-        html = html.replace('{{ createSuiteletUrl }}', createSuiteletUrl);
+        html = html.replace(/{{ apiSuiteletUrl }}/gi, apiSuiteletUrl);
+        html = html.replace(/{{ createSuiteletUrl }}/gi, createSuiteletUrl);
         html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
         return html;
     };

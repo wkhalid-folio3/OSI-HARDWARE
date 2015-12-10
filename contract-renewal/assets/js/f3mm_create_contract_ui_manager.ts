@@ -217,7 +217,7 @@ class CreateContractUIManager {
         var htmlMarkup = compiledTemplate(contract);
         $('.view-horizontal').html(htmlMarkup);
 
-        if (contract.custrecord_f3mm_status.value == "1") {
+        if (contract.custrecord_f3mm_status && contract.custrecord_f3mm_status.value == "1") {
             $('.btn-generate-quote').attr('disabled', 'disabled');
         } else {
             $('.btn-generate-quote').removeAttr('disabled');
@@ -739,6 +739,9 @@ class CreateContractUIManager {
             args.cancel = true;
             alert("Please select price level");
             return;
+        } else {
+            // make it string
+            args.item.price_level = args.item.price_level + "";
         }
 
 

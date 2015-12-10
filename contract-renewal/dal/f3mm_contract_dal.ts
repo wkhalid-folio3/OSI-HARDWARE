@@ -12,6 +12,7 @@
  * - f3mm_base_dal.ts
  * -
  */
+
 /**
  * This class handles all operations related to Contracts.
  * Following are the responsibilities of this class:
@@ -78,6 +79,10 @@ class ContractDAL extends BaseDAL {
         poNumber: {
             id: 'custrecord_f3mm_po_number',
             type: 'text'
+        },
+        deleted: {
+            id: 'custrecord_f3mm_deleted',
+            type: 'checkbox'
         }
     };
 
@@ -93,6 +98,12 @@ class ContractDAL extends BaseDAL {
         try {
             var commonDAL = new CommonDAL();
             contract = this.get(id);
+
+            if ( contract[this.fields.deleted.id] == 'T') {
+                var err = new Error('the record is deleted');
+                F3.Util.Utility.logException('ContractDAL.getWithDetails(id); // id = ' + id, err);
+                return null;
+            }
 
             var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
             var items = [];
@@ -139,17 +150,47 @@ class ContractDAL extends BaseDAL {
         return contract;
     }
 
+    /**
+     * Search contracts with specified filters
+     * @param {object} params json object contain filters data
+     * @returns {object[]} array of json representation of contract objects
+     */
     search(params) {
         var result = {
             total: 0,
             records: null
         };
+        var filters = [];
 
-        result.records = super.getAll(null, null, null, params);
+        if (!F3.Util.Utility.isBlankOrNull(params.contract_number)) {
+            filters.push(new nlobjSearchFilter(this.fields.contractNumber.id, null, 'contains', params.contract_number));
+        }
+
+        if (!F3.Util.Utility.isBlankOrNull(params.status)) {
+            filters.push(new nlobjSearchFilter(this.fields.status.id, null, 'anyof', params.status));
+        }
+
+        if (!F3.Util.Utility.isBlankOrNull(params.customer)) {
+            filters.push(new nlobjSearchFilter(this.fields.customer.id, null, 'anyof', params.customer));
+        }
+
+        if (!F3.Util.Utility.isBlankOrNull(params.start_date)) {
+            filters.push(new nlobjSearchFilter(this.fields.startDate.id, null, 'onorafter', params.start_date));
+        }
+
+        if (!F3.Util.Utility.isBlankOrNull(params.end_date)) {
+            filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, 'onorbefore', params.end_date));
+        }
+
+        // exclude deleted & inactive records
+        filters.push(new nlobjSearchFilter('isinactive', null, 'is', params.isinactive == true ? 'T' : 'F'));
+        filters.push(new nlobjSearchFilter(this.fields.deleted.id, null, 'is', 'F'));
+
+        result.records = super.getAll(filters, null, null, params);
 
         // count records
         var columns = [new nlobjSearchColumn('internalid', null, 'count').setLabel('total')];
-        var count = super.getAll(null, columns)[0];
+        var count = super.getAll(filters, columns)[0];
         result.total = count.total;
 
         return result;
@@ -273,6 +314,28 @@ class ContractDAL extends BaseDAL {
         return record;
     }
 
+    /**
+     * Delete Contract
+     * @param {object} contract json object containing data for contract
+     * @returns {number} id of created / updated contract
+     */
+    delete(contract): {
+        id: any
+    } {
+        if (!contract) {
+            throw new Error("contract cannot be null.");
+        }
+
+        var record: any = {};
+        record.id = contract.id;
+        record[this.fields.deleted.id] = 'T';
+
+        var id = this.upsert(record);
+        var result = {
+            id: id
+        };
+        return result;
+    }
 
 
     /**

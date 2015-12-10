@@ -33,6 +33,10 @@ class CreateContractUISuitelet extends BaseUISuitelet {
         var suiteletDeploymentId = 'customdeploy_f3mm_create_contract_api_st';
         var apiSuiteletUrl = nlapiResolveURL('SUITELET', suiteletScriptId, suiteletDeploymentId, false);
 
+        var contractListingScriptId = 'customscript_f3mm_list_contracts_ui_st';
+        var contractListingDeploymentId = 'customdeploy_f3mm_list_contracts_ui_st';
+        var contractListingUrl = nlapiResolveURL('SUITELET', contractListingScriptId, contractListingDeploymentId, false);
+
         html = html || '';
 
         for (var i in files) {
@@ -46,6 +50,7 @@ class CreateContractUISuitelet extends BaseUISuitelet {
         html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
         html = html.replace('{{ contractInfo }}', JSON.stringify(data.contract));
         html = html.replace(/{{ viewContractUrl }}/gi, data.uiSuiteletUrl);
+        html = html.replace(/{{ contractListingUrl }}/gi, contractListingUrl);
 
         return html;
     }
@@ -75,6 +80,10 @@ class CreateContractUISuitelet extends BaseUISuitelet {
                 contract = this._contractDAL.getWithDetails(contractId);
                 F3.Util.Utility.logDebug('CreateContractUISuitelet.main() // contract: ', JSON.stringify(contract));
 
+                if ( !contract) {
+                    throw new Error('that record does not exist.');
+                }
+
                 uiSuiteletUrl = uiSuiteletUrl + '&cid=' + contractId;
 
                 if (editMode == 't') {
@@ -85,6 +94,10 @@ class CreateContractUISuitelet extends BaseUISuitelet {
                     this.title = 'View Contract';
                     this.type = 'view';
                 }
+            }
+            else {
+                this.title = 'Create Contract';
+                this.type = 'create';
             }
 
             var standaloneParam = request.getParameter('standalone');
@@ -99,7 +112,7 @@ class CreateContractUISuitelet extends BaseUISuitelet {
                 contract: contract
             });
 
-            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this: ', JSON.stringify(this));
+            F3.Util.Utility.logDebug('CreateContractUISuitelet.main(); // this: ', JSON.stringify(this));
             F3.Util.Utility.logDebug('CreateContractUISuitelet.main(); // this.title: ', this.title);
 
             // no need to create NetSuite form if standalone parameter is true

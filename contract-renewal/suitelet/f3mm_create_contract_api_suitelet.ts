@@ -136,6 +136,10 @@ class CreateContractAPISuitelet {
                 case 'update_contract':
                     executedActionResult = contractDAL.update(params);
                     break;
+                case 'delete_contract':
+                    executedActionResult = contractDAL.delete(params);
+                    break;
+
                 case 'submit':
                     executedActionResult = contractDAL.updateOrCreate(params);
                     break;
