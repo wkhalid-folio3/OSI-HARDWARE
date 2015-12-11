@@ -135,7 +135,7 @@
                     <br/>
                     <div class="row">
                         <div class="col-sm-4">
-                            <button type="button" class="btn btn-apply-filter">Apply Filters</button>
+                            <button type="button" class="btn btn-apply-filter btn-primary">Apply Filters</button>
                         </div>
                     </div>
                 </div>
@@ -144,15 +144,33 @@
 
             <div class="contracts-container">
                 <div class="toolbar">
-                    &nbsp;
-                    <span class="pull-right">
-                        <span class="total_records_label"></span>
-                    </span>
 
-                    <div class="form-inline pull-left">
-                        <div>
-                            <button type="button" class="btn btn-void">Void Selected Contracts</button>
-                        </div>
+                    <div class="form-inline">
+                        <button type="button" class="btn btn-default btn-void">Void Selected Contracts</button>
+
+                        &nbsp;
+                        <span class="uir-controlbar-separator"><img src="/images/separator.png" alt=""></span>
+
+                        &nbsp;
+                        <span>
+                            <a href="javascript:;" class="export-to-csv-link"><i class="uir-list-icon-button uir-list-export-csv" role="button" tabindex="0" data-button-code="export" title="Export - CSV" aria-label="Export - CSV"></i></a>
+                        </span>
+
+                        &nbsp;
+                        <span class="uir-controlbar-separator"><img src="/images/separator.png" alt=""></span>
+
+                        &nbsp;
+                        <label class="edit-control-label">
+                            EDIT
+                            <input type="checkbox" class="ios-switch edit-grid-checkbox" />
+                            <div class="switch"></div>
+                        </label>
+                        <!--&nbsp;-->
+                        <!--<label><input class="" type="checkbox"> Edit</label>-->
+
+                        <span class="pull-right">
+                            <span class="total_records_label"></span>
+                        </span>
                     </div>
 
                     <!--<div class="form-inline pull-left">-->

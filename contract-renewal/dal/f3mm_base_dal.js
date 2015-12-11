@@ -45,10 +45,10 @@ var BaseDAL = (function () {
         var recs = null;
         var arr = [];
         try {
+            options = options || {};
             filters = filters ? filters : [];
             columns = columns ? columns : this.getFields(options);
             internalId = internalId || this.internalId;
-            options = options || {};
             F3.Util.Utility.logDebug('BaseDAL.getAll(); // filters: ', JSON.stringify(filters));
             F3.Util.Utility.logDebug('BaseDAL.getAll(); // columns: ', JSON.stringify(columns));
             F3.Util.Utility.logDebug('BaseDAL.getAll(); // internalId: ', JSON.stringify(internalId));

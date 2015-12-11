@@ -477,6 +477,56 @@ class DataManager {
 
 
     /**
+     * Delete contract
+     * @param {object} data contract json object to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
+    exportToCSV(data, callback) {
+        var options = {
+            'action': 'export_to_csv',
+            'format': 'csv'
+        };
+
+        $.extend(options, {
+            'params': JSON.stringify(data)
+        });
+
+        window.location.href = this._serverUrl;
+        //return jQuery.get(this._serverUrl, options, function (result) {
+        //    console.log('deleteContract(); // jquery complete: ', arguments);
+        //
+        //    callback && callback(result);
+        //
+        //});
+    }
+
+
+    /**
+     * Void Selected contracts
+     * @param {object} data object containing ids of contracts
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
+    voidContract(data, callback) {
+        var options = {
+            'action': 'void_contract'
+        };
+
+        $.extend(options, {
+            'params': JSON.stringify(data)
+        });
+
+        return jQuery.post(this._serverUrl, options, function(result) {
+            console.log('voidContract(); // jquery complete: ', arguments);
+
+            callback && callback(result);
+
+        });
+    }
+
+
+    /**
      * Update specific properties of contract
      * @param {object} data contract json object to pass to server
      * @param {function} callback callback function to receive data in

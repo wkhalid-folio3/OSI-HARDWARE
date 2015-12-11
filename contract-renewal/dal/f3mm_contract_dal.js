@@ -157,23 +157,25 @@ var ContractDAL = (function (_super) {
             records: null
         };
         var filters = [];
-        if (!F3.Util.Utility.isBlankOrNull(params.contract_number)) {
-            filters.push(new nlobjSearchFilter(this.fields.contractNumber.id, null, 'contains', params.contract_number));
+        if (!!params) {
+            if (!F3.Util.Utility.isBlankOrNull(params.contract_number)) {
+                filters.push(new nlobjSearchFilter(this.fields.contractNumber.id, null, 'contains', params.contract_number));
+            }
+            if (!F3.Util.Utility.isBlankOrNull(params.status)) {
+                filters.push(new nlobjSearchFilter(this.fields.status.id, null, 'anyof', params.status));
+            }
+            if (!F3.Util.Utility.isBlankOrNull(params.customer)) {
+                filters.push(new nlobjSearchFilter(this.fields.customer.id, null, 'anyof', params.customer));
+            }
+            if (!F3.Util.Utility.isBlankOrNull(params.start_date)) {
+                filters.push(new nlobjSearchFilter(this.fields.startDate.id, null, 'onorafter', params.start_date));
+            }
+            if (!F3.Util.Utility.isBlankOrNull(params.end_date)) {
+                filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, 'onorbefore', params.end_date));
+            }
+            // exclude deleted & inactive records
+            filters.push(new nlobjSearchFilter('isinactive', null, 'is', params.isinactive == true ? 'T' : 'F'));
         }
-        if (!F3.Util.Utility.isBlankOrNull(params.status)) {
-            filters.push(new nlobjSearchFilter(this.fields.status.id, null, 'anyof', params.status));
-        }
-        if (!F3.Util.Utility.isBlankOrNull(params.customer)) {
-            filters.push(new nlobjSearchFilter(this.fields.customer.id, null, 'anyof', params.customer));
-        }
-        if (!F3.Util.Utility.isBlankOrNull(params.start_date)) {
-            filters.push(new nlobjSearchFilter(this.fields.startDate.id, null, 'onorafter', params.start_date));
-        }
-        if (!F3.Util.Utility.isBlankOrNull(params.end_date)) {
-            filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, 'onorbefore', params.end_date));
-        }
-        // exclude deleted & inactive records
-        filters.push(new nlobjSearchFilter('isinactive', null, 'is', params.isinactive == true ? 'T' : 'F'));
         filters.push(new nlobjSearchFilter(this.fields.deleted.id, null, 'is', 'F'));
         result.records = _super.prototype.getAll.call(this, filters, null, null, params);
         // count records
@@ -295,6 +297,99 @@ var ContractDAL = (function (_super) {
             id: id
         };
         return result;
+    };
+    /**
+     * Void Selected Contracts
+     * @param {object} contractIds array containing ids of contracts to void
+     * @returns {number} id of created / updated contract
+     */
+    ContractDAL.prototype.void = function (contractIds) {
+        var _this = this;
+        if (!contractIds) {
+            throw new Error("contractIds cannot be null.");
+        }
+        var result = [];
+        var voidStatusId = 5;
+        contractIds.forEach(function (contractId) {
+            try {
+                var record = {};
+                record.id = contractId;
+                record[_this.fields.status.id] = voidStatusId; // void
+                var id = _this.upsert(record);
+                result[contractId] = true;
+            }
+            catch (e) {
+                F3.Util.Utility.logException('ContractDAL.void', e.toString());
+                result[contractId] = false;
+            }
+        });
+        return result;
+    };
+    /**
+     * Export records in csv format
+     * @param {object} params json object contain filters data
+     * @returns {object[]} array of json representation of contract objects
+     */
+    ContractDAL.prototype.exportToCSV = function (params) {
+        var searchResult = this.search(params);
+        var records = searchResult.records;
+        var includeHeader = true;
+        var contents = '';
+        var content = [];
+        var temp = [];
+        var keysToExclude = ['recordType', 'custrecord_f3mm_deleted'];
+        var keyObjects = [
+            'custrecord_f3mm_contract_vendor',
+            'custrecord_f3mm_customer',
+            'custrecord_f3mm_department',
+            'custrecord_f3mm_primary_contact',
+            'custrecord_f3mm_sales_rep',
+            'custrecord_f3mm_status'
+        ];
+        if (includeHeader === true && records.length > 0) {
+            var record = records[0];
+            for (var key in record) {
+                if (keysToExclude.indexOf(key) > -1) {
+                    continue;
+                }
+                var columnName = key;
+                columnName = columnName.replace('custrecord_f3mm_', '');
+                columnName = columnName.replace(/_/gi, ' ');
+                if (typeof record[key] == 'object' || keyObjects.indexOf(key) > -1) {
+                    temp.push(columnName + ' id');
+                    temp.push(columnName + ' name');
+                }
+                else {
+                    temp.push(columnName);
+                }
+            }
+            content.push(temp);
+        }
+        // Looping through the search Results
+        for (var i = 0; i < records.length; i++) {
+            temp = [];
+            var record = records[i];
+            // Looping through each column and assign it to the temp array
+            for (var key in record) {
+                if (keysToExclude.indexOf(key) > -1) {
+                    continue;
+                }
+                if (typeof record[key] == 'object' || keyObjects.indexOf(key) > -1) {
+                    var obj = record[key] || {};
+                    temp.push(obj.value);
+                    temp.push(obj.text);
+                }
+                else {
+                    temp.push(record[key]);
+                }
+            }
+            content.push(temp);
+        }
+        // Looping through the content array and assigning it to the contents string variable.
+        for (var z = 0; z < content.length; z++) {
+            contents += content[z].toString() + '\n';
+        }
+        return contents;
     };
     /**
      * Create/Update a Contract based on json data passed

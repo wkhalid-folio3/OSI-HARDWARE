@@ -32,6 +32,7 @@ var CreateContractAPISuitelet = (function () {
         var mainRequestTimer = F3.Util.StopWatch.start('CreateContractAPISuitelet.main();');
         var action = request.getParameter('action');
         var params = request.getParameter('params');
+        var format = request.getParameter('format');
         var callback = request.getParameter('callback');
         if (!!params) {
             params = JSON.parse(params);
@@ -39,13 +40,20 @@ var CreateContractAPISuitelet = (function () {
         F3.Util.Utility.logDebug('CreateContractAPISuitelet.main(); // action = ', action);
         F3.Util.Utility.logDebug('CreateContractAPISuitelet.main(); // params = ', JSON.stringify(params));
         var result = this.executeAction(action, params);
-        var json = JSON.stringify(result);
-        F3.Util.Utility.logDebug('Response: ', json);
-        if (!!callback) {
-            json = callback + '(' + json + ')';
+        if (format === 'csv') {
+            var file = nlapiCreateFile('contracts.csv', 'CSV', result.data);
+            response.setContentType('CSV', 'contracts.csv', 'inline');
+            response.write(file.getValue());
         }
-        response.setContentType('JSON');
-        response.writeLine(json);
+        else {
+            var json = JSON.stringify(result);
+            F3.Util.Utility.logDebug('Response: ', json);
+            if (!!callback) {
+                json = callback + '(' + json + ')';
+            }
+            response.setContentType('JSON');
+            response.writeLine(json);
+        }
         mainRequestTimer.stop();
     };
     /**
@@ -102,6 +110,12 @@ var CreateContractAPISuitelet = (function () {
                     break;
                 case 'delete_contract':
                     executedActionResult = contractDAL.delete(params);
+                    break;
+                case 'void_contract':
+                    executedActionResult = contractDAL.void(params.contractIds);
+                    break;
+                case 'export_to_csv':
+                    executedActionResult = contractDAL.exportToCSV(params);
                     break;
                 case 'submit':
                     executedActionResult = contractDAL.updateOrCreate(params);

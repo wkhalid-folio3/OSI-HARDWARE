@@ -56,7 +56,9 @@ class ListContractsUIManager {
         this.initDatePicker($('.input-group.date'));
 
         $('.btn-apply-filter').on('click', this.filter.bind(this));
-        $('.form-inline :checkbox').on('click', this.filter.bind(this));
+
+        // for inactive checkbox
+        //$('.form-inline :checkbox').on('click', this.filter.bind(this));
     }
 
     /**
@@ -291,13 +293,8 @@ class ListContractsUIManager {
         };
     }
 
-    /**
-     * Search contracts based on the filters passed
-     * @returns {Promise} promise object which will be resolved/rejected in future
-     */
-    search(filter) {
-        console.log('filter: ', filter);
-        var promise = $.Deferred();
+
+    private getFilters(filter){
         var startIndex = (filter.pageIndex - 1) * filter.pageSize;
         var sortField = filter.sortField;
 
@@ -331,6 +328,19 @@ class ListContractsUIManager {
             options.isinactive = true;
         }
 
+        return options;
+    }
+
+    /**
+     * Search contracts based on the filters passed
+     * @returns {Promise} promise object which will be resolved/rejected in future
+     */
+    search(filter) {
+        console.log('filter: ', filter);
+        var promise = $.Deferred();
+
+        var options = this.getFilters(filter);
+
         this._dataManager.searchContracts(options, result=> {
             console.log('result: ', result);
             var data = this.prepareGridData(result.data.records);
@@ -352,13 +362,32 @@ class ListContractsUIManager {
         return promise.promise();
     }
 
+    /**
+     * Invoked when Void Selected Contracts button is clicked.
+     * Responsible for invoking void contracts api with selected contract ids.
+     * @returns {void}
+     */
     private voidSelected() {
-        var $chceckboxes = $("#jsGrid").find('.jsgrid-grid-body .select-item :checkbox');
+        var $chceckboxes = $("#jsGrid").find('.jsgrid-grid-body .select-item :checkbox:checked');
         var selectedContracts = $chceckboxes.map(function () {
             return $(this).data('contract-id');
-        });
+        }).toArray();
 
-        console.log($chceckboxes)
+        if (!selectedContracts.length) {
+            alert('Please select at least one contract');
+            return;
+        }
+
+        var data = {
+            contractIds: selectedContracts
+        };
+        this.showLoading();
+        this._dataManager.voidContract(data, result=> {
+            console.log('voided: // ', result);
+
+            this.hideLoading();
+            this.filter();
+        });
     }
 
     /**
@@ -375,28 +404,6 @@ class ListContractsUIManager {
      * @returns {object[]} returns array of objects containing contract items data
      */
     private prepareGridData(contractsInfo): any[] {
-        //var contacts = [];
-        //
-        //if (!!contractsInfo) {
-        //    contractsInfo.forEach(contract => {
-        //        contacts.push({
-        //            customer: contract.custrecord_f3mm_customer.text,
-        //            customerId: contract.custrecord_f3mm_customer.value,
-        //            primaryContact: contract.custrecord_f3mm_primary_contact.text,
-        //            primaryContactId: contract.custrecord_f3mm_primary_contact.value,
-        //            primaryContactEmail: contract.custrecord_f3mm_primary_contact_email,
-        //            contractNumber: contract.custrecord_f3mm_contract_number,
-        //            vendor: contract.custrecord_f3mm_contract_vendor.text,
-        //            vendorId: contract.custrecord_f3mm_contract_vendor.value,
-        //            totalQtySeats: contract.custrecord_f3mm_total_qty_seats,
-        //            startDate: contract.custrecord_f3mm_start_date,
-        //            endDate: contract.custrecord_f3mm_end_date,
-        //            memo: contract.custrecord_f3mm_memo,
-        //            firstItemDescription: contract.custrecord_f3mm_memo
-        //        });
-        //    });
-        //}
-
         return contractsInfo;
     }
 
@@ -410,28 +417,30 @@ class ListContractsUIManager {
             title: "&nbsp;",
             name: "internalid",
             type: "checkbox",
-            sortting: false,
+            sorting: false,
             editing: false,
             inserting: false,
             filtering: false,
-            sorting: false,
             width: 25,
             css: 'select-item',
             headerTemplate: function () {
                 return $("<input>").attr("type", "checkbox").addClass('select-all');
             },
             itemTemplate: function (_, item) {
-                return $("<input>").attr("type", "checkbox").data('contract-id', _);
+                if (this.editing == false && this._grid.editing == false) {
+                    return $("<input>").attr("type", "checkbox").data('contract-id', _);
+                } else {
+                    return $(_);
+                }
             }
         }, {
             title: "&nbsp;",
             name: "internalid",
             type: "text",
-            sortting: false,
+            sorting: false,
             editing: false,
             inserting: false,
             filtering: false,
-            sorting: false,
             width: 70,
             itemTemplate: function (value) {
                 var viewUrl = window.createSuiteletUrl + '&cid=' + value;
@@ -554,18 +563,17 @@ class ListContractsUIManager {
         }];
 
         var gridFields = this.prepareGridFields();
-        var inserting = false;
-        var editing = true;
         var $grid = $("#jsGrid");
 
         $grid.jsGrid({
             height: "auto",
             width: "100%",
             noDataContent: 'No items added.',
-            inserting: inserting,
+            inserting: false,
             filtering: false,
-            editing: editing,
+            editing: false,
             sorting: true,
+            selecting: false,
             paging: true,
             pageLoading: true,
             autoload: true,
@@ -590,9 +598,41 @@ class ListContractsUIManager {
         });
 
         $grid.on('click', '.select-all', this.selectAll.bind(this));
+        $('.edit-grid-checkbox').on('click', this.enableEditing.bind(this));
         $('.btn-void').on('click', this.voidSelected.bind(this));
+        $('.export-to-csv-link').on('click', this.exportToCSV.bind(this));
 
 
+    }
+
+    private exportToCSV() {
+        var grid = $('#jsGrid').data().JSGrid;
+        var filter = grid._sortingParams();
+        var options = this.getFilters(filter);
+
+        this.showLoading();
+        this._dataManager.exportToCSV(options, result=> {
+            console.log('exported: // ', result);
+
+            this.hideLoading();
+        });
+    }
+
+    private enableEditing(ev) {
+        console.log('enableEditing: ', ev);
+        var $input = $(ev.target);
+        var checked = $input.is(':checked');
+
+        console.log('$input: ', $input);
+        console.log('checked: ', checked);
+        $("#jsGrid").jsGrid('option', 'editing', checked);
+        $("#jsGrid").jsGrid('option', 'selecting', checked);
+
+        if (checked) {
+            $('.select-all').hide();
+        } else {
+            $('.select-all').show();
+        }
     }
 
     private selectAll(ev) {
