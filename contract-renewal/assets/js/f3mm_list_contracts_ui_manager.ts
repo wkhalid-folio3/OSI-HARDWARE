@@ -1,5 +1,8 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
 /// <reference path="./f3mm_data_manager.ts" />
+
+declare var apiSuiteletUrl: string;
+
 /**
  * Created by zshaikh on 11/18/2015.
  * -
@@ -605,17 +608,36 @@ class ListContractsUIManager {
 
     }
 
-    private exportToCSV() {
+    private exportToCSV(ev) {
+        console.log('exportToCSV: ', ev);
+
+        var $link = $(ev.currentTarget);
         var grid = $('#jsGrid').data().JSGrid;
         var filter = grid._sortingParams();
-        var options = this.getFilters(filter);
+        var data = this.getFilters(filter);
 
-        this.showLoading();
-        this._dataManager.exportToCSV(options, result=> {
-            console.log('exported: // ', result);
+        var options = {
+            'action': 'export_to_csv',
+            'format': 'csv'
+        };
 
-            this.hideLoading();
+        $.extend(options, {
+            'params': JSON.stringify(data)
         });
+
+        var url = window.apiSuiteletUrl + '&';
+        url = url + $.param(options);
+
+        $link.attr('href', url);
+        $link.attr('target', '_blank');
+        //$link.click();
+
+        //this.showLoading();
+        //this._dataManager.exportToCSV(options, result=> {
+        //    console.log('exported: // ', result);
+        //
+        //    this.hideLoading();
+        //});
     }
 
     private enableEditing(ev) {

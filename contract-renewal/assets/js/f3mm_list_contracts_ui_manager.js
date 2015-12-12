@@ -502,16 +502,30 @@ var ListContractsUIManager = (function () {
         $('.btn-void').on('click', this.voidSelected.bind(this));
         $('.export-to-csv-link').on('click', this.exportToCSV.bind(this));
     };
-    ListContractsUIManager.prototype.exportToCSV = function () {
-        var _this = this;
+    ListContractsUIManager.prototype.exportToCSV = function (ev) {
+        console.log('exportToCSV: ', ev);
+        var $link = $(ev.currentTarget);
         var grid = $('#jsGrid').data().JSGrid;
         var filter = grid._sortingParams();
-        var options = this.getFilters(filter);
-        this.showLoading();
-        this._dataManager.exportToCSV(options, function (result) {
-            console.log('exported: // ', result);
-            _this.hideLoading();
+        var data = this.getFilters(filter);
+        var options = {
+            'action': 'export_to_csv',
+            'format': 'csv'
+        };
+        $.extend(options, {
+            'params': JSON.stringify(data)
         });
+        var url = window.apiSuiteletUrl + '&';
+        url = url + $.param(options);
+        $link.attr('href', url);
+        $link.attr('target', '_blank');
+        //$link.click();
+        //this.showLoading();
+        //this._dataManager.exportToCSV(options, result=> {
+        //    console.log('exported: // ', result);
+        //
+        //    this.hideLoading();
+        //});
     };
     ListContractsUIManager.prototype.enableEditing = function (ev) {
         console.log('enableEditing: ', ev);
