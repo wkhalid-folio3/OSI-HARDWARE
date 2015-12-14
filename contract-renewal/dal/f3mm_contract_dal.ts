@@ -268,6 +268,7 @@ class ContractDAL extends BaseDAL {
 
         } catch (e) {
             F3.Util.Utility.logException('ContractDAL.generateQuote', e.toString());
+            throw e;
         }
 
         return result;

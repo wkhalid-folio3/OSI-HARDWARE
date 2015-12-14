@@ -120,7 +120,10 @@ var CommonDAL = (function (_super) {
             }
         }
         var priceLevels = JsonHelper.getSublistItemsJson(record, priceID);
-        return priceLevels;
+        var priceLevelsFiltered = priceLevels.filter(function (priceLevel) {
+            return !!priceLevel.price_1_ || !!priceLevel.discount;
+        });
+        return priceLevelsFiltered;
     };
     /**
      * Get Quotes of a Contract

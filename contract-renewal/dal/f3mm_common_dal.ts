@@ -131,7 +131,12 @@ class CommonDAL extends BaseDAL {
         }
 
         var priceLevels = JsonHelper.getSublistItemsJson(record, priceID);
-        return priceLevels;
+
+        var priceLevelsFiltered = priceLevels.filter(priceLevel=> {
+            return !!priceLevel.price_1_ || !!priceLevel.discount;
+        });
+
+        return priceLevelsFiltered;
     }
 
     /**
