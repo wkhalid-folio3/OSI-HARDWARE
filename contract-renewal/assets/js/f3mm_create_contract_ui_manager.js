@@ -44,7 +44,38 @@ var CreateContractUIManager = (function () {
         this.bindDatePicker();
         this.applyValidation();
         $('.btn-generate-quote').on('click', this.generateQuote.bind(this));
+        $('#entity_popup_link').on('click', this.openExistingCustomerWindow.bind(this));
+        $('#entity_popup_new').on('click', this.openNewCustomerWindow.bind(this));
     }
+    CreateContractUIManager.prototype.getSelectedCustomer = function () {
+        var result = null;
+        var $customerDropdown = $('.customer-dropdown');
+        var customerText = $customerDropdown.val();
+        var customerId = $customerDropdown.attr('data-selected-id');
+        // validate customer
+        if (!!customerId && customerText != "") {
+            result = customerId;
+        }
+        return result;
+    };
+    CreateContractUIManager.prototype.openNewCustomerWindow = function () {
+        var url = 'https://system.na1.netsuite.com/app/common/entity/custjob.nl?target=main:entity&label=Customer&stage=prospect';
+        //setSelectValue(document.forms['main_form'].elements['entity'], -1);
+        //document.forms['main_form'].elements['entity_display'].value = '';
+        //document.forms['main_form'].elements['entity_display'].isvalid = true;
+        //NS.form.setValid(true);
+        //Syncentity(true);
+        nlOpenWindow(url, '_blank', '');
+        return false;
+    };
+    CreateContractUIManager.prototype.openExistingCustomerWindow = function () {
+        var selectValue = this.getSelectedCustomer();
+        if (!!selectValue)
+            nlOpenWindow('/app/common/entity/custjob.nl?id=' + selectValue + '', '_blank', '');
+        else
+            alert('Please choose an entry first.');
+        return false;
+    };
     /**
      * Show Loading Indicator
      */
@@ -487,6 +518,7 @@ var CreateContractUIManager = (function () {
             autoload: true,
             pageSize: 15,
             pageButtonCount: 5,
+            deleteConfirm: "Are you sure you want to delete this item?",
             controller: {
                 loadData: function (filter) {
                     return contactItems;

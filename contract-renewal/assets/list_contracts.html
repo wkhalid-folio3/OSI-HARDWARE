@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
           integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ=="
           crossorigin="anonymous"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" media="screen" href="{{ bootstrap-datepicker3.min.css }}"/>
     <link rel="stylesheet" type="text/css" media="screen" href="{{ jsgrid.min.css }}"/>
     <link rel="stylesheet" type="text/css" media="screen" href="{{ jsgrid-theme.min.css }}"/>
@@ -45,8 +46,7 @@
                             <div class="col-sm-8">
 
                                 <div class="form-group">
-                                    <label for="contract_number" class="control-label">Contract # <span
-                                            class="mandatory">*</span></label>
+                                    <label for="contract_number" class="control-label">Contract #</label>
 
                                     <div class="">
                                         <input type="text" class="form-control contract-number-text"
@@ -57,8 +57,7 @@
 
 
                                 <div class="form-group">
-                                    <label for="customer" class="control-label">Customer <span
-                                            class="mandatory">*</span></label>
+                                    <label for="customer" class="control-label">Customer</label>
                                     <div class="">
                                         <input class="typeahead form-control customer-dropdown"
                                                id="customer"
@@ -73,9 +72,26 @@
                     <div class="col-sm-4">
                         <div class="row">
                             <div class="col-sm-8">
+
+                                <!--<div class="form-group">-->
+                                    <!--<label for="status" class="control-label">Contract Duration</label>-->
+
+                                    <!--<div class="">-->
+                                        <!--<select class="form-control duration-dropdown"-->
+                                                <!--id="duration"-->
+                                                <!--name="duration">-->
+                                            <!--<option value=""></option>-->
+                                            <!--<option value="1">Monthly</option>-->
+                                            <!--<option value="2">Quarterly</option>-->
+                                            <!--<option value="3">Annual</option>-->
+                                        <!--</select>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+
+
+
                                 <div class="form-group">
-                                    <label for="start_date" class="control-label">Start Date <span
-                                            class="mandatory">*</span></label>
+                                    <label for="start_date" class="control-label">Start Date</label>
                                     <div class="">
                                         <div class="input-group date">
                                             <input type="text" class="form-control start-date-text"
@@ -88,8 +104,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="end_date" class="control-label">End Date <span
-                                            class="mandatory">*</span></label>
+                                    <label for="end_date" class="control-label">End Date</label>
                                     <div class="">
                                         <div class="input-group date">
                                             <input type="text" class="form-control end-date-text"
@@ -108,8 +123,7 @@
                             <div class="col-sm-8">
 
                                 <div class="form-group">
-                                    <label for="status" class="control-label">Status <span
-                                            class="mandatory">*</span></label>
+                                    <label for="status" class="control-label">Status</label>
 
                                     <div class="">
                                         <select class="form-control status-dropdown"
@@ -200,6 +214,7 @@
 
     <!-- All Scripts should go below -->
     <script>
+        document.title = '{{ title }}'.replace('<i class="fa fa-file-text-o"></i>', '');
         window.$ = (window.NS && window.NS.jQuery) || window.jQuery;
         window.pageType = '{{ type }}';
         window.apiSuiteletUrl = '{{ apiSuiteletUrl }}';

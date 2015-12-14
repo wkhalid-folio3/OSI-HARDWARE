@@ -45,7 +45,7 @@ class CreateContractUISuitelet extends BaseUISuitelet {
         }
 
         html = html.replace('{{ type }}', this.type);
-        html = html.replace('{{ title }}', this.title);
+        html = html.replace(/{{ title }}/gi, data.title);
         html = html.replace('{{ apiSuiteletUrl }}', apiSuiteletUrl);
         html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
         html = html.replace('{{ contractInfo }}', JSON.stringify(data.contract));
@@ -100,6 +100,8 @@ class CreateContractUISuitelet extends BaseUISuitelet {
                 this.type = 'create';
             }
 
+            this.title = '<i class="fa fa-file-text-o"></i> ' + this.title;
+
             var standaloneParam = request.getParameter('standalone');
             var standalone = standaloneParam == 'T' || standaloneParam == '1';
             var standaloneClass = (standalone ? 'page-standalone' : 'page-inline');
@@ -109,7 +111,8 @@ class CreateContractUISuitelet extends BaseUISuitelet {
             var processedHtml = this.parseHtmlTemplate(htmlTemplate, {
                 standaloneClass: standaloneClass,
                 uiSuiteletUrl: uiSuiteletUrl,
-                contract: contract
+                contract: contract,
+                title: this.title
             });
 
             F3.Util.Utility.logDebug('CreateContractUISuitelet.main(); // this: ', JSON.stringify(this));

@@ -34,6 +34,10 @@ var ContractDAL = (function (_super) {
                 id: 'internalid',
                 type: 'number'
             },
+            name: {
+                id: 'name',
+                type: 'string'
+            },
             customer: {
                 id: 'custrecord_f3mm_customer',
                 type: 'list'
@@ -61,6 +65,10 @@ var ContractDAL = (function (_super) {
             endDate: {
                 id: 'custrecord_f3mm_end_date',
                 type: 'date'
+            },
+            duration: {
+                id: 'custrecord_f3mm_contract_duration',
+                type: 'list'
             },
             memo: {
                 id: 'custrecord_f3mm_memo',
@@ -255,6 +263,7 @@ var ContractDAL = (function (_super) {
         record[this.fields.salesRep.id] = contract.sales_rep;
         record[this.fields.department.id] = contract.department;
         record[this.fields.contractNumber.id] = contract.contract_number;
+        record[this.fields.name.id] = contract.contract_number;
         record[this.fields.status.id] = contract.status;
         record[this.fields.poNumber.id] = contract.po_number;
         if (!!contract.items) {
@@ -407,6 +416,8 @@ var ContractDAL = (function (_super) {
         record[this.fields.startDate.id] = contract.custrecord_f3mm_start_date;
         record[this.fields.endDate.id] = contract.custrecord_f3mm_end_date;
         record[this.fields.contractNumber.id] = contract.custrecord_f3mm_contract_number;
+        record[this.fields.name.id] = contract.custrecord_f3mm_contract_number;
+        record[this.fields.memo.id] = contract.custrecord_f3mm_memo;
         var id = this.upsert(record);
         var result = {
             id: id

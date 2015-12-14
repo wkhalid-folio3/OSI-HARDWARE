@@ -43,7 +43,7 @@ class ListContractsUISuitelet extends BaseUISuitelet {
             html = html.replace('{{ ' + fileInfo.name + ' }}', fileInfo.url);
         }
 
-        html = html.replace('{{ title }}', this.title);
+        html = html.replace(/{{ title }}/gi, data.title);
         html = html.replace(/{{ apiSuiteletUrl }}/gi, apiSuiteletUrl);
         html = html.replace(/{{ createSuiteletUrl }}/gi, createSuiteletUrl);
         html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
@@ -64,10 +64,12 @@ class ListContractsUISuitelet extends BaseUISuitelet {
             var standalone = standaloneParam == 'T' || standaloneParam == '1';
             var standaloneClass = (standalone ? 'page-standalone' : 'page-inline');
 
+            this.title = '<i class="fa fa-file-text-o"></i> List Contracts';
             var templateName = 'list_contracts.html';
             var htmlTemplate = this.getHtmlTemplate(templateName);
             var processedHtml = this.parseHtmlTemplate(htmlTemplate, {
                 standaloneClass: standaloneClass,
+                title: this.title
             });
 
             F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this: ', JSON.stringify(this));
@@ -76,11 +78,13 @@ class ListContractsUISuitelet extends BaseUISuitelet {
             F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this.parseHtmlTemplate: ', this.parseHtmlTemplate);
             F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this.title: ', this.title);
 
+
+
             // no need to create NetSuite form if standalone parameter is true
             if (standalone === true) {
                 response.write(processedHtml);
             } else {
-                var form = nlapiCreateForm(this.title || 'Contracts');
+                var form = nlapiCreateForm(this.title);
                 var htmlField = form.addField('inlinehtml', 'inlinehtml', '');
                 htmlField.setDefaultValue(processedHtml);
                 response.writePage(form);

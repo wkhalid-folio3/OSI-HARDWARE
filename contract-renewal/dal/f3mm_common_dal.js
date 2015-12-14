@@ -98,7 +98,28 @@ var CommonDAL = (function (_super) {
      */
     CommonDAL.prototype.getPriceLevels = function (options) {
         var record = nlapiLoadRecord(options.recordType, options.itemId);
-        var priceLevels = JsonHelper.getSublistItemsJson(record, 'price1');
+        // Check the features enabled in the account. See Pricing Sublist Feature Dependencies for
+        // details on why this is important.
+        var multiCurrency = nlapiGetContext().getFeature('MULTICURRENCY');
+        var multiPrice = nlapiGetContext().getFeature('MULTPRICE');
+        var quantityPricing = nlapiGetContext().getFeature('QUANTITYPRICING');
+        var priceID = '';
+        // Set the ID for the sublist and the price field. Note that if all pricing-related features
+        // are disabled, you will set the price in the rate field. See Pricing Sublist Feature Dependencies
+        // for details.
+        if (!multiCurrency && !multiPrice && !quantityPricing) {
+        }
+        else {
+            priceID = "price";
+            if (multiCurrency) {
+                //var internalId = nlapiSearchRecord('currency', null, new nlobjSearchFilter('symbol', null, 'contains', currencyID))[0].getId();
+                //for USD as default curremcy id - TODO: generalize in future for more than one currency support
+                var internalId = 1;
+                // Append the currency ID to the sublist name
+                priceID = priceID + internalId;
+            }
+        }
+        var priceLevels = JsonHelper.getSublistItemsJson(record, priceID);
         return priceLevels;
     };
     /**
@@ -175,6 +196,7 @@ var CommonDAL = (function (_super) {
         cols.push(new nlobjSearchColumn('companyname'));
         cols.push(new nlobjSearchColumn('isperson'));
         filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
+        filters.push(new nlobjSearchFilter('custentity_f3mm_show_vendor_on_contract', null, 'is', 'T'));
         var result = this.getAll(filters, cols, 'vendor');
         return result;
     };

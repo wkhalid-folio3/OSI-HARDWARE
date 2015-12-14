@@ -28,6 +28,10 @@ class ContractDAL extends BaseDAL {
             id: 'internalid',
             type: 'number'
         },
+        name: {
+            id: 'name',
+            type: 'string'
+        },
         customer: {
             id: 'custrecord_f3mm_customer',
             type: 'list'
@@ -55,6 +59,10 @@ class ContractDAL extends BaseDAL {
         endDate: {
             id: 'custrecord_f3mm_end_date',
             type: 'date'
+        },
+        duration: {
+            id: 'custrecord_f3mm_contract_duration',
+            type: 'list'
         },
         memo: {
             id: 'custrecord_f3mm_memo',
@@ -99,7 +107,7 @@ class ContractDAL extends BaseDAL {
             var commonDAL = new CommonDAL();
             contract = this.get(id);
 
-            if ( contract[this.fields.deleted.id] == 'T') {
+            if (contract[this.fields.deleted.id] == 'T') {
                 var err = new Error('the record is deleted');
                 F3.Util.Utility.logException('ContractDAL.getWithDetails(id); // id = ' + id, err);
                 return null;
@@ -109,7 +117,7 @@ class ContractDAL extends BaseDAL {
             var items = [];
             var itemIds = contractItems
                 .filter(ci=> !!ci.custrecord_f3mm_ci_item)
-                .map(ci => parseInt(ci.custrecord_f3mm_ci_item.value));
+                .map(ci=>parseInt(ci.custrecord_f3mm_ci_item.value));
 
             if (itemIds && itemIds.length) {
                 items = commonDAL.getItems({
@@ -131,7 +139,7 @@ class ContractDAL extends BaseDAL {
             contract.sublists.quotes = quotes;
 
             contractItems.forEach(contractItem => {
-                if ( !!contractItem.custrecord_f3mm_ci_item) {
+                if (!!contractItem.custrecord_f3mm_ci_item) {
                     var itemId = contractItem.custrecord_f3mm_ci_item.value;
                     var foundItem = items.filter(item => item.id == itemId)[0];
                     if (!!foundItem) {
@@ -162,7 +170,7 @@ class ContractDAL extends BaseDAL {
         };
         var filters = [];
 
-        if ( !!params) {
+        if (!!params) {
             if (!F3.Util.Utility.isBlankOrNull(params.contract_number)) {
                 filters.push(new nlobjSearchFilter(this.fields.contractNumber.id, null, 'contains', params.contract_number));
             }
@@ -285,6 +293,7 @@ class ContractDAL extends BaseDAL {
         record[this.fields.salesRep.id] = contract.sales_rep;
         record[this.fields.department.id] = contract.department;
         record[this.fields.contractNumber.id] = contract.contract_number;
+        record[this.fields.name.id] = contract.contract_number;
         record[this.fields.status.id] = contract.status;
         record[this.fields.poNumber.id] = contract.po_number;
 
@@ -372,8 +381,6 @@ class ContractDAL extends BaseDAL {
     }
 
 
-
-
     /**
      * Export records in csv format
      * @param {object} params json object contain filters data
@@ -387,7 +394,7 @@ class ContractDAL extends BaseDAL {
 
         var content = [];
         var temp = [];
-        var keysToExclude = ['recordType','custrecord_f3mm_deleted'];
+        var keysToExclude = ['recordType', 'custrecord_f3mm_deleted'];
         var keyObjects = [
             'custrecord_f3mm_contract_vendor',
             'custrecord_f3mm_customer',
@@ -453,7 +460,6 @@ class ContractDAL extends BaseDAL {
     }
 
 
-
     /**
      * Create/Update a Contract based on json data passed
      * @param {object} contract json object containing data for contract
@@ -474,6 +480,8 @@ class ContractDAL extends BaseDAL {
         record[this.fields.startDate.id] = contract.custrecord_f3mm_start_date;
         record[this.fields.endDate.id] = contract.custrecord_f3mm_end_date;
         record[this.fields.contractNumber.id] = contract.custrecord_f3mm_contract_number;
+        record[this.fields.name.id] = contract.custrecord_f3mm_contract_number;
+        record[this.fields.memo.id] = contract.custrecord_f3mm_memo;
 
         var id = this.upsert(record);
         var result = {

@@ -21,6 +21,7 @@ var DataManager = (function () {
     function DataManager(type) {
         this._serverUrl = null;
         this._cacheTime = 0;
+        this._cachePrefix = 'mm_cn_';
         this._viewType = type;
         var oneSecond = 1000;
         var oneMinute = 60 * oneSecond;
@@ -100,7 +101,7 @@ var DataManager = (function () {
     DataManager.prototype.getTaxCodes = function (params, callback) {
         var _this = this;
         try {
-            var cacheKey = 'taxcodes';
+            var cacheKey = this._cachePrefix + 'taxcodes';
             var data = $.jStorage.get(cacheKey);
             if (!!data) {
                 callback && callback(data);
@@ -176,7 +177,7 @@ var DataManager = (function () {
      * @returns {void}
      */
     DataManager.prototype.getVendors = function (callback) {
-        var cacheKey = 'vendors';
+        var cacheKey = this._cachePrefix + 'vendors';
         var data = $.jStorage.get(cacheKey);
         if (!!data) {
             callback && callback(data);
@@ -196,7 +197,7 @@ var DataManager = (function () {
      * @returns {void}
      */
     DataManager.prototype.getEmployees = function (callback) {
-        var cacheKey = 'employees';
+        var cacheKey = this._cachePrefix + 'employees';
         var data = $.jStorage.get(cacheKey);
         if (!!data) {
             callback && callback(data);
@@ -216,7 +217,7 @@ var DataManager = (function () {
      * @returns {void}
      */
     DataManager.prototype.getDepartment = function (callback) {
-        var cacheKey = 'departments';
+        var cacheKey = this._cachePrefix + 'departments';
         var data = $.jStorage.get(cacheKey);
         if (!!data) {
             callback && callback(data);

@@ -22,6 +22,7 @@ class DataManager {
     private _serverUrl: string = null;
     private _viewType: string;
     private _cacheTime: number = 0;
+    private _cachePrefix: string = 'mm_cn_';
 
     constructor(type: string) {
         this._viewType = type;
@@ -128,7 +129,7 @@ class DataManager {
      */
     getTaxCodes(params, callback) {
         try {
-            var cacheKey = 'taxcodes';
+            var cacheKey = this._cachePrefix + 'taxcodes';
             var data = $.jStorage.get(cacheKey);
 
             if (!!data) {
@@ -227,7 +228,7 @@ class DataManager {
      */
     getVendors(callback) {
 
-        var cacheKey = 'vendors';
+        var cacheKey = this._cachePrefix + 'vendors';
         var data = $.jStorage.get(cacheKey);
 
         if (!!data) {
@@ -252,7 +253,7 @@ class DataManager {
      */
     getEmployees(callback) {
 
-        var cacheKey = 'employees';
+        var cacheKey = this._cachePrefix + 'employees';
         var data = $.jStorage.get(cacheKey);
 
         if (!!data) {
@@ -277,7 +278,7 @@ class DataManager {
      */
     getDepartment(callback) {
 
-        var cacheKey = 'departments';
+        var cacheKey = this._cachePrefix + 'departments';
         var data = $.jStorage.get(cacheKey);
 
         if (!!data) {

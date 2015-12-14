@@ -220,7 +220,9 @@ class ListContractsUIManager {
      * bindDatePicker - Bind date picker control with textboxes
      */
     private bindDatePicker(e) {
-        var $this = $(e.target);
+        console.log(e);
+        var $this = $(e.target).closest('.input-group.date');
+        console.log('$this:',$this);
 
         if ($this.find('input').is(':disabled')) {
             e.cancelBubble = true;
@@ -437,7 +439,7 @@ class ListContractsUIManager {
                 }
             }
         }, {
-            title: "&nbsp;",
+            title: "Edit | View",
             name: "internalid",
             type: "text",
             sorting: false,
@@ -457,11 +459,11 @@ class ListContractsUIManager {
                 return $links;
             }
         }, {
-            title: "ID",
-            name: "internalid",
+            title: "Contract #",
+            name: "custrecord_f3mm_contract_number",
             type: "text",
-            width: 20,
-            editing: false
+            width: 70,
+            css: "contract-number"
         }, {
             title: "Company Name",
             name: "custrecord_f3mm_customer.text",
@@ -481,16 +483,10 @@ class ListContractsUIManager {
             width: 150,
             editing: false
         }, {
-            title: "Contract #",
-            name: "custrecord_f3mm_contract_number",
-            type: "text",
-            width: 70,
-            css: "contract-number"
-        }, {
-            title: "Vendor",
+            title: "Contract Vendor",
             name: "custrecord_f3mm_contract_vendor.text",
             type: "text",
-            width: 80,
+            width: 90,
             editing: false
         }, {
             title: "Total Qty Seats",
@@ -502,7 +498,7 @@ class ListContractsUIManager {
             title: "Start Date",
             name: "custrecord_f3mm_start_date",
             type: "text",
-            width: 70,
+            width: 85,
             editTemplate: function (_, item) {
 
                 var $html = $('<div class="input-group input-group-sm date start-date">' +
@@ -520,10 +516,10 @@ class ListContractsUIManager {
             title: "End Date",
             name: "custrecord_f3mm_end_date",
             type: "text",
-            width: 70,
+            width: 85,
             editTemplate: function (_, item) {
 
-                var $html = $('<div class="input-group input-group-sm date start-date">' +
+                var $html = $('<div class="input-group input-group-sm date end-date">' +
                     '<input type="text" class="form-control" />' +
                     '<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>' +
                     '</div>');
@@ -538,8 +534,7 @@ class ListContractsUIManager {
             title: "memo",
             name: "custrecord_f3mm_memo",
             type: "text",
-            width: 120,
-            editing: false
+            width: 120
         }];
 
 
@@ -553,6 +548,7 @@ class ListContractsUIManager {
 
         return gridFields;
     }
+
 
     /**
      * Binds Contract Items with the Grid
@@ -582,6 +578,7 @@ class ListContractsUIManager {
             autoload: true,
             pageSize: 10,
             pageButtonCount: 5,
+            deleteConfirm: "Are you sure you want to delete this contract?",
             controller: {
                 deleteItem: this.deleteContract.bind(this),
                 loadData: this.search.bind(this)
@@ -596,7 +593,7 @@ class ListContractsUIManager {
         $grid.on('focusin', '.jsgrid-edit-row .primary-contact', (ev) => {
             this.bindPrimaryContactDropdown($(ev.target));
         });
-        $grid.on('focusin', '.jsgrid-edit-row .start-date, .jsgrid-edit-row .end-date', (ev) => {
+        $grid.on('focusin click', '.jsgrid-edit-row .start-date, .jsgrid-edit-row .end-date', (ev) => {
             this.bindDatePicker(ev);
         });
 
@@ -652,8 +649,10 @@ class ListContractsUIManager {
 
         if (checked) {
             $('.select-all').hide();
+            $('.btn-void').attr('disabled', 'disabled');
         } else {
             $('.select-all').show();
+            $('.btn-void').removeAttr('disabled');
         }
     }
 
@@ -713,7 +712,8 @@ class ListContractsUIManager {
             custrecord_f3mm_end_date: args.item.custrecord_f3mm_end_date,
             custrecord_f3mm_contract_number: args.item.custrecord_f3mm_contract_number,
             custrecord_f3mm_primary_contact: args.item.custrecord_f3mm_primary_contact,
-            custrecord_f3mm_primary_contact_email: args.item.custrecord_f3mm_primary_contact_email
+            custrecord_f3mm_primary_contact_email: args.item.custrecord_f3mm_primary_contact_email,
+            custrecord_f3mm_memo: args.item.custrecord_f3mm_memo
         };
 
         this.showLoading();

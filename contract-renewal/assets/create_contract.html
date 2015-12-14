@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
           integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ=="
           crossorigin="anonymous"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" media="screen" href="{{ bootstrap-datepicker3.min.css }}"/>
     <link rel="stylesheet" type="text/css" media="screen" href="{{ jsgrid.min.css }}"/>
     <link rel="stylesheet" type="text/css" media="screen" href="{{ jsgrid-theme.min.css }}"/>
@@ -85,7 +86,7 @@
                                     <label for="customer" class="control-label">Customer <span
                                             class="mandatory">*</span></label>
 
-                                    <div class="">
+                                    <div class="input-group">
                                         <!--<select class="form-control customer-dropdown"-->
                                         <!--id="customer"-->
                                         <!--name="customer">-->
@@ -96,6 +97,11 @@
                                                id="customer"
                                                name="customer"
                                                type="text"/>
+
+                                        <span  class="input-group-addon input-group-addon-transparent">
+                                            <a id="entity_popup_new" title="New" href='javascript:void("entity_new")'><img src="/uirefresh/img/field/add.png" /></a>
+                                            <a href="#" id="entity_popup_link" title="Open"><img src="/uirefresh/img/field/open.png" /></a>
+                                        </span>
 
                                         <!--<img class="Typeahead-spinner" src="img/spinner.gif">-->
                                         <!--<span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>-->
@@ -463,6 +469,7 @@
 
     <!-- All Scripts should go below -->
     <script>
+        document.title = '{{ title }}'.replace('<i class="fa fa-file-text-o"></i>', '');
         window.$ = (window.NS && window.NS.jQuery) || window.jQuery;
         window.pageType = '{{ type }}';
         window.apiSuiteletUrl = '{{ apiSuiteletUrl }}';
