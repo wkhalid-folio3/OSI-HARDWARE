@@ -163,6 +163,34 @@ class ContractDAL extends BaseDAL {
      * @param {object} params json object contain filters data
      * @returns {object[]} array of json representation of contract objects
      */
+    searchContractItems(params) {
+        var filters = [];
+        var cols = [];
+        var contractItemInternalId = 'customrecord_f3mm_contract_item';
+
+        if ( !!params) {
+            if (!!params.contractIds) {
+                filters.push(new nlobjSearchFilter('custrecord_f3mm_ci_contract', null, 'anyof', params.contractIds));
+            }
+        }
+
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_quantity'));
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_item'));
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_price'));
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_amount'));
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_item_description'));
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_price_level'));
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_contract'));
+
+        var records = super.getAll(filters, cols, contractItemInternalId);
+        return records;
+    }
+
+    /**
+     * Search contracts with specified filters
+     * @param {object} params json object contain filters data
+     * @returns {object[]} array of json representation of contract objects
+     */
     search(params) {
         var result = {
             total: 0,
@@ -198,6 +226,18 @@ class ContractDAL extends BaseDAL {
         filters.push(new nlobjSearchFilter(this.fields.deleted.id, null, 'is', 'F'));
 
         result.records = super.getAll(filters, null, null, params);
+
+
+        if (!!result.records) {
+            var contractIds = result.records.map(record=> record.id);
+            var contractItems = this.searchContractItems({contractIds: contractIds});
+            result.records.forEach(record=> {
+                record.sublists = record.sublists || {};
+                var filtered = contractItems.filter(ci=> ci.custrecord_f3mm_ci_contract == record.id);
+                record.sublists.recmachcustrecord_f3mm_ci_contract = filtered;
+            });
+        }
+
 
         // count records
         var columns = [new nlobjSearchColumn('internalid', null, 'count').setLabel('total')];
@@ -297,6 +337,7 @@ class ContractDAL extends BaseDAL {
         record[this.fields.name.id] = contract.contract_number;
         record[this.fields.status.id] = contract.status;
         record[this.fields.poNumber.id] = contract.po_number;
+        record[this.fields.duration.id] = contract.duration;
 
         if (!!contract.items) {
 

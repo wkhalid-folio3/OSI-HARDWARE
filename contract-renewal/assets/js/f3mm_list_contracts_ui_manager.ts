@@ -446,7 +446,7 @@ class ListContractsUIManager {
             editing: false,
             inserting: false,
             filtering: false,
-            width: 70,
+            width: 90,
             itemTemplate: function (value) {
                 var viewUrl = window.createSuiteletUrl + '&cid=' + value;
                 var editUrl = window.createSuiteletUrl + '&e=t&cid=' + value;
@@ -462,7 +462,7 @@ class ListContractsUIManager {
             title: "Contract #",
             name: "custrecord_f3mm_contract_number",
             type: "text",
-            width: 70,
+            width: 75,
             css: "contract-number"
         }, {
             title: "Company Name",
@@ -498,7 +498,7 @@ class ListContractsUIManager {
             title: "Start Date",
             name: "custrecord_f3mm_start_date",
             type: "text",
-            width: 85,
+            width: 100,
             editTemplate: function (_, item) {
 
                 var $html = $('<div class="input-group input-group-sm date start-date">' +
@@ -516,7 +516,7 @@ class ListContractsUIManager {
             title: "End Date",
             name: "custrecord_f3mm_end_date",
             type: "text",
-            width: 85,
+            width: 100,
             editTemplate: function (_, item) {
 
                 var $html = $('<div class="input-group input-group-sm date end-date">' +
@@ -529,6 +529,20 @@ class ListContractsUIManager {
                 this.editControl.val(_);
 
                 return $html;
+            }
+        }, {
+            title: "First Item Description",
+            name: "custrecord_f3mm_memo",
+            type: "text",
+            width: 150,
+            editing: false,
+            itemTemplate: (_, item)=> {
+                //console.log('First Item Description: arguments: ', arguments);
+                var contractItems = item && item.sublists && item.sublists.recmachcustrecord_f3mm_ci_contract;
+                var firstItem = contractItems && contractItems.length && contractItems[0];
+                var description = firstItem && firstItem.custrecord_f3mm_ci_item_description;
+                var itemName = firstItem.custrecord_f3mm_ci_item && firstItem.custrecord_f3mm_ci_item.text;
+                return description || itemName || '';
             }
         }, {
             title: "memo",
@@ -739,7 +753,7 @@ class ListContractsUIManager {
         console.log('onItemUpdating: ', JSON.stringify(suggestion));
 
         if (!!suggestion) {
-            if (!!data.custrecord_f3mm_primary_contact) {
+            if (!data.custrecord_f3mm_primary_contact) {
                 data.custrecord_f3mm_primary_contact = {};
             }
 
@@ -757,7 +771,7 @@ class ListContractsUIManager {
         if (!data.custrecord_f3mm_primary_contact || !data.custrecord_f3mm_primary_contact.value) {
             args.preserve = true;
             args.cancel = true;
-            alert("Please select an item");
+            alert("Please select a primary contact");
             return;
         }
 

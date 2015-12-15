@@ -46,6 +46,8 @@ var CreateContractUIManager = (function () {
         $('.btn-generate-quote').on('click', this.generateQuote.bind(this));
         $('#entity_popup_link').on('click', this.openExistingCustomerWindow.bind(this));
         $('#entity_popup_new').on('click', this.openNewCustomerWindow.bind(this));
+        $('.duration-dropdown').on('change', this.durationDropdownChanged.bind(this));
+        $('.start-date-text').parent().on('changeDate', this.durationDropdownChanged.bind(this));
     }
     CreateContractUIManager.prototype.getSelectedCustomer = function () {
         var result = null;
@@ -75,6 +77,36 @@ var CreateContractUIManager = (function () {
         else
             alert('Please choose an entry first.');
         return false;
+    };
+    CreateContractUIManager.prototype.durationDropdownChanged = function (ev) {
+        var $dropdown = $('.duration-dropdown');
+        var selected = $dropdown.val();
+        var $startDateElement = $('.start-date-text').parent();
+        var $endDateElement = $('.end-date-text').parent();
+        var startDate = $startDateElement.datepicker('getDate');
+        var endDate = null;
+        console.log('durationDropdownChanged(); // $dropdown: ', $dropdown);
+        console.log('durationDropdownChanged(); // selected: ', selected);
+        if (!!startDate) {
+            if (selected == "1") {
+                endDate = startDate;
+                endDate.setMonth(startDate.getMonth() + 1); // add one month
+                endDate.setDate(endDate.getDate() - 1); // substract one day
+            }
+            else if (selected == "2") {
+                endDate = startDate;
+                endDate.setMonth(startDate.getMonth() + 3);
+                endDate.setDate(endDate.getDate() - 1); // substract one day
+            }
+            else if (selected == "3") {
+                endDate = startDate;
+                endDate.setMonth(startDate.getMonth() + 12);
+                endDate.setDate(endDate.getDate() - 1); // substract one day
+            }
+        }
+        if (!!endDate) {
+            $endDateElement.datepicker('setDate', endDate);
+        }
     };
     /**
      * Show Loading Indicator
@@ -109,6 +141,9 @@ var CreateContractUIManager = (function () {
                     requiredTypeahead: true
                 },
                 department: {
+                    required: true
+                },
+                duration: {
                     required: true
                 },
                 vendor: {
@@ -275,6 +310,9 @@ var CreateContractUIManager = (function () {
             }
         }
         else {
+            if (!!contract.custrecord_f3mm_contract_duration) {
+                $('.duration-dropdown', $form).val(contract.custrecord_f3mm_contract_duration.value);
+            }
             if (!!contract.custrecord_f3mm_start_date) {
                 $('.start-date-text', $form).parent().datepicker('setDate', contract.custrecord_f3mm_start_date);
             }

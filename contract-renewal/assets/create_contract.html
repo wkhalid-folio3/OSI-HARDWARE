@@ -250,6 +250,21 @@
                                 </div>
 
                                 <div class="form-group">
+                                    <label for="duration" class="control-label">Contract Duration</label>
+
+                                    <div class="">
+                                        <select class="form-control duration-dropdown"
+                                                id="duration"
+                                                name="duration">
+                                            <option value=""></option>
+                                            <option value="1">Monthly</option>
+                                            <option value="2">Quarterly</option>
+                                            <option value="3">Annual</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
                                     <label for="start_date" class="control-label">Start Date <span
                                             class="mandatory">*</span></label>
                                     <div class="">
@@ -436,6 +451,17 @@
                                 {{ } }}
                             </div>
                         </div>
+
+                        <div class="form-group">
+                            <label for="department" class="control-label">Contract Duration</label>
+
+                            <div class="">
+                                {{ if ( !!custrecord_f3mm_contract_duration) { }}
+                                    {{= custrecord_f3mm_contract_duration.text }}
+                                {{ } }}
+                            </div>
+                        </div>
+
 
                         <div class="form-group">
                             <label for="start_date" class="control-label">Start Date</label>

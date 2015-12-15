@@ -159,6 +159,30 @@ var ContractDAL = (function (_super) {
      * @param {object} params json object contain filters data
      * @returns {object[]} array of json representation of contract objects
      */
+    ContractDAL.prototype.searchContractItems = function (params) {
+        var filters = [];
+        var cols = [];
+        var contractItemInternalId = 'customrecord_f3mm_contract_item';
+        if (!!params) {
+            if (!!params.contractIds) {
+                filters.push(new nlobjSearchFilter('custrecord_f3mm_ci_contract', null, 'anyof', params.contractIds));
+            }
+        }
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_quantity'));
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_item'));
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_price'));
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_amount'));
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_item_description'));
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_price_level'));
+        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_contract'));
+        var records = _super.prototype.getAll.call(this, filters, cols, contractItemInternalId);
+        return records;
+    };
+    /**
+     * Search contracts with specified filters
+     * @param {object} params json object contain filters data
+     * @returns {object[]} array of json representation of contract objects
+     */
     ContractDAL.prototype.search = function (params) {
         var result = {
             total: 0,
@@ -186,6 +210,15 @@ var ContractDAL = (function (_super) {
         }
         filters.push(new nlobjSearchFilter(this.fields.deleted.id, null, 'is', 'F'));
         result.records = _super.prototype.getAll.call(this, filters, null, null, params);
+        if (!!result.records) {
+            var contractIds = result.records.map(function (record) { return record.id; });
+            var contractItems = this.searchContractItems({ contractIds: contractIds });
+            result.records.forEach(function (record) {
+                record.sublists = record.sublists || {};
+                var filtered = contractItems.filter(function (ci) { return ci.custrecord_f3mm_ci_contract == record.id; });
+                record.sublists.recmachcustrecord_f3mm_ci_contract = filtered;
+            });
+        }
         // count records
         var columns = [new nlobjSearchColumn('internalid', null, 'count').setLabel('total')];
         var count = _super.prototype.getAll.call(this, filters, columns)[0];
@@ -267,6 +300,7 @@ var ContractDAL = (function (_super) {
         record[this.fields.name.id] = contract.contract_number;
         record[this.fields.status.id] = contract.status;
         record[this.fields.poNumber.id] = contract.po_number;
+        record[this.fields.duration.id] = contract.duration;
         if (!!contract.items) {
             var contractItemsSublist = {
                 internalId: 'recmachcustrecord_f3mm_ci_contract',

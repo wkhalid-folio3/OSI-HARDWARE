@@ -33,7 +33,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of contacts searched from database
      */
-    getContacts(options ? ) {
+    getContacts(options ?) {
 
         var filters = [];
         var cols = [];
@@ -80,7 +80,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of employees searched from database
      */
-    getEmployees(options ? ) {
+    getEmployees(options ?) {
 
         var filters = [];
         var cols = [];
@@ -102,7 +102,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of price levels fetched from database
      */
-    getPriceLevels(options ? ) {
+    getPriceLevels(options ?) {
         var record = nlapiLoadRecord(options.recordType, options.itemId);
 
         // Check the features enabled in the account. See Pricing Sublist Feature Dependencies for
@@ -119,7 +119,6 @@ class CommonDAL extends BaseDAL {
 
         }
         else {
-
             priceID = "price";
             if (multiCurrency) {
                 //var internalId = nlapiSearchRecord('currency', null, new nlobjSearchFilter('symbol', null, 'contains', currencyID))[0].getId();
@@ -132,7 +131,7 @@ class CommonDAL extends BaseDAL {
 
         var priceLevels = JsonHelper.getSublistItemsJson(record, priceID);
 
-        var priceLevelsFiltered = priceLevels.filter(priceLevel=> {
+        var priceLevelsFiltered = priceLevels.filter(priceLevel  => {
             return !!priceLevel.price_1_ || !!priceLevel.discount;
         });
 
@@ -216,7 +215,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of vendors
      */
-    getVendors(options ? ) {
+    getVendors(options ?) {
 
         var filters = [];
         var cols = [];
@@ -239,7 +238,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of departments
      */
-    getDepartments(options ? ) {
+    getDepartments(options ?) {
 
         var filters = [];
         var cols = [];
@@ -258,7 +257,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of searched customers
      */
-    getCustomers(options ? ) {
+    getCustomers(options ?) {
 
         var filters = [];
         var cols = [];
@@ -300,7 +299,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of tax groups and tax codes merged
      */
-    getTaxItems(options ? ) {
+    getTaxItems(options ?) {
         var taxGroups = this.getTaxGroups(options);
         var taxCodes = this.getTaxCodes(options);
 
@@ -328,7 +327,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of searched tax groups
      */
-    getTaxGroups(options ? ) {
+    getTaxGroups(options ?) {
 
         var filters = [];
         var cols = [];
@@ -360,7 +359,7 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of searched tax codes
      */
-    getTaxCodes(options ? ) {
+    getTaxCodes(options ?) {
 
         var filters = [];
         var cols = [];

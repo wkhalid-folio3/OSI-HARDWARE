@@ -1613,9 +1613,9 @@
             return $result;
         },
 
-        editTemplate: function(value) {
+        editTemplate: function(value, item) {
             if(!this.editing)
-                return this.itemTemplate(value);
+                return this.itemTemplate(value, item);
 
             var $result = this.editControl = this._createTextBox();
             $result.val(value);
