@@ -171,9 +171,9 @@ class CreateContractUIManager {
                 department: {
                     required: true
                 },
-                duration: {
-                    required: true
-                },
+                //duration: {
+                //    required: true
+                //},
                 vendor: {
                     required: true
                 },

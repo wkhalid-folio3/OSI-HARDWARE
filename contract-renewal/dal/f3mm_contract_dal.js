@@ -102,6 +102,27 @@ var ContractDAL = (function (_super) {
     }
     /**
      * Gets contract with specified id including details of Items and related Quote
+     * @param {string} contractId
+     * @returns {object} json representation of contract obejct along with contract items and quotes
+     */
+    ContractDAL.prototype.getHistory = function (contractId) {
+        var filters = [], columns = [];
+        //filters.push(new nlobjSearchFilter('type', null, 'anyof', 'SalesOrd'));
+        //if(!!lastSyncDate)
+        //    filters.push(new nlobjSearchFilter('date', 'systemNotes', 'After', lastSyncDate));
+        filters.push(new nlobjSearchFilter('internalid', null, 'is', contractId));
+        columns.push(new nlobjSearchColumn('date', 'systemNotes', 'group'));
+        columns.push(new nlobjSearchColumn('field', 'systemNotes', 'group'));
+        columns.push(new nlobjSearchColumn('type', 'systemNotes', 'group'));
+        columns.push(new nlobjSearchColumn('oldvalue', 'systemNotes', 'group'));
+        columns.push(new nlobjSearchColumn('newvalue', 'systemNotes', 'group'));
+        //sorting on date field
+        columns[0].setSort();
+        var history = this.getAll(filters, columns);
+        return history;
+    };
+    /**
+     * Gets contract with specified id including details of Items and related Quote
      * @param {string} id
      * @returns {object} json representation of contract obejct along with contract items and quotes
      */
@@ -135,6 +156,7 @@ var ContractDAL = (function (_super) {
                 contractId: id
             });
             contract.sublists.quotes = quotes;
+            contract.history = this.getHistory(id);
             contractItems.forEach(function (contractItem) {
                 if (!!contractItem.custrecord_f3mm_ci_item) {
                     var itemId = contractItem.custrecord_f3mm_ci_item.value;
@@ -215,7 +237,7 @@ var ContractDAL = (function (_super) {
             var contractItems = this.searchContractItems({ contractIds: contractIds });
             result.records.forEach(function (record) {
                 record.sublists = record.sublists || {};
-                var filtered = contractItems.filter(function (ci) { return ci.custrecord_f3mm_ci_contract == record.id; });
+                var filtered = contractItems.filter(function (ci) { return ci.custrecord_f3mm_ci_contract.value == record.id; });
                 record.sublists.recmachcustrecord_f3mm_ci_contract = filtered;
             });
         }
@@ -238,13 +260,15 @@ var ContractDAL = (function (_super) {
             var quote = nlapiCreateRecord('estimate');
             var tranDate = new Date();
             var expectedClosingDate = new Date();
-            expectedClosingDate.setDate(expectedClosingDate.getDate() + 7); // add 7 days
+            expectedClosingDate.setDate(expectedClosingDate.getDate() + 30); // add 7 days
+            var dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + 30); // add 7 days
             // TODO : need to set due date base on customer requirement
             //var dueDate = new Date();
             //dueDate.setDate(dueDate.getDate() + 7); // add 7 days
             quote.setFieldValue('expectedclosedate', nlapiDateToString(expectedClosingDate)); // mandatory field
             quote.setFieldValue('trandate', nlapiDateToString(tranDate)); // mandatory field
-            quote.setFieldValue('duedate', nlapiDateToString(tranDate)); // mandatory field
+            quote.setFieldValue('duedate', nlapiDateToString(dueDate)); // mandatory field
             // entityStatuses for references
             var proposalStatusId = "10";
             quote.setFieldValue('entitystatus', proposalStatusId); // proposal

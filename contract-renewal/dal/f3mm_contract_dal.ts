@@ -96,6 +96,34 @@ class ContractDAL extends BaseDAL {
 
     /**
      * Gets contract with specified id including details of Items and related Quote
+     * @param {string} contractId
+     * @returns {object} json representation of contract obejct along with contract items and quotes
+     */
+    getHistory(contractId: string) {
+        var filters = [],
+            columns = [];
+
+        //filters.push(new nlobjSearchFilter('type', null, 'anyof', 'SalesOrd'));
+        //if(!!lastSyncDate)
+        //    filters.push(new nlobjSearchFilter('date', 'systemNotes', 'After', lastSyncDate));
+        filters.push(new nlobjSearchFilter('internalid', null, 'is', contractId));
+
+        columns.push(new nlobjSearchColumn('date', 'systemNotes', 'group'));
+        columns.push(new nlobjSearchColumn('field', 'systemNotes', 'group'));
+        columns.push(new nlobjSearchColumn('type', 'systemNotes', 'group'));
+        columns.push(new nlobjSearchColumn('oldvalue', 'systemNotes', 'group'));
+        columns.push(new nlobjSearchColumn('newvalue', 'systemNotes', 'group'));
+        //sorting on date field
+        columns[0].setSort();
+
+        var history = this.getAll(filters, columns);
+
+        return history;
+    }
+
+
+    /**
+     * Gets contract with specified id including details of Items and related Quote
      * @param {string} id
      * @returns {object} json representation of contract obejct along with contract items and quotes
      */
@@ -137,6 +165,8 @@ class ContractDAL extends BaseDAL {
             });
 
             contract.sublists.quotes = quotes;
+
+            contract.history = this.getHistory(id);
 
             contractItems.forEach(contractItem => {
                 if (!!contractItem.custrecord_f3mm_ci_item) {
@@ -227,13 +257,12 @@ class ContractDAL extends BaseDAL {
 
         result.records = super.getAll(filters, null, null, params);
 
-
         if (!!result.records) {
             var contractIds = result.records.map(record=> record.id);
             var contractItems = this.searchContractItems({contractIds: contractIds});
             result.records.forEach(record=> {
                 record.sublists = record.sublists || {};
-                var filtered = contractItems.filter(ci=> ci.custrecord_f3mm_ci_contract == record.id);
+                var filtered = contractItems.filter(ci=> ci.custrecord_f3mm_ci_contract.value == record.id);
                 record.sublists.recmachcustrecord_f3mm_ci_contract = filtered;
             });
         }
@@ -265,7 +294,9 @@ class ContractDAL extends BaseDAL {
 
             var tranDate = new Date();
             var expectedClosingDate = new Date();
-            expectedClosingDate.setDate(expectedClosingDate.getDate() + 7); // add 7 days
+            expectedClosingDate.setDate(expectedClosingDate.getDate() + 30); // add 7 days
+            var dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + 30); // add 7 days
 
             // TODO : need to set due date base on customer requirement
             //var dueDate = new Date();
@@ -273,7 +304,7 @@ class ContractDAL extends BaseDAL {
 
             quote.setFieldValue('expectedclosedate', nlapiDateToString(expectedClosingDate)); // mandatory field
             quote.setFieldValue('trandate', nlapiDateToString(tranDate)); // mandatory field
-            quote.setFieldValue('duedate', nlapiDateToString(tranDate)); // mandatory field
+            quote.setFieldValue('duedate', nlapiDateToString(dueDate)); // mandatory field
 
             // entityStatuses for references
             var proposalStatusId = "10";

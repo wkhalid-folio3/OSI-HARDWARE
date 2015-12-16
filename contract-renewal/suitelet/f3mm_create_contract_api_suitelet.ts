@@ -106,6 +106,8 @@ class CreateContractAPISuitelet {
             message: ''
         };
 
+        nlapiLogExecution('DEBUG', 'title', null);
+
         try {
 
             var executedActionResult = null;

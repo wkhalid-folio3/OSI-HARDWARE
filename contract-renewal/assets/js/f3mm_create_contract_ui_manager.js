@@ -143,9 +143,9 @@ var CreateContractUIManager = (function () {
                 department: {
                     required: true
                 },
-                duration: {
-                    required: true
-                },
+                //duration: {
+                //    required: true
+                //},
                 vendor: {
                     required: true
                 },

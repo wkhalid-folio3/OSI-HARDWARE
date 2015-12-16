@@ -590,7 +590,7 @@ class ListContractsUIManager {
             paging: true,
             pageLoading: true,
             autoload: true,
-            pageSize: 10,
+            pageSize: 25,
             pageButtonCount: 5,
             deleteConfirm: "Are you sure you want to delete this contract?",
             controller: {

@@ -30,7 +30,8 @@ var JsonHelper = (function () {
                     nm = (columnNames && columnNames[x]) || item.getName();
                     val = row.getValue(item);
                     text = row.getText(item);
-                    if (!!text && val != text) {
+                    // donot create object for internal id
+                    if (!!text && nm != 'internalid') {
                         obj[nm] = {
                             text: text,
                             value: val

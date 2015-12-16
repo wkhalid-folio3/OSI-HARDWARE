@@ -71,6 +71,7 @@ var CreateContractAPISuitelet = (function () {
             status: 'OK',
             message: ''
         };
+        nlapiLogExecution('DEBUG', 'title', null);
         try {
             var executedActionResult = null;
             var actionExecuted = true;
