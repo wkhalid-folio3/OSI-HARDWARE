@@ -113,8 +113,8 @@ class ContractDAL extends BaseDAL {
         columns.push(new nlobjSearchColumn('type', 'systemNotes', 'group'));
         columns.push(new nlobjSearchColumn('oldvalue', 'systemNotes', 'group'));
         columns.push(new nlobjSearchColumn('newvalue', 'systemNotes', 'group'));
-        //sorting on date field
-        columns[0].setSort();
+        //sorting on date field in descending order
+        columns[0].setSort(true);
 
         var history = this.getAll(filters, columns);
 
@@ -198,7 +198,7 @@ class ContractDAL extends BaseDAL {
         var cols = [];
         var contractItemInternalId = 'customrecord_f3mm_contract_item';
 
-        if ( !!params) {
+        if (!!params) {
             if (!!params.contractIds) {
                 filters.push(new nlobjSearchFilter('custrecord_f3mm_ci_contract', null, 'anyof', params.contractIds));
             }
@@ -374,12 +374,13 @@ class ContractDAL extends BaseDAL {
 
             var contractItemsSublist = {
                 internalId: 'recmachcustrecord_f3mm_ci_contract',
-                keyField: 'custrecord_f3mm_ci_item',
+                keyField: 'id',
                 lineitems: []
             };
 
             contract.items.forEach(item => {
                 var lineitem = {};
+                lineitem['id'] = item.id;
                 lineitem['custrecord_f3mm_ci_quantity'] = item.quantity;
                 lineitem['custrecord_f3mm_ci_item'] = item.item_id;
                 lineitem['custrecord_f3mm_ci_price'] = item.price == "-1" ? "" : item.price;
@@ -577,10 +578,9 @@ class ContractDAL extends BaseDAL {
             throw new Error("contract cannot be null.");
         }
 
-        var removeExistingLineItems = true;
         var record = this.prepareDataToUpsert(contract);
 
-        var id = this.upsert(record, removeExistingLineItems);
+        var id = this.upsert(record);
         var result = {
             id: id
         };

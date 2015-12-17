@@ -459,6 +459,7 @@ class CreateContractUIManager {
             var items = $('#jsGrid').data().JSGrid.data;
             $.each(items, function(index, item) {
                 serializedData.items.push({
+                    id: item.id,
                     item_id: item.itemid,
                     amount: item.amount,
                     price: item.price,
@@ -538,6 +539,7 @@ class CreateContractUIManager {
                         var priceLevel = contractItem.custrecord_f3mm_ci_price_level;
                         //var taxCode = contractItem.custrecord_f3mm_ci_taxcode;
                         contactItems.push({
+                            id: contractItem.id,
                             item: contractItem.custrecord_f3mm_ci_item.text,
                             itemid: contractItem.custrecord_f3mm_ci_item.value,
                             baseprice: contractItem.custrecord_f3mm_ci_item.baseprice,
