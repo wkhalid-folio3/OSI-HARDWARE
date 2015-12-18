@@ -240,6 +240,7 @@ label.control-label {
     padding: 4px 4px 2px 3px;
     background-color: #607799;
     line-height: 9px;
+    border-radius: 0;
 }
 
 
@@ -252,7 +253,7 @@ textarea {
 }
 
 .form-control {
-    height: 24px !important;
+    height: 24px;
     line-height: 24px !important;
     font-size: 12px;
     border-radius: 0;
@@ -315,4 +316,139 @@ textarea:disabled,
 
 .view-horizontal .form-group {
     margin-bottom: 10px;
+}
+
+.contracts-container tr.jsgrid-header-row,
+.contracts-container tr.jsgrid-header-row th,
+.contracts-container th.jsgrid-header-sortable,
+.contracts-container th.jsgrid-control-field {
+    background-color: #E5E5E5 !important
+}
+
+.contracts-container .jsgrid-edit-row .input-group-addon {
+    background-color: transparent;
+    border: 0;
+    padding: 4px;
+    height: auto;
+}
+
+
+.contracts-listing-page .toolbar {
+    background-color: #E0E6EF;
+    padding: 12px;
+    border-bottom: 1px solid #CECECE;
+}
+
+
+.input-group > .input-group-addon-transparent {
+    background-color: transparent;
+    border-width: 0;
+    padding-right: 0;
+}
+
+
+
+.uir-list-export-csv {
+    background: url('/images/sprite-list.png') no-repeat -50px -600px;
+    width: 20px;
+    height: 18px;
+    display: inline-block;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * iOS 6 style switch checkboxes
+ * by Lea Verou http://lea.verou.me
+ */
+.edit-control-label {
+    font-weight: normal;
+    font-size: 13px;
+}
+:root input[type="checkbox"].ios-switch { /* :root here acting as a filter for older browsers */
+    position: absolute;
+    opacity: 0;
+}
+
+:root input[type="checkbox"].ios-switch + div {
+    display: inline-block;
+    vertical-align: middle;
+    width: 3em;	height: 1em;
+    border: 1px solid rgba(0,0,0,.3);
+    border-radius: 999px;
+    margin: 0 .5em;
+    background: white;
+    background-image: linear-gradient(rgba(0,0,0,.1), transparent),
+    linear-gradient(90deg, hsl(210, 90%, 60%) 50%, transparent 50%);
+    background-size: 200% 100%;
+    background-position: 100% 0;
+    background-origin: border-box;
+    background-clip: border-box;
+    overflow: hidden;
+    transition-duration: .4s;
+    transition-property: padding, width, background-position, text-indent;
+    box-shadow: 0 .1em .1em rgba(0,0,0,.2) inset,
+    0 .45em 0 .1em rgba(0,0,0,.05) inset;
+    font-size: 150%; /* change this and see how they adjust! */
+}
+
+:root input[type="checkbox"].ios-switch:checked + div {
+    padding-left: 2em;
+    width: 3em;
+    background-position: 0 0;
+}
+
+:root input[type="checkbox"].ios-switch + div:before {
+    content: 'On';
+    float: left;
+    width: 1.65em; height: 1.65em;
+    margin: -.1em;
+    border: 1px solid rgba(0,0,0,.35);
+    border-radius: inherit;
+    background: white;
+    background-image: linear-gradient(rgba(0,0,0,.2), transparent);
+    box-shadow: 0 .1em .1em .1em hsla(0,0%,100%,.8) inset,
+    0 0 .5em rgba(0,0,0,.3);
+    color: white;
+    text-shadow: 0 -1px 1px rgba(0,0,0,.3);
+    text-indent: -2.5em;
+}
+
+:root input[type="checkbox"].ios-switch:active + div:before {
+    background-color: #eee;
+}
+
+:root input[type="checkbox"].ios-switch:focus + div {
+    box-shadow: 0 .1em .1em rgba(0,0,0,.2) inset,
+    0 .45em 0 .1em rgba(0,0,0,.05) inset,
+    0 0 .4em 1px rgba(255,0,0,.5);
+}
+
+:root input[type="checkbox"].ios-switch + div:before,
+:root input[type="checkbox"].ios-switch + div:after {
+    font: bold 60%/1.7 sans-serif;
+    text-transform: uppercase;
+}
+
+:root input[type="checkbox"].ios-switch + div:after {
+    content: 'Off';
+    float: left;
+    text-indent: .5em;
+    color: rgba(0,0,0,.45);
+    text-shadow: none;
+
 }
