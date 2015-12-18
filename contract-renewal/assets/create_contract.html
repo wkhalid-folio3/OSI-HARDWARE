@@ -312,13 +312,26 @@
             <br/>
 
             <!-- Items Grid -->
-            <div class="panel panel-primary">
-                <div class="panel-heading">
-                    Items
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#items-container" aria-controls="items" role="tab" data-toggle="tab">Items</a></li>
+                <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab">history</a></li>
+            </ul>
+            <!--<div class="panel panel-primary">-->
+                <!--<div class="panel-heading">-->
+                    <!---->
+                <!--</div>-->
+            <!--</div>-->
+
+
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane items-container active" id="items-container">
+                    <div id="jsGrid"></div>
                 </div>
-            </div>
-            <div class="items-container">
-                <div id="jsGrid"></div>
+                <div role="tabpanel" class="tab-pane" id="history">
+                    <div id="history_grid"></div>
+                </div>
             </div>
 
 

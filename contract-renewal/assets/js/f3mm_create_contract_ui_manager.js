@@ -41,6 +41,7 @@ var CreateContractUIManager = (function () {
         this.setViewMode();
         this.bindDropdown();
         this.bindItemsGrid();
+        this.bindHistoryGrid();
         this.bindDatePicker();
         this.applyValidation();
         $('.btn-generate-quote').on('click', this.generateQuote.bind(this));
@@ -440,6 +441,30 @@ var CreateContractUIManager = (function () {
      * Prepares items data before binding with the grid
      * @returns {object[]} returns array of objects containing contract items data
      */
+    CreateContractUIManager.prototype.prepareHistoryData = function () {
+        var historyItems = [];
+        if (!!this._contractInfo && !!this._contractInfo.history) {
+            var historyItemsInfo = this._contractInfo.history;
+            if (!!historyItemsInfo) {
+                historyItemsInfo.forEach(function (historyItem) {
+                    if (!!historyItem.field) {
+                        historyItems.push({
+                            date: historyItem.date,
+                            field: historyItem.field.text,
+                            newvalue: historyItem.newvalue,
+                            oldvalue: historyItem.oldvalue,
+                            type: historyItem.type
+                        });
+                    }
+                });
+            }
+        }
+        return historyItems;
+    };
+    /**
+     * Prepares items data before binding with the grid
+     * @returns {object[]} returns array of objects containing contract items data
+     */
     CreateContractUIManager.prototype.prepareGridData = function () {
         var contactItems = [];
         if (!!this._contractInfo && !!this._contractInfo.sublists) {
@@ -530,6 +555,63 @@ var CreateContractUIManager = (function () {
             });
         }
         return gridFields;
+    };
+    /**
+     * Binds Contract History with the Grid
+     * @returns {void}
+     */
+    CreateContractUIManager.prototype.bindHistoryGrid = function () {
+        var _this = this;
+        var $grid = $("#history_grid");
+        $grid.jsGrid({
+            height: "auto",
+            width: "100%",
+            noDataContent: 'No history.',
+            inserting: false,
+            filtering: false,
+            editing: false,
+            selecting: false,
+            sorting: true,
+            paging: false,
+            autoload: true,
+            controller: {
+                loadData: function (filter) {
+                    var historyItems = _this.prepareHistoryData();
+                    return historyItems;
+                }
+            },
+            fields: [{
+                    title: "Date",
+                    name: "date",
+                    type: "date",
+                    width: 150
+                }, {
+                    title: "User",
+                    name: "type",
+                    type: "text",
+                    width: 50
+                }, {
+                    title: "Type",
+                    name: "type",
+                    type: "text",
+                    width: 150
+                }, {
+                    title: "Field",
+                    name: "field",
+                    type: "text",
+                    width: 50
+                }, {
+                    title: "Old Value",
+                    name: "oldvalue",
+                    type: "text",
+                    width: 80
+                }, {
+                    title: "New Value",
+                    name: "newvalue",
+                    type: "text",
+                    width: 50
+                }]
+        });
     };
     /**
      * Binds Contract Items with the Grid
