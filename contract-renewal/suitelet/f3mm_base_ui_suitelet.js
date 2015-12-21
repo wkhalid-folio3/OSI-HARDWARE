@@ -40,7 +40,7 @@ var BaseUISuitelet = (function () {
         var templateFile = null;
         var html = null;
         files.forEach(function (file) {
-            if (file.name == templateName) {
+            if (file.name === templateName) {
                 found = file;
             }
         });

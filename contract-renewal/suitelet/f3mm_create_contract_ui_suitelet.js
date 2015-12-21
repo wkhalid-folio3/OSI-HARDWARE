@@ -25,35 +25,9 @@ var CreateContractUISuitelet = (function (_super) {
     __extends(CreateContractUISuitelet, _super);
     function CreateContractUISuitelet() {
         _super.apply(this, arguments);
-        this.title = 'Create Contract';
-        this.type = 'create';
+        this.title = "Create Contract";
+        this.type = "create";
     }
-    /**
-     * Parse HTML Template and replace variables with required data
-     * @returns {string} returns processed html
-     */
-    CreateContractUISuitelet.prototype.parseHtmlTemplate = function (html, data) {
-        var files = this.getDependencyFiles();
-        var suiteletScriptId = 'customscript_f3mm_create_contract_api_st';
-        var suiteletDeploymentId = 'customdeploy_f3mm_create_contract_api_st';
-        var apiSuiteletUrl = nlapiResolveURL('SUITELET', suiteletScriptId, suiteletDeploymentId, false);
-        var contractListingScriptId = 'customscript_f3mm_list_contracts_ui_st';
-        var contractListingDeploymentId = 'customdeploy_f3mm_list_contracts_ui_st';
-        var contractListingUrl = nlapiResolveURL('SUITELET', contractListingScriptId, contractListingDeploymentId, false);
-        html = html || '';
-        for (var i in files) {
-            var fileInfo = files[i];
-            html = html.replace('{{ ' + fileInfo.name + ' }}', fileInfo.url);
-        }
-        html = html.replace('{{ type }}', this.type);
-        html = html.replace(/{{ title }}/gi, data.title);
-        html = html.replace('{{ apiSuiteletUrl }}', apiSuiteletUrl);
-        html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
-        html = html.replace('{{ contractInfo }}', JSON.stringify(data.contract));
-        html = html.replace(/{{ viewContractUrl }}/gi, data.uiSuiteletUrl);
-        html = html.replace(/{{ contractListingUrl }}/gi, contractListingUrl);
-        return html;
-    };
     /**
      * Entry point for Request. Operations:
      *  - Process request
@@ -123,6 +97,32 @@ var CreateContractUISuitelet = (function (_super) {
             throw ex;
         }
         F3.Util.Utility.logDebug('CreateContractUISuitelet.main()', 'End');
+    };
+    /**
+     * Parse HTML Template and replace variables with required data
+     * @returns {string} returns processed html
+     */
+    CreateContractUISuitelet.prototype.parseHtmlTemplate = function (html, data) {
+        var files = this.getDependencyFiles();
+        var suiteletScriptId = "customscript_f3mm_create_contract_api_st";
+        var suiteletDeploymentId = "customdeploy_f3mm_create_contract_api_st";
+        var apiSuiteletUrl = nlapiResolveURL("SUITELET", suiteletScriptId, suiteletDeploymentId, false);
+        var contractListingScriptId = "customscript_f3mm_list_contracts_ui_st";
+        var contractListingDeploymentId = "customdeploy_f3mm_list_contracts_ui_st";
+        var contractListingUrl = nlapiResolveURL("SUITELET", contractListingScriptId, contractListingDeploymentId, false);
+        html = html || "";
+        for (var i in files) {
+            var fileInfo = files[i];
+            html = html.replace("{{ " + fileInfo.name + " }}", fileInfo.url);
+        }
+        html = html.replace("{{ type }}", this.type);
+        html = html.replace(/{{ title }}/gi, data.title);
+        html = html.replace("{{ apiSuiteletUrl }}", apiSuiteletUrl);
+        html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
+        html = html.replace("{{ contractInfo }}", JSON.stringify(data.contract));
+        html = html.replace(/{{ viewContractUrl }}/gi, data.uiSuiteletUrl);
+        html = html.replace(/{{ contractListingUrl }}/gi, contractListingUrl);
+        return html;
     };
     return CreateContractUISuitelet;
 })(BaseUISuitelet);

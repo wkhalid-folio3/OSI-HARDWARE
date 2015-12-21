@@ -21,20 +21,20 @@
  *  - Generate Quote from Contract
  */
 class ContractDAL extends BaseDAL {
-    internalId: string = 'customrecord_f3mm_contract';
+    public internalId: string = "customrecord_f3mm_contract";
 
-    fields = {
+    public fields = {
         id: {
             id: 'internalid',
             type: 'number'
         },
-        name: {
-            id: 'name',
-            type: 'string'
-        },
         customer: {
             id: 'custrecord_f3mm_customer',
             type: 'list'
+        },
+        name: {
+            id: 'name',
+            type: 'string'
         },
         primaryContact: {
             id: 'custrecord_f3mm_primary_contact',
@@ -99,24 +99,23 @@ class ContractDAL extends BaseDAL {
      * @param {string} contractId
      * @returns {object} json representation of contract obejct along with contract items and quotes
      */
-    getHistory(contractId: string) {
-        var filters = [],
+    public getHistory(contractId: string, internalId?: string) {
+        let filters = [],
             columns = [];
 
-        //filters.push(new nlobjSearchFilter('type', null, 'anyof', 'SalesOrd'));
-        //if(!!lastSyncDate)
-        //    filters.push(new nlobjSearchFilter('date', 'systemNotes', 'After', lastSyncDate));
-        filters.push(new nlobjSearchFilter('internalid', null, 'is', contractId));
+        filters.push(new nlobjSearchFilter("internalid", null, "is", contractId));
 
-        columns.push(new nlobjSearchColumn('date', 'systemNotes', 'group'));
-        columns.push(new nlobjSearchColumn('field', 'systemNotes', 'group'));
-        columns.push(new nlobjSearchColumn('type', 'systemNotes', 'group'));
-        columns.push(new nlobjSearchColumn('oldvalue', 'systemNotes', 'group'));
-        columns.push(new nlobjSearchColumn('newvalue', 'systemNotes', 'group'));
-        //sorting on date field in descending order
+        columns.push(new nlobjSearchColumn("date", "systemNotes", "group"));
+        columns.push(new nlobjSearchColumn("field", "systemNotes", "group"));
+        columns.push(new nlobjSearchColumn("type", "systemNotes", "group"));
+        columns.push(new nlobjSearchColumn("name", "systemNotes", "group"));
+        columns.push(new nlobjSearchColumn("oldvalue", "systemNotes", "group"));
+        columns.push(new nlobjSearchColumn("newvalue", "systemNotes", "group"));
+
+        // sorting on date field in descending order
         columns[0].setSort(true);
 
-        var history = this.getAll(filters, columns);
+        let history = this.getAll(filters, columns, internalId);
 
         return history;
     }
@@ -127,42 +126,44 @@ class ContractDAL extends BaseDAL {
      * @param {string} id
      * @returns {object} json representation of contract obejct along with contract items and quotes
      */
-    getWithDetails(id: string) {
+    public getWithDetails(id: string) {
 
-        var contract = null;
+        let contract = null;
 
         try {
-            var commonDAL = new CommonDAL();
+            let commonDAL = new CommonDAL();
             contract = this.get(id);
 
-            if (contract[this.fields.deleted.id] == 'T') {
-                var err = new Error('the record is deleted');
-                F3.Util.Utility.logException('ContractDAL.getWithDetails(id); // id = ' + id, err);
+            if (contract[this.fields.deleted.id] === "T") {
+                let err = new Error("the record is deleted");
+                F3.Util.Utility.logException("ContractDAL.getWithDetails(id); // id = " + id, err);
                 return null;
             }
 
-            var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
-            var items = [];
-            var itemIds = contractItems
-                .filter(ci=> !!ci.custrecord_f3mm_ci_item)
-                .map(ci=>parseInt(ci.custrecord_f3mm_ci_item.value));
+            let contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
+            let items = [];
+            let itemIds = contractItems
+                .filter(ci => !!ci.custrecord_f3mm_ci_item)
+                .map(ci => parseInt(ci.custrecord_f3mm_ci_item.value));
 
             if (itemIds && itemIds.length) {
                 items = commonDAL.getItems({
                     itemIds: itemIds
                 });
 
-                items.forEach(item=> {
+                items.forEach(item => {
                     item.priceLevels = commonDAL.getPriceLevels({
-                        recordType: item.recordType,
-                        itemId: item.id
+                        itemId: item.id,
+                        recordType: item.recordType
                     });
                 });
             }
 
-            var quotes = commonDAL.getQuotes({
+            let quotes = commonDAL.getQuotes({
                 contractId: id
             });
+
+            var contractItemsHistory = this.getHistory(ids)
 
             contract.sublists.quotes = quotes;
 
@@ -170,8 +171,8 @@ class ContractDAL extends BaseDAL {
 
             contractItems.forEach(contractItem => {
                 if (!!contractItem.custrecord_f3mm_ci_item) {
-                    var itemId = contractItem.custrecord_f3mm_ci_item.value;
-                    var foundItem = items.filter(item => item.id == itemId)[0];
+                    let itemId = contractItem.custrecord_f3mm_ci_item.value;
+                    let foundItem = items.filter(item => item.id == itemId)[0];
                     if (!!foundItem) {
                         contractItem.custrecord_f3mm_ci_item.baseprice = foundItem.baseprice;
                         contractItem.custrecord_f3mm_ci_item.displayname = foundItem.displayname;
@@ -181,7 +182,7 @@ class ContractDAL extends BaseDAL {
                 }
             });
         } catch (ex) {
-            F3.Util.Utility.logException('ContractDAL.getWithDetails(id); // id = ' + id, ex);
+            F3.Util.Utility.logException("ContractDAL.getWithDetails(id); // id = " + id, ex);
             throw ex;
         }
 

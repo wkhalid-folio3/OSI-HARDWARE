@@ -1,8 +1,3 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="./f3mm_base_dal.ts" />
 /**
@@ -15,6 +10,11 @@ var __extends = (this && this.__extends) || function (d, b) {
  * - f3mm_base_dal.ts
  * -
  */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 /**
  * This class is responsible for performing DB operations related to File / Folder Search
  * Following are the responsibilities of this class:
@@ -25,7 +25,7 @@ var FoldersDAL = (function (_super) {
     __extends(FoldersDAL, _super);
     function FoldersDAL() {
         _super.apply(this, arguments);
-        this.internalId = 'folder';
+        this.internalId = "folder";
     }
     /**
      * Gets files withing specified folderId
@@ -37,18 +37,18 @@ var FoldersDAL = (function (_super) {
         if (recursive === void 0) { recursive = false; }
         var filters = [];
         var cols = [];
-        filters.push(['internalid', 'anyof', folderId]);
+        filters.push(["internalid", "anyof", folderId]);
         if (recursive === true) {
-            filters.push('or');
-            filters.push(['parent', 'anyof', folderId]);
+            filters.push("or");
+            filters.push(["parent", "anyof", folderId]);
         }
-        cols.push(new nlobjSearchColumn('name', 'file'));
-        cols.push(new nlobjSearchColumn('url', 'file'));
-        cols.push(new nlobjSearchColumn('internalid', 'file'));
-        cols.push(new nlobjSearchColumn('filetype', 'file'));
-        cols.push(new nlobjSearchColumn('parent'));
+        cols.push(new nlobjSearchColumn("name", "file"));
+        cols.push(new nlobjSearchColumn("url", "file"));
+        cols.push(new nlobjSearchColumn("internalid", "file"));
+        cols.push(new nlobjSearchColumn("filetype", "file"));
+        cols.push(new nlobjSearchColumn("parent"));
         var result = this.getAll(filters, cols);
-        F3.Util.Utility.logDebug('FoldersDAL.getFiles()', JSON.stringify(result));
+        F3.Util.Utility.logDebug("FoldersDAL.getFiles()", JSON.stringify(result));
         return result;
     };
     /**
@@ -59,10 +59,10 @@ var FoldersDAL = (function (_super) {
     FoldersDAL.prototype.getMedia = function (fileIds) {
         var filters = [];
         var cols = [];
-        filters.push(new nlobjSearchFilter('internalid', 'file', 'anyof', fileIds));
-        cols.push(new nlobjSearchColumn('name', 'file'));
-        cols.push(new nlobjSearchColumn('url', 'file'));
-        cols.push(new nlobjSearchColumn('filetype', 'file'));
+        filters.push(new nlobjSearchFilter("internalid", "file", "anyof", fileIds));
+        cols.push(new nlobjSearchColumn("name", "file"));
+        cols.push(new nlobjSearchColumn("url", "file"));
+        cols.push(new nlobjSearchColumn("filetype", "file"));
         var result = this.getAll(filters, cols);
         return result;
     };

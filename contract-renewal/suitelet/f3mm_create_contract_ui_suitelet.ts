@@ -20,40 +20,9 @@
  */
 class CreateContractUISuitelet extends BaseUISuitelet {
 
-    private title: string = 'Create Contract';
-    private type: string = 'create';
+    public title: string = "Create Contract";
+    public type: string = "create";
 
-    /**
-     * Parse HTML Template and replace variables with required data
-     * @returns {string} returns processed html
-     */
-    private parseHtmlTemplate(html: string, data) {
-        var files = this.getDependencyFiles();
-        var suiteletScriptId = 'customscript_f3mm_create_contract_api_st';
-        var suiteletDeploymentId = 'customdeploy_f3mm_create_contract_api_st';
-        var apiSuiteletUrl = nlapiResolveURL('SUITELET', suiteletScriptId, suiteletDeploymentId, false);
-
-        var contractListingScriptId = 'customscript_f3mm_list_contracts_ui_st';
-        var contractListingDeploymentId = 'customdeploy_f3mm_list_contracts_ui_st';
-        var contractListingUrl = nlapiResolveURL('SUITELET', contractListingScriptId, contractListingDeploymentId, false);
-
-        html = html || '';
-
-        for (var i in files) {
-            var fileInfo = files[i];
-            html = html.replace('{{ ' + fileInfo.name + ' }}', fileInfo.url);
-        }
-
-        html = html.replace('{{ type }}', this.type);
-        html = html.replace(/{{ title }}/gi, data.title);
-        html = html.replace('{{ apiSuiteletUrl }}', apiSuiteletUrl);
-        html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
-        html = html.replace('{{ contractInfo }}', JSON.stringify(data.contract));
-        html = html.replace(/{{ viewContractUrl }}/gi, data.uiSuiteletUrl);
-        html = html.replace(/{{ contractListingUrl }}/gi, contractListingUrl);
-
-        return html;
-    }
 
     /**
      * Entry point for Request. Operations:
@@ -64,7 +33,7 @@ class CreateContractUISuitelet extends BaseUISuitelet {
      *  - Merge contract information and other required data with html
      *  - send response
      */
-    protected main(request: nlobjRequest, response: nlobjResponse) {
+    protected main(request:nlobjRequest, response:nlobjResponse) {
         F3.Util.Utility.logDebug('CreateContractUISuitelet.main()', 'Start');
 
         try {
@@ -80,7 +49,7 @@ class CreateContractUISuitelet extends BaseUISuitelet {
                 contract = this._contractDAL.getWithDetails(contractId);
                 F3.Util.Utility.logDebug('CreateContractUISuitelet.main() // contract: ', JSON.stringify(contract));
 
-                if ( !contract) {
+                if (!contract) {
                     throw new Error('that record does not exist.');
                 }
 
@@ -135,6 +104,39 @@ class CreateContractUISuitelet extends BaseUISuitelet {
 
         F3.Util.Utility.logDebug('CreateContractUISuitelet.main()', 'End');
     }
+
+    /**
+     * Parse HTML Template and replace variables with required data
+     * @returns {string} returns processed html
+     */
+    private parseHtmlTemplate(html:string, data) {
+        let files = this.getDependencyFiles();
+        let suiteletScriptId = "customscript_f3mm_create_contract_api_st";
+        let suiteletDeploymentId = "customdeploy_f3mm_create_contract_api_st";
+        let apiSuiteletUrl = nlapiResolveURL("SUITELET", suiteletScriptId, suiteletDeploymentId, false);
+
+        let contractListingScriptId = "customscript_f3mm_list_contracts_ui_st";
+        let contractListingDeploymentId = "customdeploy_f3mm_list_contracts_ui_st";
+        let contractListingUrl = nlapiResolveURL("SUITELET", contractListingScriptId, contractListingDeploymentId, false);
+
+        html = html || "";
+
+        for (let i in files) {
+            let fileInfo = files[i];
+            html = html.replace("{{ " + fileInfo.name + " }}", fileInfo.url);
+        }
+
+        html = html.replace("{{ type }}", this.type);
+        html = html.replace(/{{ title }}/gi, data.title);
+        html = html.replace("{{ apiSuiteletUrl }}", apiSuiteletUrl);
+        html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
+        html = html.replace("{{ contractInfo }}", JSON.stringify(data.contract));
+        html = html.replace(/{{ viewContractUrl }}/gi, data.uiSuiteletUrl);
+        html = html.replace(/{{ contractListingUrl }}/gi, contractListingUrl);
+
+        return html;
+    }
+
 }
 
 

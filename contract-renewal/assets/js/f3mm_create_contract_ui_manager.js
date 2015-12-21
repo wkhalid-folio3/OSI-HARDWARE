@@ -1,4 +1,5 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
+/// <reference path="../../_typescript-refs/underscore.d.ts" />
 /// <reference path="./f3mm_data_manager.ts" />
 /**
  * Created by zshaikh on 11/18/2015.
@@ -44,47 +45,53 @@ var CreateContractUIManager = (function () {
         this.bindHistoryGrid();
         this.bindDatePicker();
         this.applyValidation();
-        $('.btn-generate-quote').on('click', this.generateQuote.bind(this));
-        $('#entity_popup_link').on('click', this.openExistingCustomerWindow.bind(this));
-        $('#entity_popup_new').on('click', this.openNewCustomerWindow.bind(this));
-        $('.duration-dropdown').on('change', this.durationDropdownChanged.bind(this));
-        $('.start-date-text').parent().on('changeDate', this.durationDropdownChanged.bind(this));
+        $(".btn-generate-quote").on("click", this.generateQuote.bind(this));
+        $("#entity_popup_link").on("click", this.openExistingCustomerWindow.bind(this));
+        $("#entity_popup_new").on("click", this.openNewCustomerWindow.bind(this));
+        $(".duration-dropdown").on("change", this.durationDropdownChanged.bind(this));
+        $(".start-date-text").parent().on("changeDate", this.durationDropdownChanged.bind(this));
+        // whenever tab is switched, refresh the grid
+        $("a[data-toggle='tab']").on("shown.bs.tab", function (e) {
+            $("#history_grid").jsGrid("refresh");
+        });
     }
     CreateContractUIManager.prototype.getSelectedCustomer = function () {
         var result = null;
-        var $customerDropdown = $('.customer-dropdown');
+        var $customerDropdown = $(".customer-dropdown");
         var customerText = $customerDropdown.val();
-        var customerId = $customerDropdown.attr('data-selected-id');
+        var customerId = $customerDropdown.attr("data-selected-id");
         // validate customer
-        if (!!customerId && customerText != "") {
+        if (!!customerId && customerText !== "") {
             result = customerId;
         }
         return result;
     };
     CreateContractUIManager.prototype.openNewCustomerWindow = function () {
         var url = 'https://system.na1.netsuite.com/app/common/entity/custjob.nl?target=main:entity&label=Customer&stage=prospect';
-        //setSelectValue(document.forms['main_form'].elements['entity'], -1);
-        //document.forms['main_form'].elements['entity_display'].value = '';
-        //document.forms['main_form'].elements['entity_display'].isvalid = true;
-        //NS.form.setValid(true);
-        //Syncentity(true);
+        // setSelectValue(document.forms['main_form'].elements['entity'], -1);
+        // document.forms['main_form'].elements['entity_display'].value = '';
+        // document.forms['main_form'].elements['entity_display'].isvalid = true;
+        // NS.form.setValid(true);
+        // Syncentity(true);
         nlOpenWindow(url, '_blank', '');
         return false;
     };
     CreateContractUIManager.prototype.openExistingCustomerWindow = function () {
         var selectValue = this.getSelectedCustomer();
-        if (!!selectValue)
+        if (!!selectValue) {
             nlOpenWindow('/app/common/entity/custjob.nl?id=' + selectValue + '', '_blank', '');
-        else
+        }
+        else {
             alert('Please choose an entry first.');
+        }
         return false;
     };
     CreateContractUIManager.prototype.durationDropdownChanged = function (ev) {
-        var $dropdown = $('.duration-dropdown');
+        var $dropdown = $(".duration-dropdown");
         var selected = $dropdown.val();
-        var $startDateElement = $('.start-date-text').parent();
-        var $endDateElement = $('.end-date-text').parent();
-        var startDate = $startDateElement.datepicker('getDate');
+        var $startDateElement = $(".start-date-text").parent();
+        var $endDateElement = $(".end-date-text").parent();
+        var startDate = $startDateElement.datepicker("getDate");
         var endDate = null;
         console.log('durationDropdownChanged(); // $dropdown: ', $dropdown);
         console.log('durationDropdownChanged(); // selected: ', selected);
@@ -453,7 +460,8 @@ var CreateContractUIManager = (function () {
                             field: historyItem.field.text,
                             newvalue: historyItem.newvalue,
                             oldvalue: historyItem.oldvalue,
-                            type: historyItem.type
+                            type: historyItem.type,
+                            name: historyItem.name
                         });
                     }
                 });
@@ -545,8 +553,7 @@ var CreateContractUIManager = (function () {
                 width: 50,
                 css: "amount",
                 editing: false
-            }
-        ];
+            }];
         if (this._viewType != 'view') {
             gridFields.push({
                 type: "control",
@@ -564,16 +571,16 @@ var CreateContractUIManager = (function () {
         var _this = this;
         var $grid = $("#history_grid");
         $grid.jsGrid({
-            height: "auto",
-            width: "100%",
-            noDataContent: 'No history.',
-            inserting: false,
-            filtering: false,
+            autoload: true,
             editing: false,
+            filtering: false,
+            height: "auto",
+            inserting: false,
+            noDataContent: "No history.",
             selecting: false,
             sorting: true,
             paging: false,
-            autoload: true,
+            width: "100%",
             controller: {
                 loadData: function (filter) {
                     var historyItems = _this.prepareHistoryData();
@@ -581,35 +588,41 @@ var CreateContractUIManager = (function () {
                 }
             },
             fields: [{
-                    title: "Date",
                     name: "date",
+                    sorter: function (date1, date2) {
+                        return new Date(date1) - new Date(date2);
+                    },
+                    title: "Date",
                     type: "date",
-                    width: 150
+                    width: 50
                 }, {
+                    name: "name.text",
                     title: "User",
-                    name: "type",
                     type: "text",
-                    width: 50
+                    width: 70
                 }, {
+                    name: "type",
                     title: "Type",
-                    name: "type",
-                    type: "text",
-                    width: 150
-                }, {
-                    title: "Field",
-                    name: "field",
                     type: "text",
                     width: 50
                 }, {
-                    title: "Old Value",
+                    name: "field",
+                    title: "Field",
+                    type: "text",
+                    width: 50
+                }, {
+                    itemTemplate: function (val) {
+                        return val === "- None -" ? "" : val;
+                    },
                     name: "oldvalue",
+                    title: "Old Value",
                     type: "text",
                     width: 80
                 }, {
-                    title: "New Value",
                     name: "newvalue",
+                    title: "New Value",
                     type: "text",
-                    width: 50
+                    width: 80
                 }]
         });
     };
@@ -623,7 +636,7 @@ var CreateContractUIManager = (function () {
         var gridFields = this.prepareGridFields();
         var inserting = true;
         var editing = true;
-        if (this._viewType == 'view') {
+        if (this._viewType === 'view') {
             inserting = false;
             editing = false;
         }

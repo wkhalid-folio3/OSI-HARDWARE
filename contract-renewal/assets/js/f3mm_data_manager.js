@@ -21,7 +21,7 @@ var DataManager = (function () {
     function DataManager(type) {
         this._serverUrl = null;
         this._cacheTime = 0;
-        this._cachePrefix = 'mm_cn_';
+        this._cachePrefix = "mm_cn_";
         this._viewType = type;
         var oneSecond = 1000;
         var oneMinute = 60 * oneSecond;
@@ -29,7 +29,7 @@ var DataManager = (function () {
         var oneDay = oneHour * 24;
         this._cacheTime = oneDay;
         this._serverUrl = window.apiSuiteletUrl;
-        this._serverUrl += '&type=' + this._viewType; // append type
+        this._serverUrl += "&type=" + this._viewType; // append type
     }
     /**
      * Get Vendors from server
@@ -38,11 +38,13 @@ var DataManager = (function () {
      */
     DataManager.prototype.getVendorsFromServer = function (callback) {
         var data = {
-            'action': 'get_vendors'
+            "action": "get_vendors"
         };
         return jQuery.get(this._serverUrl, data, function (result) {
-            console.log('getVendorsFromServer(); // jquery complete: ', arguments);
-            callback && callback(result);
+            console.log("getVendorsFromServer(); // jquery complete: ", arguments);
+            if (!!callback) {
+                callback(result);
+            }
         });
     };
     /**
@@ -52,11 +54,13 @@ var DataManager = (function () {
      */
     DataManager.prototype.getEmployeesFromServer = function (callback) {
         var data = {
-            'action': 'get_employees'
+            "action": "get_employees"
         };
         return jQuery.get(this._serverUrl, data, function (result) {
-            console.log('getEmployeesFromServer(); // jquery complete: ', arguments);
-            callback && callback(result);
+            console.log("getEmployeesFromServer(); // jquery complete: ", arguments);
+            if (!!callback) {
+                callback(result);
+            }
         });
     };
     /**
@@ -367,28 +371,6 @@ var DataManager = (function () {
         });
     };
     /**
-     * Delete contract
-     * @param {object} data contract json object to pass to server
-     * @param {function} callback callback function to receive data in
-     * @returns {void}
-     */
-    DataManager.prototype.exportToCSV = function (data, callback) {
-        var options = {
-            'action': 'export_to_csv',
-            'format': 'csv'
-        };
-        $.extend(options, {
-            'params': JSON.stringify(data)
-        });
-        window.location.href = this._serverUrl;
-        //return jQuery.get(this._serverUrl, options, function (result) {
-        //    console.log('deleteContract(); // jquery complete: ', arguments);
-        //
-        //    callback && callback(result);
-        //
-        //});
-    };
-    /**
      * Void Selected contracts
      * @param {object} data object containing ids of contracts
      * @param {function} callback callback function to receive data in
@@ -396,13 +378,13 @@ var DataManager = (function () {
      */
     DataManager.prototype.voidContract = function (data, callback) {
         var options = {
-            'action': 'void_contract'
+            "action": "void_contract"
         };
         $.extend(options, {
-            'params': JSON.stringify(data)
+            "params": JSON.stringify(data)
         });
         return jQuery.post(this._serverUrl, options, function (result) {
-            console.log('voidContract(); // jquery complete: ', arguments);
+            console.log("voidContract(); // jquery complete: ", arguments);
             callback && callback(result);
         });
     };

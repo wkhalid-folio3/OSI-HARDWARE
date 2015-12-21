@@ -49,15 +49,15 @@ class CreateContractAPISuitelet {
      * @param {nlobjResponse} response response object to write information to outgoing request
      * @returns {void}
      */
-    main(request: nlobjRequest, response: nlobjResponse) {
+    public main(request: nlobjRequest, response: nlobjResponse) {
 
         F3.Util.Utility.logDebug('CreateContractAPISuitelet.main();', null);
-        var mainRequestTimer = F3.Util.StopWatch.start('CreateContractAPISuitelet.main();');
+        let mainRequestTimer = F3.Util.StopWatch.start('CreateContractAPISuitelet.main();');
 
-        var action = request.getParameter('action');
-        var params = request.getParameter('params');
-        var format = request.getParameter('format');
-        var callback = request.getParameter('callback');
+        let action = request.getParameter('action');
+        let params = request.getParameter('params');
+        let format = request.getParameter('format');
+        let callback = request.getParameter('callback');
 
         if (!!params) {
             params = JSON.parse(params);
@@ -66,15 +66,15 @@ class CreateContractAPISuitelet {
         F3.Util.Utility.logDebug('CreateContractAPISuitelet.main(); // action = ', action);
         F3.Util.Utility.logDebug('CreateContractAPISuitelet.main(); // params = ', JSON.stringify(params));
 
-        var result: IResult = this.executeAction(action, params);
+        let result: IResult = this.executeAction(action, params);
 
         if (format === 'csv') {
-            var file = nlapiCreateFile('contracts.csv', 'CSV', result.data);
+            let file = nlapiCreateFile('contracts.csv', 'CSV', result.data);
             response.setContentType('CSV', 'contracts.csv', 'inline');
             response.write(file.getValue());
         } else {
 
-            var json = JSON.stringify(result);
+            let json = JSON.stringify(result);
             F3.Util.Utility.logDebug('Response: ', json);
 
             if (!!callback) {

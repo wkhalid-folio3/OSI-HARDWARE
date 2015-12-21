@@ -22,19 +22,19 @@ class DataManager {
     private _serverUrl: string = null;
     private _viewType: string;
     private _cacheTime: number = 0;
-    private _cachePrefix: string = 'mm_cn_';
+    private _cachePrefix: string = "mm_cn_";
 
     constructor(type: string) {
         this._viewType = type;
 
-        var oneSecond = 1000;
-        var oneMinute = 60 * oneSecond;
-        var oneHour = 60 * oneMinute;
-        var oneDay = oneHour * 24;
+        let oneSecond = 1000;
+        let oneMinute = 60 * oneSecond;
+        let oneHour = 60 * oneMinute;
+        let oneDay = oneHour * 24;
         this._cacheTime = oneDay;
 
         this._serverUrl = window.apiSuiteletUrl;
-        this._serverUrl += '&type=' + this._viewType; // append type
+        this._serverUrl += "&type=" + this._viewType; // append type
     }
 
     /**
@@ -44,13 +44,15 @@ class DataManager {
      */
     private getVendorsFromServer(callback) {
 
-        var data = {
-            'action': 'get_vendors'
+        let data = {
+            "action": "get_vendors"
         };
         return jQuery.get(this._serverUrl, data, (result) => {
-            console.log('getVendorsFromServer(); // jquery complete: ', arguments);
+            console.log("getVendorsFromServer(); // jquery complete: ", arguments);
 
-            callback && callback(result);
+            if (!!callback) {
+                callback(result);
+            }
 
         });
 
@@ -63,13 +65,16 @@ class DataManager {
      */
     private getEmployeesFromServer(callback) {
 
-        var data = {
-            'action': 'get_employees'
+        let data = {
+            "action": "get_employees"
         };
-        return jQuery.get(this._serverUrl, data, (result) => {
-            console.log('getEmployeesFromServer(); // jquery complete: ', arguments);
 
-            callback && callback(result);
+        return jQuery.get(this._serverUrl, data, (result) => {
+            console.log("getEmployeesFromServer(); // jquery complete: ", arguments);
+
+            if (!!callback) {
+                callback(result);
+            }
 
         });
 
@@ -127,7 +132,7 @@ class DataManager {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
-    getTaxCodes(params, callback) {
+    public getTaxCodes(params, callback) {
         try {
             var cacheKey = this._cachePrefix + 'taxcodes';
             var data = $.jStorage.get(cacheKey);
@@ -160,7 +165,7 @@ class DataManager {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
-    searchContracts(params, callback) {
+    public searchContracts(params, callback) {
         try {
 
             var options = {
@@ -194,7 +199,7 @@ class DataManager {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
-    getItems(params, callback) {
+    public getItems(params, callback) {
         try {
 
             var options = {
@@ -226,7 +231,7 @@ class DataManager {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
-    getVendors(callback) {
+    public getVendors(callback) {
 
         var cacheKey = this._cachePrefix + 'vendors';
         var data = $.jStorage.get(cacheKey);
@@ -251,7 +256,7 @@ class DataManager {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
-    getEmployees(callback) {
+    public getEmployees(callback) {
 
         var cacheKey = this._cachePrefix + 'employees';
         var data = $.jStorage.get(cacheKey);
@@ -276,7 +281,7 @@ class DataManager {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
-    getDepartment(callback) {
+    public getDepartment(callback) {
 
         var cacheKey = this._cachePrefix + 'departments';
         var data = $.jStorage.get(cacheKey);
@@ -301,7 +306,7 @@ class DataManager {
      * Description of method DataManager
      * @param parameter
      */
-    getPrimaryContacts(params, callback) {
+    public getPrimaryContacts(params, callback) {
         try {
 
             var options = {
@@ -334,7 +339,7 @@ class DataManager {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
-    getCustomers(params, callback) {
+    public getCustomers(params, callback) {
         try {
 
             var options = {
@@ -367,7 +372,7 @@ class DataManager {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
-    getPriceLevels(params, callback) {
+    public getPriceLevels(params, callback) {
         try {
 
             var options = {
@@ -400,7 +405,7 @@ class DataManager {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
-    generateQuote(params, callback) {
+    public generateQuote(params, callback) {
         try {
 
             var options = {
@@ -433,7 +438,7 @@ class DataManager {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
-    submit(data, callback) {
+    public submit(data, callback) {
 
         var options = {
             'action': 'submit'
@@ -459,8 +464,8 @@ class DataManager {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
-    deleteContract(data, callback) {
-        var options = {
+    public deleteContract(data, callback)   {
+        let options = {
             'action': 'delete_contract'
         };
 
@@ -478,48 +483,22 @@ class DataManager {
 
 
     /**
-     * Delete contract
-     * @param {object} data contract json object to pass to server
-     * @param {function} callback callback function to receive data in
-     * @returns {void}
-     */
-    exportToCSV(data, callback) {
-        var options = {
-            'action': 'export_to_csv',
-            'format': 'csv'
-        };
-
-        $.extend(options, {
-            'params': JSON.stringify(data)
-        });
-
-        window.location.href = this._serverUrl;
-        //return jQuery.get(this._serverUrl, options, function (result) {
-        //    console.log('deleteContract(); // jquery complete: ', arguments);
-        //
-        //    callback && callback(result);
-        //
-        //});
-    }
-
-
-    /**
      * Void Selected contracts
      * @param {object} data object containing ids of contracts
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
-    voidContract(data, callback) {
-        var options = {
-            'action': 'void_contract'
+    public voidContract(data, callback) {
+        let options = {
+            "action": "void_contract"
         };
 
         $.extend(options, {
-            'params': JSON.stringify(data)
+            "params": JSON.stringify(data)
         });
 
         return jQuery.post(this._serverUrl, options, function(result) {
-            console.log('voidContract(); // jquery complete: ', arguments);
+            console.log("voidContract(); // jquery complete: ", arguments);
 
             callback && callback(result);
 
@@ -533,7 +512,7 @@ class DataManager {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
-    updateContract(data, callback) {
+    public updateContract(data, callback) {
         var options = {
             'action': 'update_contract'
         };

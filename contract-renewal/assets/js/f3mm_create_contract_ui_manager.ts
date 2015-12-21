@@ -1,4 +1,5 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
+/// <reference path="../../_typescript-refs/underscore.d.ts" />
 /// <reference path="./f3mm_data_manager.ts" />
 /**
  * Created by zshaikh on 11/18/2015.
@@ -57,23 +58,29 @@ class CreateContractUIManager {
 
         this.applyValidation();
 
-        $('.btn-generate-quote').on('click', this.generateQuote.bind(this));
-        $('#entity_popup_link').on('click', this.openExistingCustomerWindow.bind(this));
-        $('#entity_popup_new').on('click', this.openNewCustomerWindow.bind(this));
-        $('.duration-dropdown').on('change', this.durationDropdownChanged.bind(this));
-        $('.start-date-text').parent().on('changeDate', this.durationDropdownChanged.bind(this));
+        $(".btn-generate-quote").on("click", this.generateQuote.bind(this));
+        $("#entity_popup_link").on("click", this.openExistingCustomerWindow.bind(this));
+        $("#entity_popup_new").on("click", this.openNewCustomerWindow.bind(this));
+        $(".duration-dropdown").on("change", this.durationDropdownChanged.bind(this));
+        $(".start-date-text").parent().on("changeDate", this.durationDropdownChanged.bind(this));
+
+        // whenever tab is switched, refresh the grid
+        $("a[data-toggle='tab']").on("shown.bs.tab", function (e) {
+            $("#history_grid").jsGrid("refresh");
+        });
+
     }
 
 
     private getSelectedCustomer() {
 
-        var result = null;
-        var $customerDropdown = $('.customer-dropdown');
-        var customerText = $customerDropdown.val();
-        var customerId = $customerDropdown.attr('data-selected-id');
+        let result = null;
+        let $customerDropdown = $(".customer-dropdown");
+        let customerText = $customerDropdown.val();
+        let customerId = $customerDropdown.attr("data-selected-id");
 
         // validate customer
-        if (!!customerId && customerText != "") {
+        if (!!customerId && customerText !== "") {
             result = customerId;
         }
 
@@ -83,33 +90,35 @@ class CreateContractUIManager {
 
     private openNewCustomerWindow() {
 
-        var url = 'https://system.na1.netsuite.com/app/common/entity/custjob.nl?target=main:entity&label=Customer&stage=prospect';
-        //setSelectValue(document.forms['main_form'].elements['entity'], -1);
-        //document.forms['main_form'].elements['entity_display'].value = '';
-        //document.forms['main_form'].elements['entity_display'].isvalid = true;
-        //NS.form.setValid(true);
-        //Syncentity(true);
+        let url = 'https://system.na1.netsuite.com/app/common/entity/custjob.nl?target=main:entity&label=Customer&stage=prospect';
+        // setSelectValue(document.forms['main_form'].elements['entity'], -1);
+        // document.forms['main_form'].elements['entity_display'].value = '';
+        // document.forms['main_form'].elements['entity_display'].isvalid = true;
+        // NS.form.setValid(true);
+        // Syncentity(true);
         nlOpenWindow(url, '_blank', '');
         return false;
     }
 
     private openExistingCustomerWindow() {
-        var selectValue = this.getSelectedCustomer();
-        if (!!selectValue)
+        let selectValue = this.getSelectedCustomer();
+
+        if (!!selectValue) {
             nlOpenWindow('/app/common/entity/custjob.nl?id=' + selectValue + '', '_blank', '');
-        else
+        } else {
             alert('Please choose an entry first.');
+        }
+
         return false;
     }
 
-
     private durationDropdownChanged (ev) {
-        var $dropdown = $('.duration-dropdown');
-        var selected = $dropdown.val();
-        var $startDateElement = $('.start-date-text').parent();
-        var $endDateElement = $('.end-date-text').parent();
-        var startDate = $startDateElement.datepicker('getDate');
-        var endDate = null;
+        let $dropdown = $(".duration-dropdown");
+        let selected = $dropdown.val();
+        let $startDateElement = $(".start-date-text").parent();
+        let $endDateElement = $(".end-date-text").parent();
+        let startDate = $startDateElement.datepicker("getDate");
+        let endDate = null;
 
         console.log('durationDropdownChanged(); // $dropdown: ', $dropdown);
         console.log('durationDropdownChanged(); // selected: ', selected);
@@ -545,7 +554,8 @@ class CreateContractUIManager {
                             field: historyItem.field.text,
                             newvalue: historyItem.newvalue,
                             oldvalue: historyItem.oldvalue,
-                            type: historyItem.type
+                            type: historyItem.type,
+                            name: historyItem.name
                         });
                     }
 
@@ -647,23 +657,7 @@ class CreateContractUIManager {
             width: 50,
             css: "amount",
             editing: false
-        }
-        //    , {
-        //    title: "Tax Code <span class='mandatory'>*</span>",
-        //    name: "taxcode",
-        //    type: "text",
-        //    width: 150,
-        //    css: "taxcode"
-        //}, {
-        //    title: "Tax",
-        //    name: "taxrate",
-        //    type: "decimal_number",
-        //    width: 50,
-        //    css: "taxrate",
-        //    editing: false,
-        //    inserting: false
-        //}
-        ];
+        }];
 
 
         if (this._viewType != 'view') {
@@ -683,58 +677,60 @@ class CreateContractUIManager {
      */
     bindHistoryGrid(){
 
-        var $grid = $("#history_grid");
+        let $grid = $("#history_grid");
         $grid.jsGrid({
-            height: "auto",
-            width: "100%",
-            noDataContent: 'No history.',
-            inserting: false,
-            filtering: false,
+            autoload: true,
             editing: false,
+            filtering: false,
+            height: "auto",
+            inserting: false,
+            noDataContent: "No history.",
             selecting: false,
             sorting: true,
             paging: false,
-            autoload: true,
+            width: "100%",
             controller: {
                 loadData: (filter) => {
-                    var historyItems = this.prepareHistoryData();
+                    let historyItems = this.prepareHistoryData();
                     return historyItems;
                 }
             },
             fields: [{
-                title: "Date",
                 name: "date",
+                sorter: function(date1, date2) {
+                    return new Date(date1) - new Date(date2);
+                },
+                title: "Date",
                 type: "date",
-                width: 150
+                width: 50
             }, {
+                name: "name.text",
                 title: "User",
-                name: "type",
                 type: "text",
-                width: 50
+                width: 70
             }, {
+                name: "type",
                 title: "Type",
-                name: "type",
-                type: "text",
-                width: 150
-            }, {
-                title: "Field",
-                name: "field",
                 type: "text",
                 width: 50
             }, {
-                title: "Old Value",
+                name: "field",
+                title: "Field",
+                type: "text",
+                width: 50
+            }, {
+                itemTemplate: function(val){
+                    return val === "- None -" ? "" : val;
+                },
                 name: "oldvalue",
+                title: "Old Value",
                 type: "text",
                 width: 80
-                //,
-                //itemTemplate: function(val){
-                //    return val == '- None -' ? '' : val;
-                //}
             }, {
-                title: "New Value",
                 name: "newvalue",
+                title: "New Value",
                 type: "text",
-                width: 50
+                width: 80
             }]
         });
 
@@ -744,19 +740,19 @@ class CreateContractUIManager {
      * Binds Contract Items with the Grid
      * @returns {void}
      */
-    bindItemsGrid() {
+    public bindItemsGrid() {
 
         var contactItems = this.prepareGridData();
         var gridFields = this.prepareGridFields();
         var inserting = true;
         var editing = true;
 
-        if (this._viewType == 'view') {
+        if (this._viewType === 'view') {
             inserting = false;
             editing = false;
         }
 
-        var $grid = $("#jsGrid");
+        let $grid = $("#jsGrid");
         $grid.jsGrid({
             height: "auto",
             width: "100%",

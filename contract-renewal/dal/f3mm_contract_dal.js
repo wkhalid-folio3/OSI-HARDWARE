@@ -28,19 +28,19 @@ var ContractDAL = (function (_super) {
     __extends(ContractDAL, _super);
     function ContractDAL() {
         _super.apply(this, arguments);
-        this.internalId = 'customrecord_f3mm_contract';
+        this.internalId = "customrecord_f3mm_contract";
         this.fields = {
             id: {
                 id: 'internalid',
                 type: 'number'
             },
-            name: {
-                id: 'name',
-                type: 'string'
-            },
             customer: {
                 id: 'custrecord_f3mm_customer',
                 type: 'list'
+            },
+            name: {
+                id: 'name',
+                type: 'string'
             },
             primaryContact: {
                 id: 'custrecord_f3mm_primary_contact',
@@ -105,20 +105,18 @@ var ContractDAL = (function (_super) {
      * @param {string} contractId
      * @returns {object} json representation of contract obejct along with contract items and quotes
      */
-    ContractDAL.prototype.getHistory = function (contractId) {
+    ContractDAL.prototype.getHistory = function (contractId, internalId) {
         var filters = [], columns = [];
-        //filters.push(new nlobjSearchFilter('type', null, 'anyof', 'SalesOrd'));
-        //if(!!lastSyncDate)
-        //    filters.push(new nlobjSearchFilter('date', 'systemNotes', 'After', lastSyncDate));
-        filters.push(new nlobjSearchFilter('internalid', null, 'is', contractId));
-        columns.push(new nlobjSearchColumn('date', 'systemNotes', 'group'));
-        columns.push(new nlobjSearchColumn('field', 'systemNotes', 'group'));
-        columns.push(new nlobjSearchColumn('type', 'systemNotes', 'group'));
-        columns.push(new nlobjSearchColumn('oldvalue', 'systemNotes', 'group'));
-        columns.push(new nlobjSearchColumn('newvalue', 'systemNotes', 'group'));
-        //sorting on date field in descending order
+        filters.push(new nlobjSearchFilter("internalid", null, "is", contractId));
+        columns.push(new nlobjSearchColumn("date", "systemNotes", "group"));
+        columns.push(new nlobjSearchColumn("field", "systemNotes", "group"));
+        columns.push(new nlobjSearchColumn("type", "systemNotes", "group"));
+        columns.push(new nlobjSearchColumn("name", "systemNotes", "group"));
+        columns.push(new nlobjSearchColumn("oldvalue", "systemNotes", "group"));
+        columns.push(new nlobjSearchColumn("newvalue", "systemNotes", "group"));
+        // sorting on date field in descending order
         columns[0].setSort(true);
-        var history = this.getAll(filters, columns);
+        var history = this.getAll(filters, columns, internalId);
         return history;
     };
     /**
@@ -131,9 +129,9 @@ var ContractDAL = (function (_super) {
         try {
             var commonDAL = new CommonDAL();
             contract = this.get(id);
-            if (contract[this.fields.deleted.id] == 'T') {
-                var err = new Error('the record is deleted');
-                F3.Util.Utility.logException('ContractDAL.getWithDetails(id); // id = ' + id, err);
+            if (contract[this.fields.deleted.id] === "T") {
+                var err = new Error("the record is deleted");
+                F3.Util.Utility.logException("ContractDAL.getWithDetails(id); // id = " + id, err);
                 return null;
             }
             var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
@@ -147,14 +145,15 @@ var ContractDAL = (function (_super) {
                 });
                 items.forEach(function (item) {
                     item.priceLevels = commonDAL.getPriceLevels({
-                        recordType: item.recordType,
-                        itemId: item.id
+                        itemId: item.id,
+                        recordType: item.recordType
                     });
                 });
             }
             var quotes = commonDAL.getQuotes({
                 contractId: id
             });
+            var contractItemsHistory = this.getHistory(ids);
             contract.sublists.quotes = quotes;
             contract.history = this.getHistory(id);
             contractItems.forEach(function (contractItem) {
@@ -171,7 +170,7 @@ var ContractDAL = (function (_super) {
             });
         }
         catch (ex) {
-            F3.Util.Utility.logException('ContractDAL.getWithDetails(id); // id = ' + id, ex);
+            F3.Util.Utility.logException("ContractDAL.getWithDetails(id); // id = " + id, ex);
             throw ex;
         }
         return contract;
