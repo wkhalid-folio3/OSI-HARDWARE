@@ -74,10 +74,10 @@ var CreateContractUISuitelet = (function (_super) {
             var templateName = 'create_contract.html';
             var htmlTemplate = this.getHtmlTemplate(templateName);
             var processedHtml = this.parseHtmlTemplate(htmlTemplate, {
-                standaloneClass: standaloneClass,
-                uiSuiteletUrl: uiSuiteletUrl,
                 contract: contract,
-                title: this.title
+                standaloneClass: standaloneClass,
+                title: this.title,
+                uiSuiteletUrl: uiSuiteletUrl
             });
             F3.Util.Utility.logDebug('CreateContractUISuitelet.main(); // this: ', JSON.stringify(this));
             F3.Util.Utility.logDebug('CreateContractUISuitelet.main(); // this.title: ', this.title);
@@ -96,7 +96,7 @@ var CreateContractUISuitelet = (function (_super) {
             F3.Util.Utility.logException('CreateContractUISuitelet.main()', ex);
             throw ex;
         }
-        F3.Util.Utility.logDebug('CreateContractUISuitelet.main()', 'End');
+        F3.Util.Utility.logDebug("CreateContractUISuitelet.main()", "End");
     };
     /**
      * Parse HTML Template and replace variables with required data

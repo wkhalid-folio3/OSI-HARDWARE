@@ -30,84 +30,90 @@ var ContractDAL = (function (_super) {
         _super.apply(this, arguments);
         this.internalId = "customrecord_f3mm_contract";
         this.fields = {
-            id: {
-                id: 'internalid',
-                type: 'number'
-            },
-            customer: {
-                id: 'custrecord_f3mm_customer',
-                type: 'list'
-            },
-            name: {
-                id: 'name',
-                type: 'string'
-            },
-            primaryContact: {
-                id: 'custrecord_f3mm_primary_contact',
-                type: 'list'
-            },
-            primaryContactEmail: {
-                id: 'custrecord_f3mm_primary_contact_email',
-                type: 'text'
+            contractNumber: {
+                id: "custrecord_f3mm_contract_number",
+                type: "text"
             },
             contractVendor: {
-                id: 'custrecord_f3mm_contract_vendor',
-                type: 'list'
+                id: "custrecord_f3mm_contract_vendor",
+                type: "list"
             },
-            totalQuantitySeats: {
-                id: 'custrecord_f3mm_total_qty_seats',
-                type: 'number'
-            },
-            startDate: {
-                id: 'custrecord_f3mm_start_date',
-                type: 'date'
-            },
-            endDate: {
-                id: 'custrecord_f3mm_end_date',
-                type: 'date'
-            },
-            duration: {
-                id: 'custrecord_f3mm_contract_duration',
-                type: 'list'
-            },
-            memo: {
-                id: 'custrecord_f3mm_memo',
-                type: 'text'
-            },
-            salesRep: {
-                id: 'custrecord_f3mm_sales_rep',
-                type: 'list'
-            },
-            department: {
-                id: 'custrecord_f3mm_department',
-                type: 'list'
-            },
-            contractNumber: {
-                id: 'custrecord_f3mm_contract_number',
-                type: 'text'
-            },
-            status: {
-                id: 'custrecord_f3mm_status',
-                type: 'list'
-            },
-            poNumber: {
-                id: 'custrecord_f3mm_po_number',
-                type: 'text'
+            customer: {
+                id: "custrecord_f3mm_customer",
+                type: "list"
             },
             deleted: {
-                id: 'custrecord_f3mm_deleted',
-                type: 'checkbox'
+                id: "custrecord_f3mm_deleted",
+                type: "checkbox"
+            },
+            department: {
+                id: "custrecord_f3mm_department",
+                type: "list"
+            },
+            duration: {
+                id: "custrecord_f3mm_contract_duration",
+                type: "list"
+            },
+            endDate: {
+                id: "custrecord_f3mm_end_date",
+                type: "date"
+            },
+            id: {
+                id: "internalid",
+                type: "number"
+            },
+            memo: {
+                id: "custrecord_f3mm_memo",
+                type: "text"
+            },
+            name: {
+                id: "name",
+                type: "string"
+            },
+            poNumber: {
+                id: "custrecord_f3mm_po_number",
+                type: "text"
+            },
+            primaryContact: {
+                id: "custrecord_f3mm_primary_contact",
+                type: "list"
+            },
+            primaryContactEmail: {
+                id: "custrecord_f3mm_primary_contact_email",
+                type: "text"
+            },
+            salesRep: {
+                id: "custrecord_f3mm_sales_rep",
+                type: "list"
+            },
+            startDate: {
+                id: "custrecord_f3mm_start_date",
+                type: "date"
+            },
+            status: {
+                id: "custrecord_f3mm_status",
+                type: "list"
+            },
+            totalQuantitySeats: {
+                id: "custrecord_f3mm_total_qty_seats",
+                type: "number"
             }
         };
     }
     /**
-     * Gets contract with specified id including details of Items and related Quote
-     * @param {string} contractId
+     * Gets history of contract and contract items based on their ids
+     * @param {any} contractIds
+     * @param {string} internalId
      * @returns {object} json representation of contract obejct along with contract items and quotes
      */
-    ContractDAL.prototype.getHistory = function (contractId, internalId) {
+    ContractDAL.prototype.getHistory = function (contractIds, internalId) {
         var filters = [], columns = [];
-        filters.push(new nlobjSearchFilter("internalid", null, "is", contractId));
+        if (contractIds.constructor === Array) {
+            filters.push(new nlobjSearchFilter("internalid", null, "anyof", contractIds));
+        }
+        else {
+            filters.push(new nlobjSearchFilter("internalid", null, "is", contractIds));
+        }
         columns.push(new nlobjSearchColumn("date", "systemNotes", "group"));
         columns.push(new nlobjSearchColumn("field", "systemNotes", "group"));
         columns.push(new nlobjSearchColumn("type", "systemNotes", "group"));
@@ -136,6 +142,7 @@ var ContractDAL = (function (_super) {
             }
             var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
             var items = [];
+            var contractItemIds = contractItems.map(function (ci) { return ci.id; });
             var itemIds = contractItems
                 .filter(function (ci) { return !!ci.custrecord_f3mm_ci_item; })
                 .map(function (ci) { return parseInt(ci.custrecord_f3mm_ci_item.value); });
@@ -150,12 +157,15 @@ var ContractDAL = (function (_super) {
                     });
                 });
             }
-            var quotes = commonDAL.getQuotes({
+            // attach quotes
+            contract.sublists.quotes = commonDAL.getQuotes({
                 contractId: id
             });
-            var contractItemsHistory = this.getHistory(ids);
-            contract.sublists.quotes = quotes;
+            // attach history
+            var contractItemsHistory = this.getHistory(contractItemIds, "customrecord_f3mm_contract_item");
+            contractItemsHistory = contractItemsHistory.filter(function (cih) { return cih.field.text === "Item"; });
             contract.history = this.getHistory(id);
+            contract.history = contract.history.concat(contractItemsHistory);
             contractItems.forEach(function (contractItem) {
                 if (!!contractItem.custrecord_f3mm_ci_item) {
                     var itemId = contractItem.custrecord_f3mm_ci_item.value;
@@ -256,15 +266,15 @@ var ContractDAL = (function (_super) {
         try {
             var contractId = params.contractId;
             var contract = this.getWithDetails(contractId);
-            var quote = nlapiCreateRecord('estimate');
+            var quote = nlapiCreateRecord("estimate");
             var tranDate = new Date();
             var expectedClosingDate = new Date();
             expectedClosingDate.setDate(expectedClosingDate.getDate() + 30); // add 7 days
             var dueDate = new Date();
             dueDate.setDate(dueDate.getDate() + 30); // add 7 days
             // TODO : need to set due date base on customer requirement
-            //var dueDate = new Date();
-            //dueDate.setDate(dueDate.getDate() + 7); // add 7 days
+            // var dueDate = new Date();
+            // dueDate.setDate(dueDate.getDate() + 7); // add 7 days
             quote.setFieldValue('expectedclosedate', nlapiDateToString(expectedClosingDate)); // mandatory field
             quote.setFieldValue('trandate', nlapiDateToString(tranDate)); // mandatory field
             quote.setFieldValue('duedate', nlapiDateToString(dueDate)); // mandatory field
@@ -286,7 +296,7 @@ var ContractDAL = (function (_super) {
                     quote.setCurrentLineItemValue('item', 'quantity', contractItem.custrecord_f3mm_ci_quantity);
                     quote.setCurrentLineItemValue('item', 'price', contractItem.custrecord_f3mm_ci_price_level.value);
                     quote.setCurrentLineItemValue('item', 'rate', contractItem.custrecord_f3mm_ci_price);
-                    //quote.setCurrentLineItemValue('item', 'taxcode', contractItem.custrecord_f3mm_ci_taxcode.value);
+                    // quote.setCurrentLineItemValue('item', 'taxcode', contractItem.custrecord_f3mm_ci_taxcode.value);
                     quote.commitLineItem('item');
                 });
             }

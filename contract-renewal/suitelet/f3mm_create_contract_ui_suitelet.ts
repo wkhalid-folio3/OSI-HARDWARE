@@ -37,13 +37,13 @@ class CreateContractUISuitelet extends BaseUISuitelet {
         F3.Util.Utility.logDebug('CreateContractUISuitelet.main()', 'Start');
 
         try {
-            var uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
-            var uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
-            var uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
+            let uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
+            let uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
+            let uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
 
-            var editMode = request.getParameter('e');
-            var contractId = request.getParameter('cid');
-            var contract = null;
+            let editMode = request.getParameter('e');
+            let contractId = request.getParameter('cid');
+            let contract = null;
 
             if (!!contractId) {
                 contract = this._contractDAL.getWithDetails(contractId);
@@ -71,17 +71,17 @@ class CreateContractUISuitelet extends BaseUISuitelet {
 
             this.title = '<i class="fa fa-file-text-o"></i> ' + this.title;
 
-            var standaloneParam = request.getParameter('standalone');
-            var standalone = standaloneParam == 'T' || standaloneParam == '1';
-            var standaloneClass = (standalone ? 'page-standalone' : 'page-inline');
+            let standaloneParam = request.getParameter('standalone');
+            let standalone = standaloneParam == 'T' || standaloneParam == '1';
+            let standaloneClass = (standalone ? 'page-standalone' : 'page-inline');
 
-            var templateName = 'create_contract.html';
-            var htmlTemplate = this.getHtmlTemplate(templateName);
-            var processedHtml = this.parseHtmlTemplate(htmlTemplate, {
-                standaloneClass: standaloneClass,
-                uiSuiteletUrl: uiSuiteletUrl,
+            let templateName = 'create_contract.html';
+            let htmlTemplate = this.getHtmlTemplate(templateName);
+            let processedHtml = this.parseHtmlTemplate(htmlTemplate, {
                 contract: contract,
-                title: this.title
+                standaloneClass: standaloneClass,
+                title: this.title,
+                uiSuiteletUrl: uiSuiteletUrl
             });
 
             F3.Util.Utility.logDebug('CreateContractUISuitelet.main(); // this: ', JSON.stringify(this));
@@ -91,8 +91,8 @@ class CreateContractUISuitelet extends BaseUISuitelet {
             if (standalone === true) {
                 response.write(processedHtml);
             } else {
-                var form = nlapiCreateForm(this.title);
-                var htmlField = form.addField('inlinehtml', 'inlinehtml', '');
+                let form = nlapiCreateForm(this.title);
+                let htmlField = form.addField('inlinehtml', 'inlinehtml', '');
                 htmlField.setDefaultValue(processedHtml);
                 response.writePage(form);
             }
@@ -102,14 +102,14 @@ class CreateContractUISuitelet extends BaseUISuitelet {
             throw ex;
         }
 
-        F3.Util.Utility.logDebug('CreateContractUISuitelet.main()', 'End');
+        F3.Util.Utility.logDebug("CreateContractUISuitelet.main()", "End");
     }
 
     /**
      * Parse HTML Template and replace variables with required data
      * @returns {string} returns processed html
      */
-    private parseHtmlTemplate(html:string, data) {
+    private parseHtmlTemplate(html: string, data) {
         let files = this.getDependencyFiles();
         let suiteletScriptId = "customscript_f3mm_create_contract_api_st";
         let suiteletDeploymentId = "customdeploy_f3mm_create_contract_api_st";

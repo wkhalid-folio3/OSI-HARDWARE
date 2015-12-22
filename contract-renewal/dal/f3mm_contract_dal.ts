@@ -24,86 +24,91 @@ class ContractDAL extends BaseDAL {
     public internalId: string = "customrecord_f3mm_contract";
 
     public fields = {
-        id: {
-            id: 'internalid',
-            type: 'number'
-        },
-        customer: {
-            id: 'custrecord_f3mm_customer',
-            type: 'list'
-        },
-        name: {
-            id: 'name',
-            type: 'string'
-        },
-        primaryContact: {
-            id: 'custrecord_f3mm_primary_contact',
-            type: 'list'
-        },
-        primaryContactEmail: {
-            id: 'custrecord_f3mm_primary_contact_email',
-            type: 'text'
+        contractNumber: {
+            id: "custrecord_f3mm_contract_number",
+            type: "text"
         },
         contractVendor: {
-            id: 'custrecord_f3mm_contract_vendor',
-            type: 'list'
+            id: "custrecord_f3mm_contract_vendor",
+            type: "list"
         },
-        totalQuantitySeats: {
-            id: 'custrecord_f3mm_total_qty_seats',
-            type: 'number'
-        },
-        startDate: {
-            id: 'custrecord_f3mm_start_date',
-            type: 'date'
-        },
-        endDate: {
-            id: 'custrecord_f3mm_end_date',
-            type: 'date'
-        },
-        duration: {
-            id: 'custrecord_f3mm_contract_duration',
-            type: 'list'
-        },
-        memo: {
-            id: 'custrecord_f3mm_memo',
-            type: 'text'
-        },
-        salesRep: {
-            id: 'custrecord_f3mm_sales_rep',
-            type: 'list'
-        },
-        department: {
-            id: 'custrecord_f3mm_department',
-            type: 'list'
-        },
-        contractNumber: {
-            id: 'custrecord_f3mm_contract_number',
-            type: 'text'
-        },
-        status: {
-            id: 'custrecord_f3mm_status',
-            type: 'list'
-        },
-        poNumber: {
-            id: 'custrecord_f3mm_po_number',
-            type: 'text'
+        customer: {
+            id: "custrecord_f3mm_customer",
+            type: "list"
         },
         deleted: {
-            id: 'custrecord_f3mm_deleted',
-            type: 'checkbox'
+            id: "custrecord_f3mm_deleted",
+            type: "checkbox"
+        },
+        department: {
+            id: "custrecord_f3mm_department",
+            type: "list"
+        },
+        duration: {
+            id: "custrecord_f3mm_contract_duration",
+            type: "list"
+        },
+        endDate: {
+            id: "custrecord_f3mm_end_date",
+            type: "date"
+        },
+        id: {
+            id: "internalid",
+            type: "number"
+        },
+        memo: {
+            id: "custrecord_f3mm_memo",
+            type: "text"
+        },
+        name: {
+            id: "name",
+            type: "string"
+        },
+        poNumber: {
+            id: "custrecord_f3mm_po_number",
+            type: "text"
+        },
+        primaryContact: {
+            id: "custrecord_f3mm_primary_contact",
+            type: "list"
+        },
+        primaryContactEmail: {
+            id: "custrecord_f3mm_primary_contact_email",
+            type: "text"
+        },
+        salesRep: {
+            id: "custrecord_f3mm_sales_rep",
+            type: "list"
+        },
+        startDate: {
+            id: "custrecord_f3mm_start_date",
+            type: "date"
+        },
+        status: {
+            id: "custrecord_f3mm_status",
+            type: "list"
+        },
+        totalQuantitySeats: {
+            id: "custrecord_f3mm_total_qty_seats",
+            type: "number"
         }
     };
 
     /**
-     * Gets contract with specified id including details of Items and related Quote
-     * @param {string} contractId
+     * Gets history of contract and contract items based on their ids
+     * @param {any} contractIds
+     * @param {string} internalId
      * @returns {object} json representation of contract obejct along with contract items and quotes
      */
-    public getHistory(contractId: string, internalId?: string) {
+    public getHistory(contractIds: any, internalId?: string) {
         let filters = [],
             columns = [];
 
-        filters.push(new nlobjSearchFilter("internalid", null, "is", contractId));
+        if (contractIds.constructor === Array) {
+            filters.push(new nlobjSearchFilter("internalid", null, "anyof", contractIds));
+        } else {
+            filters.push(new nlobjSearchFilter("internalid", null, "is", contractIds));
+        }
 
         columns.push(new nlobjSearchColumn("date", "systemNotes", "group"));
         columns.push(new nlobjSearchColumn("field", "systemNotes", "group"));
@@ -142,6 +147,7 @@ class ContractDAL extends BaseDAL {
 
             let contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
             let items = [];
+            let contractItemIds = contractItems.map(ci => ci.id);
             let itemIds = contractItems
                 .filter(ci => !!ci.custrecord_f3mm_ci_item)
                 .map(ci => parseInt(ci.custrecord_f3mm_ci_item.value));
@@ -159,15 +165,16 @@ class ContractDAL extends BaseDAL {
                 });
             }
 
-            let quotes = commonDAL.getQuotes({
+            // attach quotes
+            contract.sublists.quotes = commonDAL.getQuotes({
                 contractId: id
             });
 
-            var contractItemsHistory = this.getHistory(ids)
-
-            contract.sublists.quotes = quotes;
-
+            // attach history
+            let contractItemsHistory = this.getHistory(contractItemIds, "customrecord_f3mm_contract_item");
+            contractItemsHistory = contractItemsHistory.filter(cih => cih.field.text === "Item");
             contract.history = this.getHistory(id);
+            contract.history = contract.history.concat(contractItemsHistory);
 
             contractItems.forEach(contractItem => {
                 if (!!contractItem.custrecord_f3mm_ci_item) {
@@ -194,10 +201,10 @@ class ContractDAL extends BaseDAL {
      * @param {object} params json object contain filters data
      * @returns {object[]} array of json representation of contract objects
      */
-    searchContractItems(params) {
-        var filters = [];
-        var cols = [];
-        var contractItemInternalId = 'customrecord_f3mm_contract_item';
+    public searchContractItems(params) {
+        let filters = [];
+        let cols = [];
+        let contractItemInternalId = 'customrecord_f3mm_contract_item';
 
         if (!!params) {
             if (!!params.contractIds) {
@@ -213,7 +220,7 @@ class ContractDAL extends BaseDAL {
         cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_price_level'));
         cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_contract'));
 
-        var records = super.getAll(filters, cols, contractItemInternalId);
+        let records = super.getAll(filters, cols, contractItemInternalId);
         return records;
     }
 
@@ -222,12 +229,12 @@ class ContractDAL extends BaseDAL {
      * @param {object} params json object contain filters data
      * @returns {object[]} array of json representation of contract objects
      */
-    search(params) {
-        var result = {
+    public search(params) {
+        let result = {
             total: 0,
             records: null
         };
-        var filters = [];
+        let filters = [];
 
         if (!!params) {
             if (!F3.Util.Utility.isBlankOrNull(params.contract_number)) {
@@ -270,8 +277,8 @@ class ContractDAL extends BaseDAL {
 
 
         // count records
-        var columns = [new nlobjSearchColumn('internalid', null, 'count').setLabel('total')];
-        var count = super.getAll(filters, columns)[0];
+        let columns = [new nlobjSearchColumn('internalid', null, 'count').setLabel('total')];
+        let count = super.getAll(filters, columns)[0];
         result.total = count.total;
 
         return result;
@@ -282,33 +289,33 @@ class ContractDAL extends BaseDAL {
      * @param {string} contractId id of the contract to generate contract from
      * @returns {number} id of quote generated from contract
      */
-    generateQuote(params) {
+    public generateQuote(params) {
 
-        var result: {
+        let result: {
             id: any
         } = null;
 
         try {
-            var contractId = params.contractId;
-            var contract = this.getWithDetails(contractId);
-            var quote = nlapiCreateRecord('estimate');
+            let contractId = params.contractId;
+            let contract = this.getWithDetails(contractId);
+            let quote = nlapiCreateRecord("estimate");
 
-            var tranDate = new Date();
-            var expectedClosingDate = new Date();
+            let tranDate = new Date();
+            let expectedClosingDate = new Date();
             expectedClosingDate.setDate(expectedClosingDate.getDate() + 30); // add 7 days
-            var dueDate = new Date();
+            let dueDate = new Date();
             dueDate.setDate(dueDate.getDate() + 30); // add 7 days
 
             // TODO : need to set due date base on customer requirement
-            //var dueDate = new Date();
-            //dueDate.setDate(dueDate.getDate() + 7); // add 7 days
+            // var dueDate = new Date();
+            // dueDate.setDate(dueDate.getDate() + 7); // add 7 days
 
             quote.setFieldValue('expectedclosedate', nlapiDateToString(expectedClosingDate)); // mandatory field
             quote.setFieldValue('trandate', nlapiDateToString(tranDate)); // mandatory field
             quote.setFieldValue('duedate', nlapiDateToString(dueDate)); // mandatory field
 
             // entityStatuses for references
-            var proposalStatusId = "10";
+            let proposalStatusId = "10";
             quote.setFieldValue('entitystatus', proposalStatusId); // proposal
             quote.setFieldValue('salesrep', contract[this.fields.salesRep.id].value);
             quote.setFieldValue('entity', contract[this.fields.customer.id].value);
@@ -319,7 +326,7 @@ class ContractDAL extends BaseDAL {
             quote.setFieldValue('custbody_end_user_email', contract[this.fields.primaryContactEmail.id]);
             quote.setFieldValue('memo', contract[this.fields.memo.id]);
 
-            var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
+            let contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
             if (!!contractItems) {
                 contractItems.forEach(contractItem => {
                     quote.selectNewLineItem('item');
@@ -327,12 +334,12 @@ class ContractDAL extends BaseDAL {
                     quote.setCurrentLineItemValue('item', 'quantity', contractItem.custrecord_f3mm_ci_quantity);
                     quote.setCurrentLineItemValue('item', 'price', contractItem.custrecord_f3mm_ci_price_level.value);
                     quote.setCurrentLineItemValue('item', 'rate', contractItem.custrecord_f3mm_ci_price);
-                    //quote.setCurrentLineItemValue('item', 'taxcode', contractItem.custrecord_f3mm_ci_taxcode.value);
+                    // quote.setCurrentLineItemValue('item', 'taxcode', contractItem.custrecord_f3mm_ci_taxcode.value);
                     quote.commitLineItem('item');
                 });
             }
 
-            var quoteId = nlapiSubmitRecord(quote);
+            let quoteId = nlapiSubmitRecord(quote);
 
             result = {
                 id: quoteId
