@@ -10,42 +10,6 @@ var JsonHelper = (function () {
     function JsonHelper() {
     }
     /**
-     * Convert search result object into json array.
-     * @param {nlobjSearchResult} row single row of search result
-     * @param {nlobjSearchColumn[]} cols array of columns to convert into json
-     * @param {string[]?} columnNames array of column names
-     * @returns {object[]} json representation of search result object
-     */
-    JsonHelper.getJsonObject = function (row, cols, columnNames) {
-        var obj = null;
-        if (row) {
-            obj = {
-                id: row.getId(),
-                recordType: row.getRecordType()
-            };
-            var nm = null, item, val, text;
-            if (!!cols) {
-                for (var x = 0; x < cols.length; x++) {
-                    item = cols[x];
-                    nm = (columnNames && columnNames[x]) || item.getName();
-                    val = row.getValue(item);
-                    text = row.getText(item);
-                    // donot create object for internal id
-                    if (!!text && nm != 'internalid') {
-                        obj[nm] = {
-                            text: text,
-                            value: val
-                        };
-                    }
-                    else {
-                        obj[nm] = val;
-                    }
-                }
-            }
-        }
-        return obj;
-    };
-    /**
      * Convert any record object of type `nlobjRecord` into json
      * @param {nlobjRecord} record record object to convert
      * @returns {object} json representation of record
@@ -62,17 +26,17 @@ var JsonHelper = (function () {
             // iterate over columns of body fields
             for (var index in allFields) {
                 var field = allFields[index];
-                var name = field;
+                var name_1 = field;
                 var val = record.getFieldValue(field);
                 var text = record.getFieldText(field);
-                if (!!text && val != text) {
-                    result[name] = {
+                if (!!text && name_1 !== "internalid") {
+                    result[name_1] = {
                         text: text,
                         value: val
                     };
                 }
                 else {
-                    result[name] = val;
+                    result[name_1] = val;
                 }
             }
             // serialize child records
@@ -103,17 +67,17 @@ var JsonHelper = (function () {
             // iterate over columns
             for (var j in fields) {
                 var field = fields[j];
-                var name = field;
+                var name_2 = field;
                 var val = record.getLineItemValue(key, field, i);
                 var text = record.getLineItemText(key, field, i);
-                if (!!text && val != text) {
-                    lineItem[name] = {
+                if (!!text && name_2 !== "internalid") {
+                    lineItem[name_2] = {
                         text: text,
                         value: val
                     };
                 }
                 else {
-                    lineItem[name] = val;
+                    lineItem[name_2] = val;
                 }
             }
             sublistItems.push(lineItem);
@@ -138,8 +102,8 @@ var JsonHelper = (function () {
                     label = item.getLabel();
                     if (!!label) {
                         label = label.toLowerCase();
-                        label = label.indexOf('_') == 0 ? label.substr(1) : label;
-                        label = label.trim().replace(/ /gi, '_');
+                        label = label.indexOf("_") === 0 ? label.substr(1) : label;
+                        label = label.trim().replace(/ /gi, "_");
                         nm = label;
                     }
                     else {
@@ -155,6 +119,42 @@ var JsonHelper = (function () {
             }
         }
         return result;
+    };
+    /**
+     * Convert search result object into json array.
+     * @param {nlobjSearchResult} row single row of search result
+     * @param {nlobjSearchColumn[]} cols array of columns to convert into json
+     * @param {string[]?} columnNames array of column names
+     * @returns {object[]} json representation of search result object
+     */
+    JsonHelper.getJsonObject = function (row, cols, columnNames) {
+        var obj = null;
+        if (row) {
+            obj = {
+                id: row.getId(),
+                recordType: row.getRecordType()
+            };
+            var nm = null, item, val, text;
+            if (!!cols) {
+                for (var x = 0; x < cols.length; x++) {
+                    item = cols[x];
+                    nm = (columnNames && columnNames[x]) || item.getName();
+                    val = row.getValue(item);
+                    text = row.getText(item);
+                    // donot create object for internal id
+                    if (!!text && nm !== "internalid") {
+                        obj[nm] = {
+                            text: text,
+                            value: val
+                        };
+                    }
+                    else {
+                        obj[nm] = val;
+                    }
+                }
+            }
+        }
+        return obj;
     };
     return JsonHelper;
 })();

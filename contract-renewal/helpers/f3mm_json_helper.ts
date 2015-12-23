@@ -6,46 +6,7 @@
  * - f3mm_base_dal.ts
  * -
  */
-class JsonHelper {
-
-    /**
-     * Convert search result object into json array.
-     * @param {nlobjSearchResult} row single row of search result
-     * @param {nlobjSearchColumn[]} cols array of columns to convert into json
-     * @param {string[]?} columnNames array of column names
-     * @returns {object[]} json representation of search result object
-     */
-    private static getJsonObject(row: nlobjSearchResult, cols: nlobjSearchColumn[], columnNames ? : string[]): {} {
-
-        var obj = null;
-        if (row) {
-            obj = {
-                id: row.getId(),
-                recordType: row.getRecordType()
-            };
-            var nm = null,
-                item, val, text;
-            if (!!cols) {
-                for (var x = 0; x < cols.length; x++) {
-                    item = cols[x];
-                    nm = (columnNames && columnNames[x]) || item.getName();
-                    val = row.getValue(item);
-                    text = row.getText(item);
-
-                    // donot create object for internal id
-                    if (!!text && nm != 'internalid') {
-                        obj[nm] = {
-                            text: text,
-                            value: val
-                        };
-                    } else {
-                        obj[nm] = val;
-                    }
-                }
-            }
-        }
-        return obj;
-    }
+public class JsonHelper {
 
 
     /**
@@ -53,9 +14,9 @@ class JsonHelper {
      * @param {nlobjRecord} record record object to convert
      * @returns {object} json representation of record
      */
-    static getJsonForFullRecord(record: nlobjRecord): {} {
+    public static getJsonForFullRecord(record: nlobjRecord): {} {
 
-        var result = null;
+        let result = null;
         if (!!record) {
             result = {
                 id: record.getId(),
@@ -63,16 +24,16 @@ class JsonHelper {
             };
 
             // serialize body fields
-            var allFields = record.getAllFields();
+            let allFields = record.getAllFields();
 
             // iterate over columns of body fields
-            for (var index in allFields) {
-                var field = allFields[index];
-                var name = field;
-                var val: any = record.getFieldValue(field);
-                var text: any = record.getFieldText(field);
+            for (let index in allFields) {
+                let field = allFields[index];
+                let name = field;
+                let val: any = record.getFieldValue(field);
+                let text: any = record.getFieldText(field);
 
-                if (!!text && val != text) {
+                if (!!text && name !== "internalid") {
                     result[name] = {
                         text: text,
                         value: val
@@ -84,14 +45,14 @@ class JsonHelper {
 
             // serialize child records
             result.sublists = {};
-            var lineItemGroups = record.getAllLineItems();
+            let lineItemGroups = record.getAllLineItems();
 
             // iterate over child record types
-            for (var lineItemIndex in lineItemGroups) {
+            for (let lineItemIndex in lineItemGroups) {
 
-                var key = lineItemGroups[lineItemIndex];
+                let key = lineItemGroups[lineItemIndex];
 
-                var sublistItems = JsonHelper.getSublistItemsJson(record, key);
+                let sublistItems = JsonHelper.getSublistItemsJson(record, key);
 
                 result.sublists[key] = sublistItems;
             }
@@ -109,23 +70,23 @@ class JsonHelper {
      * @param {string} key sublist key to get items of.
      * @returns {object} json representation of record
      */
-    static getSublistItemsJson(record: nlobjRecord, key: string) {
-        var sublistItems = [];
-        var lineItemCount = record.getLineItemCount(key);
+    public static getSublistItemsJson(record: nlobjRecord, key: string) {
+        let sublistItems = [];
+        let lineItemCount = record.getLineItemCount(key);
 
         // iterate over child record items of type `key`
-        for (var i = 1; i <= lineItemCount; i++) {
-            var lineItem = {};
-            var fields = record.getAllLineItemFields(key);
+        for (let i = 1; i <= lineItemCount; i++) {
+            let lineItem = {};
+            let fields = record.getAllLineItemFields(key);
 
             // iterate over columns
-            for (var j in fields) {
-                var field = fields[j];
-                var name: string = field;
-                var val: any = record.getLineItemValue(key, field, i);
-                var text: any = record.getLineItemText(key, field, i);
+            for (let j in fields) {
+                let field = fields[j];
+                let name: string = field;
+                let val: any = record.getLineItemValue(key, field, i);
+                let text: any = record.getLineItemText(key, field, i);
 
-                if (!!text && val != text) {
+                if (!!text && name !== "internalid") {
                     lineItem[name] = {
                         text: text,
                         value: val
@@ -147,18 +108,18 @@ class JsonHelper {
      * @param {nlobjSearchResult[]} records array of search result
      * @returns {object[]} json representation of search result array
      */
-    static getJsonArray(records: nlobjSearchResult[]): {}[] {
+    public static getJsonArray(records: nlobjSearchResult[]): {}[] {
 
-        var result = [];
+        let result = [];
         if (!!records && records.length > 0) {
 
-            var cols = records[0].getAllColumns();
-            var columnNames = [];
-            var item = null,
+            let cols = records[0].getAllColumns();
+            let columnNames = [];
+            let item = null,
                 label = null,
                 nm = null,
                 j = 0;
-            var record = null,
+            let record = null,
                 jsonObj = null,
                 k = 0;
 
@@ -168,8 +129,8 @@ class JsonHelper {
                     label = item.getLabel();
                     if (!!label) {
                         label = label.toLowerCase();
-                        label = label.indexOf('_') == 0 ? label.substr(1) : label;
-                        label = label.trim().replace(/ /gi, '_');
+                        label = label.indexOf("_") === 0 ? label.substr(1) : label;
+                        label = label.trim().replace(/ /gi, "_");
 
                         nm = label;
                     } else {
@@ -189,4 +150,44 @@ class JsonHelper {
         return result;
     }
 
+
+
+    /**
+     * Convert search result object into json array.
+     * @param {nlobjSearchResult} row single row of search result
+     * @param {nlobjSearchColumn[]} cols array of columns to convert into json
+     * @param {string[]?} columnNames array of column names
+     * @returns {object[]} json representation of search result object
+     */
+    private static getJsonObject(row: nlobjSearchResult, cols: nlobjSearchColumn[], columnNames? : string[]): {} {
+
+        let obj = null;
+        if (row) {
+            obj = {
+                id: row.getId(),
+                recordType: row.getRecordType()
+            };
+            let nm = null,
+                item, val, text;
+            if (!!cols) {
+                for (let x = 0; x < cols.length; x++) {
+                    item = cols[x];
+                    nm = (columnNames && columnNames[x]) || item.getName();
+                    val = row.getValue(item);
+                    text = row.getText(item);
+
+                    // donot create object for internal id
+                    if (!!text && nm !== "internalid") {
+                        obj[nm] = {
+                            text: text,
+                            value: val
+                        };
+                    } else {
+                        obj[nm] = val;
+                    }
+                }
+            }
+        }
+        return obj;
+    }
 }

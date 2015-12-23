@@ -175,6 +175,9 @@ class ContractDAL extends BaseDAL {
             contractItemsHistory = contractItemsHistory.filter(cih => cih.field.text === "Item");
             contract.history = this.getHistory(id);
             contract.history = contract.history.concat(contractItemsHistory);
+            contract.history.sort((item1, item2) => {
+                return new Date(item2.date) - new Date(item1.date);
+            });
 
             contractItems.forEach(contractItem => {
                 if (!!contractItem.custrecord_f3mm_ci_item) {
@@ -266,11 +269,11 @@ class ContractDAL extends BaseDAL {
         result.records = super.getAll(filters, null, null, params);
 
         if (!!result.records) {
-            var contractIds = result.records.map(record=> record.id);
-            var contractItems = this.searchContractItems({contractIds: contractIds});
-            result.records.forEach(record=> {
+            let contractIds = result.records.map(record => record.id);
+            let contractItems = this.searchContractItems({contractIds: contractIds});
+            result.records.forEach(record => {
                 record.sublists = record.sublists || {};
-                var filtered = contractItems.filter(ci=> ci.custrecord_f3mm_ci_contract.value == record.id);
+                let filtered = contractItems.filter(ci => ci.custrecord_f3mm_ci_contract.value == record.id);
                 record.sublists.recmachcustrecord_f3mm_ci_contract = filtered;
             });
         }

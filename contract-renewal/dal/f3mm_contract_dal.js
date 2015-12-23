@@ -166,6 +166,9 @@ var ContractDAL = (function (_super) {
             contractItemsHistory = contractItemsHistory.filter(function (cih) { return cih.field.text === "Item"; });
             contract.history = this.getHistory(id);
             contract.history = contract.history.concat(contractItemsHistory);
+            contract.history.sort(function (item1, item2) {
+                return new Date(item2.date) - new Date(item1.date);
+            });
             contractItems.forEach(function (contractItem) {
                 if (!!contractItem.custrecord_f3mm_ci_item) {
                     var itemId = contractItem.custrecord_f3mm_ci_item.value;

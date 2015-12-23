@@ -313,9 +313,19 @@
 
             <!-- Items Grid -->
             <!-- Nav tabs -->
-            <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#items-container" aria-controls="items" role="tab" data-toggle="tab">Items</a></li>
-                <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab">history</a></li>
+            <ul class="nav nav-tabs contract-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a href="#items-container" aria-controls="items" role="tab" data-toggle="tab">
+                        Items
+                        <i class="glyphicon glyphicon-triangle-top"></i>
+                    </a>
+                </li>
+                <li role="presentation">
+                    <a href="#history-container" aria-controls="history-container" role="tab" data-toggle="tab">
+                        history
+                        <i class="glyphicon glyphicon-triangle-top"></i>
+                    </a>
+                </li>
             </ul>
             <!--<div class="panel panel-primary">-->
                 <!--<div class="panel-heading">-->
@@ -329,12 +339,11 @@
                 <div role="tabpanel" class="tab-pane items-container active" id="items-container">
                     <div id="jsGrid"></div>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="history">
-
+                <div role="tabpanel" class="tab-pane" id="history-container">
+                    <div id="history_grid"></div>
                 </div>
             </div>
 
-            <div id="history_grid"></div>
 
             <!-- Action buttons -->
             <div class="form-actions" style="display: none">

@@ -357,8 +357,46 @@ textarea:disabled,
 
 
 
+.contract-tabs {
+    background-color: #607799;
+}
 
+.contract-tabs > li {
+    text-transform: uppercase;
+}
+.contract-tabs > li > a,
+.contract-tabs > li > a:focus,
+.contract-tabs > li > a:hover,
+.contract-tabs > li.active > a,
+.contract-tabs > li.active > a:focus,
+.contract-tabs > li.active > a:hover {
+    color: #fff;
+    padding: 4px 4px 2px 6px;
+    border-radius: 0;
+}
+.contract-tabs > li > a:hover,
+.contract-tabs > li.active > a:hover,
+.contract-tabs > li > a:focus,
+.contract-tabs > li.active > a:focus{
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+.contract-tabs > li.active > a {
+    background-color: transparent;
+    color: #fff;
+    border: 1px solid transparent;
+}
 
+.contract-tabs > li > a > .glyphicon {
+    display: none;
+}
+
+.contract-tabs > li.active > a > .glyphicon {
+    display: inline;
+    position: absolute;
+    left: 45%;
+    top: 15px;
+}
 
 .nav.nav-tabs {
     margin-left: auto;
