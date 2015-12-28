@@ -33,49 +33,48 @@ class CreateContractUISuitelet extends BaseUISuitelet {
      *  - Merge contract information and other required data with html
      *  - send response
      */
-    protected main(request:nlobjRequest, response:nlobjResponse) {
-        F3.Util.Utility.logDebug('CreateContractUISuitelet.main()', 'Start');
+    protected main(request: nlobjRequest, response: nlobjResponse) {
+        F3.Util.Utility.logDebug("CreateContractUISuitelet.main()", "Start");
 
         try {
-            let uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
-            let uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
-            let uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
+            let uiSuiteletScriptId = "customscript_f3mm_create_contract_ui_st";
+            let uiSuiteletDeploymentId = "customdeploy_f3mm_create_contract_ui_st";
+            let uiSuiteletUrl = nlapiResolveURL("SUITELET", uiSuiteletScriptId, uiSuiteletDeploymentId, false);
 
-            let editMode = request.getParameter('e');
-            let contractId = request.getParameter('cid');
+            let editMode = request.getParameter("e");
+            let contractId = request.getParameter("cid");
             let contract = null;
 
             if (!!contractId) {
                 contract = this._contractDAL.getWithDetails(contractId);
-                F3.Util.Utility.logDebug('CreateContractUISuitelet.main() // contract: ', JSON.stringify(contract));
+                F3.Util.Utility.logDebug("CreateContractUISuitelet.main() // contract: ", JSON.stringify(contract));
 
                 if (!contract) {
-                    throw new Error('that record does not exist.');
+                    throw new Error("that record does not exist.");
                 }
 
-                uiSuiteletUrl = uiSuiteletUrl + '&cid=' + contractId;
+                uiSuiteletUrl = uiSuiteletUrl + "&cid=" + contractId;
 
-                if (editMode == 't') {
-                    this.title = 'Edit Contract';
-                    this.type = 'edit';
+                if (editMode === "t") {
+                    this.title = "Edit Contract";
+                    this.type = "edit";
                 } else {
-                    uiSuiteletUrl = uiSuiteletUrl + '&e=t';
-                    this.title = 'View Contract';
-                    this.type = 'view';
+                    uiSuiteletUrl = uiSuiteletUrl + "&e=t";
+                    this.title = "View Contract";
+                    this.type = "view";
                 }
+            } else {
+                this.title = "Create Contract";
+                this.type = "create";
             }
-            else {
-                this.title = 'Create Contract';
-                this.type = 'create';
-            }
 
-            this.title = '<i class="fa fa-file-text-o"></i> ' + this.title;
+            this.title = "<i class='fa fa-file-text-o'></i> " + this.title;
 
-            let standaloneParam = request.getParameter('standalone');
-            let standalone = standaloneParam == 'T' || standaloneParam == '1';
-            let standaloneClass = (standalone ? 'page-standalone' : 'page-inline');
+            let standaloneParam = request.getParameter("standalone");
+            let standalone = standaloneParam === "T" || standaloneParam === "1";
+            let standaloneClass = (standalone ? "page-standalone" : "page-inline");
 
-            let templateName = 'create_contract.html';
+            let templateName = "create_contract.html";
             let htmlTemplate = this.getHtmlTemplate(templateName);
             let processedHtml = this.parseHtmlTemplate(htmlTemplate, {
                 contract: contract,
@@ -84,21 +83,21 @@ class CreateContractUISuitelet extends BaseUISuitelet {
                 uiSuiteletUrl: uiSuiteletUrl
             });
 
-            F3.Util.Utility.logDebug('CreateContractUISuitelet.main(); // this: ', JSON.stringify(this));
-            F3.Util.Utility.logDebug('CreateContractUISuitelet.main(); // this.title: ', this.title);
+            F3.Util.Utility.logDebug("CreateContractUISuitelet.main(); // this: ", JSON.stringify(this));
+            F3.Util.Utility.logDebug("CreateContractUISuitelet.main(); // this.title: ", this.title);
 
             // no need to create NetSuite form if standalone parameter is true
             if (standalone === true) {
                 response.write(processedHtml);
             } else {
                 let form = nlapiCreateForm(this.title);
-                let htmlField = form.addField('inlinehtml', 'inlinehtml', '');
+                let htmlField = form.addField("inlinehtml", "inlinehtml", "");
                 htmlField.setDefaultValue(processedHtml);
                 response.writePage(form);
             }
 
         } catch (ex) {
-            F3.Util.Utility.logException('CreateContractUISuitelet.main()', ex);
+            F3.Util.Utility.logException("CreateContractUISuitelet.main()", ex);
             throw ex;
         }
 

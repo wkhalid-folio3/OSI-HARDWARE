@@ -194,53 +194,50 @@ var CreateContractUIManager = (function () {
         var gridFields = this.prepareGridFields();
         var inserting = true;
         var editing = true;
-        if (this._viewType === 'view') {
+        if (this._viewType === "view") {
             inserting = false;
             editing = false;
         }
         var $grid = $("#jsGrid");
         $grid.jsGrid({
-            height: "auto",
-            width: "100%",
-            noDataContent: 'No items added.',
-            inserting: inserting,
-            filtering: false,
-            editing: editing,
-            sorting: false,
-            paging: false,
             autoload: true,
-            pageSize: 15,
-            pageButtonCount: 5,
-            deleteConfirm: "Are you sure you want to delete this item?",
             controller: {
                 loadData: function (filter) {
                     return contactItems;
                 }
             },
-            onItemInserted: this.itemsChanged.bind(this),
-            onItemUpdated: this.itemsChanged.bind(this),
-            onItemDeleted: this.itemsChanged.bind(this),
+            deleteConfirm: "Are you sure you want to delete this item?",
+            editing: editing,
+            fields: gridFields,
+            filtering: false,
+            height: "auto",
+            inserting: inserting,
+            noDataContent: "No items added.",
             onDataLoaded: this.loaded.bind(this),
-            onItemUpdating: this.onGridItemUpdating.bind(this),
+            onItemDeleted: this.itemsChanged.bind(this),
+            onItemInserted: this.itemsChanged.bind(this),
             onItemInserting: this.onGridItemInserting.bind(this),
-            fields: gridFields
+            onItemUpdated: this.itemsChanged.bind(this),
+            onItemUpdating: this.onGridItemUpdating.bind(this),
+            pageButtonCount: 5,
+            pageSize: 15,
+            paging: false,
+            sorting: false,
+            width: "100%"
         });
         // bind grid events
         var gridRowClass = [
-            '.jsgrid-insert-row .quantity input',
-            '.jsgrid-insert-row .price input',
-            '.jsgrid-edit-row .quantity input',
-            '.jsgrid-edit-row .price input'
+            ".jsgrid-insert-row .quantity input",
+            ".jsgrid-insert-row .price input",
+            ".jsgrid-edit-row .quantity input",
+            ".jsgrid-edit-row .price input"
         ];
-        $grid.on('focusin', '.jsgrid-insert-row input:first, .jsgrid-edit-row input:first', function (ev) {
+        $grid.on("focusin", ".jsgrid-insert-row input:first, .jsgrid-edit-row input:first", function (ev) {
             _this.bindItemPicker($(ev.target));
         });
-        //$grid.on('focusin', '.jsgrid-insert-row .taxcode input, .jsgrid-edit-row .taxcode input', (ev) => {
-        //    this.bindTaxCodePicker($(ev.target));
-        //});
-        $grid.on('blur', gridRowClass.join(', '), this.onPriceOrQuantityChanged.bind(this));
-        $grid.on('change', '.jsgrid-insert-row .price-level select', this.onPriceLevelChangedInInsertRow.bind(this));
-        $grid.on('change', '.jsgrid-edit-row .price-level select', this.onPriceLevelChangedInEditRow.bind(this));
+        $grid.on("blur", gridRowClass.join(", "), this.onPriceOrQuantityChanged.bind(this));
+        $grid.on("change", ".jsgrid-insert-row .price-level select", this.onPriceLevelChangedInInsertRow.bind(this));
+        $grid.on("change", ".jsgrid-edit-row .price-level select", this.onPriceLevelChangedInEditRow.bind(this));
     };
     /**
      * Binds typeahead autocomplete component with primary contact control
@@ -693,7 +690,7 @@ var CreateContractUIManager = (function () {
             // make it string
             args.item.price_level = args.item.price_level + "";
         }
-        var existingData = $('#jsGrid').data().JSGrid.data;
+        var existingData = $("#jsGrid").data().JSGrid.data;
         var found = false;
         existingData.forEach(function (item) {
             if (item.itemid == args.item.itemid) {
@@ -714,18 +711,18 @@ var CreateContractUIManager = (function () {
      */
     CreateContractUIManager.prototype.onPriceOrQuantityChanged = function (ev) {
         var $input = $(ev.target);
-        var $tr = $input.parents('tr:first');
-        var $quantity = $tr.find('.quantity input');
-        var $price = $tr.find('.price input');
-        var isEditing = $tr.hasClass('jsgrid-edit-row');
+        var $tr = $input.parents("tr:first");
+        var $quantity = $tr.find(".quantity input");
+        var $price = $tr.find(".price input");
+        var isEditing = $tr.hasClass("jsgrid-edit-row");
         var quantity = parseInt($quantity.val());
         var price = parseFloat($price.val());
         var totalPrice = (price * quantity).toFixed(2);
         if (isEditing) {
-            $tr.find('.amount').html(totalPrice);
+            $tr.find(".amount").html(totalPrice);
         }
         else {
-            $tr.find('.amount input').val(totalPrice);
+            $tr.find(".amount input").val(totalPrice);
         }
     };
     /**
@@ -736,23 +733,23 @@ var CreateContractUIManager = (function () {
      */
     CreateContractUIManager.prototype.onPriceLevelChangedInInsertRow = function (ev) {
         var $priceLevelDropdown = $(ev.target);
-        var $row = $priceLevelDropdown.parents('tr:first');
-        var $priceTextbox = $row.find('.price input');
-        var priceLevels = $row.data('price-levels');
-        var suggestion = $row.data('data-selected-suggestion');
+        var $row = $priceLevelDropdown.parents("tr:first");
+        var $priceTextbox = $row.find(".price input");
+        var priceLevels = $row.data("price-levels");
+        var suggestion = $row.data("data-selected-suggestion");
         var selectedPriceLevelId = $priceLevelDropdown.val();
-        var price = $priceTextbox.val();
-        if (selectedPriceLevelId == "0" || selectedPriceLevelId == "-1") {
-            $priceTextbox.removeAttr('disabled');
+        // let price = $priceTextbox.val();
+        if (selectedPriceLevelId === "0" || selectedPriceLevelId === "-1") {
+            $priceTextbox.removeAttr("disabled");
             if (!!suggestion) {
                 $priceTextbox.val(suggestion.baseprice);
             }
             else {
-                $priceTextbox.val('');
+                $priceTextbox.val("");
             }
         }
         else {
-            $priceTextbox.attr('disabled', 'disabled');
+            $priceTextbox.attr("disabled", "disabled");
             var selectedPriceLevel = _.find(priceLevels, function (priceLevel) {
                 return priceLevel.pricelevel == selectedPriceLevelId;
             });
@@ -763,7 +760,7 @@ var CreateContractUIManager = (function () {
                 $priceTextbox.val(discountedPrice);
             }
         }
-        $priceTextbox.focus().trigger('blur');
+        $priceTextbox.focus().trigger("blur");
     };
     /**
      * Invoked whenever price level field is changed in any editing row of grid
@@ -773,24 +770,23 @@ var CreateContractUIManager = (function () {
      */
     CreateContractUIManager.prototype.onPriceLevelChangedInEditRow = function (ev) {
         var $priceLevelDropdown = $(ev.target);
-        var $row = $priceLevelDropdown.parents('tr:first');
-        var $priceTextbox = $row.find('.price input');
-        //var priceLevels = $row.data('price-levels');
-        var jsGridItem = $row.prev().data('JSGridItem');
+        var $row = $priceLevelDropdown.parents("tr:first");
+        var $priceTextbox = $row.find(".price input");
+        var jsGridItem = $row.prev().data("JSGridItem");
         var suggestion = jsGridItem;
         var selectedPriceLevelId = $priceLevelDropdown.val();
-        var price = $priceTextbox.val();
-        if (selectedPriceLevelId == "0" || selectedPriceLevelId == "-1") {
-            $priceTextbox.removeAttr('disabled');
+        // let price = $priceTextbox.val();
+        if (selectedPriceLevelId === "0" || selectedPriceLevelId === "-1") {
+            $priceTextbox.removeAttr("disabled");
             if (!!suggestion) {
                 $priceTextbox.val(suggestion.baseprice);
             }
             else {
-                $priceTextbox.val('');
+                $priceTextbox.val("");
             }
         }
         else {
-            $priceTextbox.attr('disabled', 'disabled');
+            $priceTextbox.attr("disabled", "disabled");
             var priceLevels = jsGridItem.priceLevels;
             var selectedPriceLevel = _.find(priceLevels, function (priceLevel) {
                 return priceLevel.pricelevel == selectedPriceLevelId;
@@ -802,7 +798,7 @@ var CreateContractUIManager = (function () {
                 $priceTextbox.val(discountedPrice);
             }
         }
-        $priceTextbox.focus().trigger('blur');
+        $priceTextbox.focus().trigger("blur");
     };
     /**
      * itemsPickerSource - fetch data from server based on provided query
@@ -821,7 +817,7 @@ var CreateContractUIManager = (function () {
                     async(items.data);
                 }
                 catch (e) {
-                    console.error('ERROR', 'Error during async binding.', e.toString());
+                    console.error("ERROR", "Error during async binding.", e.toString());
                 }
             });
         }, 10);
@@ -1115,6 +1111,13 @@ var CreateContractUIManager = (function () {
         else {
             this.bindEditScreen(contract);
         }
+        $("#notification_days").val(contract.custrecord_f3mm_notif_days_prior);
+        $(".notification-5-days").prop("checked", contract.custrecord_f3mm_notif_5days_prior === "T");
+        $(".notification-3-days").prop("checked", contract.custrecord_f3mm_notif_3days_prior === "T");
+        $(".notification-1-day").prop("checked", contract.custrecord_f3mm_notif_1day_prior === "T");
+        $(".notification-expiration").prop("checked", contract.custrecord_f3mm_notif_on_expiration === "T");
+        $(".notification-renewal").prop("checked", contract.custrecord_f3mm_notif_on_quote_generate === "T");
+        $(".notification-quote-generation").prop("checked", contract.custrecord_f3mm_notif_on_renewal === "T");
     };
     /**
      * Binds View Contract Screen with page
@@ -1122,15 +1125,15 @@ var CreateContractUIManager = (function () {
      * @returns {void}
      */
     CreateContractUIManager.prototype.bindViewScreen = function (contract) {
-        var viewTemplate = $('#view_template').html();
+        var viewTemplate = $("#view_template").html();
         var compiledTemplate = _.template(viewTemplate);
         var htmlMarkup = compiledTemplate(contract);
-        $('.view-horizontal').html(htmlMarkup);
-        if (contract.custrecord_f3mm_status && contract.custrecord_f3mm_status.value == "1") {
-            $('.btn-generate-quote').attr('disabled', 'disabled');
+        $(".view-horizontal").html(htmlMarkup);
+        if (contract.custrecord_f3mm_status && contract.custrecord_f3mm_status.value === "1") {
+            $(".btn-generate-quote").attr("disabled", "disabled");
         }
         else {
-            $('.btn-generate-quote').removeAttr('disabled');
+            $(".btn-generate-quote").removeAttr("disabled");
         }
     };
     /**
@@ -1206,24 +1209,24 @@ var CreateContractUIManager = (function () {
     };
     /**
      * Validates if selected customer and selected primary contact is valid or not
-     * @returns {bool}
+     * @returns {bool|object}
      */
     CreateContractUIManager.prototype.validateFields = function () {
-        var $customerDropdown = $('.customer-dropdown');
+        var $customerDropdown = $(".customer-dropdown");
         var customerText = $customerDropdown.val();
-        var customerId = $customerDropdown.attr('data-selected-id');
-        var $primaryContactDropdown = $('.primary-contact-dropdown');
+        var customerId = $customerDropdown.attr("data-selected-id");
+        var $primaryContactDropdown = $(".primary-contact-dropdown");
         var primaryContactText = $primaryContactDropdown.val();
-        var primaryContactId = $primaryContactDropdown.attr('data-selected-id');
+        var primaryContactId = $primaryContactDropdown.attr("data-selected-id");
         // validate customer
-        if (!customerId && customerText != "") {
-            alert('Selected customer is not valid!');
+        if (!customerId && customerText !== "") {
+            alert("Selected customer is not valid!");
             $customerDropdown.focus();
             return false;
         }
         // validate customer
-        if (!primaryContactId && primaryContactText != "") {
-            alert('Selected End User is not valid!');
+        if (!primaryContactId && primaryContactText !== "") {
+            alert("Selected End User is not valid!");
             $primaryContactDropdown.focus();
             return false;
         }

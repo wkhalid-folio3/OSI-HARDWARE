@@ -501,7 +501,6 @@ class DataManager {
             console.log("voidContract(); // jquery complete: ", arguments);
 
             callback && callback(result);
-
         });
     }
 

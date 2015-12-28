@@ -64,6 +64,34 @@ class ContractDAL extends BaseDAL {
             id: "name",
             type: "string"
         },
+        notification1DayPrior: {
+            id: "custrecord_f3mm_notif_1day_prior",
+            type: "checkbox"
+        },
+        notification3DaysPrior: {
+            id: "custrecord_f3mm_notif_3days_prior",
+            type: "checkbox"
+        },
+        notification5DaysPrior: {
+            id: "custrecord_f3mm_notif_5days_prior",
+            type: "checkbox"
+        },
+        notificationDaysPrior: {
+            id: "custrecord_f3mm_notif_days_prior",
+            type: "number"
+        },
+        notificationOnExpiration: {
+            id: "custrecord_f3mm_notif_on_expiration",
+            type: "checkbox"
+        },
+        notificationOnQuoteGenerate: {
+            id: "custrecord_f3mm_notif_on_quote_generate",
+            type: "checkbox"
+        },
+        notificationOnRenewal: {
+            id: "custrecord_f3mm_notif_on_renewal",
+            type: "checkbox"
+        },
         poNumber: {
             id: "custrecord_f3mm_po_number",
             type: "text"
@@ -103,24 +131,28 @@ class ContractDAL extends BaseDAL {
     public getHistory(contractIds: any, internalId?: string) {
         let filters = [],
             columns = [];
+        let history = null;
 
-        if (contractIds.constructor === Array) {
-            filters.push(new nlobjSearchFilter("internalid", null, "anyof", contractIds));
-        } else {
-            filters.push(new nlobjSearchFilter("internalid", null, "is", contractIds));
+        if (contractIds && contractIds.length) {
+
+            if (contractIds.constructor === Array) {
+                filters.push(new nlobjSearchFilter("internalid", null, "anyof", contractIds));
+            } else {
+                filters.push(new nlobjSearchFilter("internalid", null, "is", contractIds));
+            }
+
+            columns.push(new nlobjSearchColumn("date", "systemNotes", "group"));
+            columns.push(new nlobjSearchColumn("field", "systemNotes", "group"));
+            columns.push(new nlobjSearchColumn("type", "systemNotes", "group"));
+            columns.push(new nlobjSearchColumn("name", "systemNotes", "group"));
+            columns.push(new nlobjSearchColumn("oldvalue", "systemNotes", "group"));
+            columns.push(new nlobjSearchColumn("newvalue", "systemNotes", "group"));
+
+            // sorting on date field in descending order
+            columns[0].setSort(true);
+
+            history = this.getAll(filters, columns, internalId);
         }
-
-        columns.push(new nlobjSearchColumn("date", "systemNotes", "group"));
-        columns.push(new nlobjSearchColumn("field", "systemNotes", "group"));
-        columns.push(new nlobjSearchColumn("type", "systemNotes", "group"));
-        columns.push(new nlobjSearchColumn("name", "systemNotes", "group"));
-        columns.push(new nlobjSearchColumn("oldvalue", "systemNotes", "group"));
-        columns.push(new nlobjSearchColumn("newvalue", "systemNotes", "group"));
-
-        // sorting on date field in descending order
-        columns[0].setSort(true);
-
-        let history = this.getAll(filters, columns, internalId);
 
         return history;
     }
@@ -171,13 +203,16 @@ class ContractDAL extends BaseDAL {
             });
 
             // attach history
-            let contractItemsHistory = this.getHistory(contractItemIds, "customrecord_f3mm_contract_item");
-            contractItemsHistory = contractItemsHistory.filter(cih => cih.field.text === "Item");
             contract.history = this.getHistory(id);
-            contract.history = contract.history.concat(contractItemsHistory);
-            contract.history.sort((item1, item2) => {
-                return new Date(item2.date) - new Date(item1.date);
-            });
+
+            let contractItemsHistory = this.getHistory(contractItemIds, "customrecord_f3mm_contract_item");
+            if (!!contractItemsHistory) {
+                contractItemsHistory = contractItemsHistory.filter(cih => cih.field.text === "Item");
+                contract.history = contract.history.concat(contractItemsHistory);
+                contract.history.sort((item1, item2) => {
+                    return new Date(item2.date) - new Date(item1.date);
+                });
+            }
 
             contractItems.forEach(contractItem => {
                 if (!!contractItem.custrecord_f3mm_ci_item) {
@@ -207,21 +242,21 @@ class ContractDAL extends BaseDAL {
     public searchContractItems(params) {
         let filters = [];
         let cols = [];
-        let contractItemInternalId = 'customrecord_f3mm_contract_item';
+        let contractItemInternalId = "customrecord_f3mm_contract_item";
 
         if (!!params) {
             if (!!params.contractIds) {
-                filters.push(new nlobjSearchFilter('custrecord_f3mm_ci_contract', null, 'anyof', params.contractIds));
+                filters.push(new nlobjSearchFilter("custrecord_f3mm_ci_contract", null, "anyof", params.contractIds));
             }
         }
 
-        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_quantity'));
-        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_item'));
-        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_price'));
-        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_amount'));
-        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_item_description'));
-        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_price_level'));
-        cols.push(new nlobjSearchColumn('custrecord_f3mm_ci_contract'));
+        cols.push(new nlobjSearchColumn("custrecord_f3mm_ci_quantity"));
+        cols.push(new nlobjSearchColumn("custrecord_f3mm_ci_item"));
+        cols.push(new nlobjSearchColumn("custrecord_f3mm_ci_price"));
+        cols.push(new nlobjSearchColumn("custrecord_f3mm_ci_amount"));
+        cols.push(new nlobjSearchColumn("custrecord_f3mm_ci_item_description"));
+        cols.push(new nlobjSearchColumn("custrecord_f3mm_ci_price_level"));
+        cols.push(new nlobjSearchColumn("custrecord_f3mm_ci_contract"));
 
         let records = super.getAll(filters, cols, contractItemInternalId);
         return records;
@@ -234,8 +269,8 @@ class ContractDAL extends BaseDAL {
      */
     public search(params) {
         let result = {
-            total: 0,
-            records: null
+            records: null,
+            total: 0
         };
         let filters = [];
 
@@ -349,12 +384,198 @@ class ContractDAL extends BaseDAL {
             };
 
         } catch (e) {
-            F3.Util.Utility.logException('ContractDAL.generateQuote', e.toString());
+            F3.Util.Utility.logException("ContractDAL.generateQuote", e.toString());
             throw e;
         }
 
         return result;
     }
+
+    /**
+     * Delete Contract
+     * @param {object} contract json object containing data for contract
+     * @returns {number} id of created / updated contract
+     */
+    public delete(contract): {
+        id: any
+    } {
+        if (!contract) {
+            throw new Error("contract cannot be null.");
+        }
+
+        let record: any = {};
+        record.id = contract.id;
+        record[this.fields.deleted.id] = "T";
+
+        let id = this.upsert(record);
+        let result = {
+            id: id
+        };
+        return result;
+    }
+
+
+    /**
+     * Void Selected Contracts
+     * @param {object} contractIds array containing ids of contracts to void
+     * @returns {number} id of created / updated contract
+     */
+    public void(contractIds): any[] {
+        if (!contractIds) {
+            throw new Error("contractIds cannot be null.");
+        }
+
+        let result = [];
+        let voidStatusId = 5;
+
+        contractIds.forEach(contractId => {
+            try {
+                let record: any = {};
+                record.id = contractId;
+                record[this.fields.status.id] = voidStatusId; // void
+
+                let id = this.upsert(record);
+                result[contractId] = true;
+            } catch (e) {
+                F3.Util.Utility.logException("ContractDAL.void", e.toString());
+                result[contractId] = false;
+            }
+        });
+
+        return result;
+    }
+
+
+    /**
+     * Export records in csv format
+     * @param {object} params json object contain filters data
+     * @returns {object[]} array of json representation of contract objects
+     */
+    public exportToCSV(params) {
+        let searchResult = this.search(params);
+        let records = searchResult.records;
+        let includeHeader = true;
+        let contents = "";
+
+        let content = [];
+        let temp = [];
+        let keysToExclude = ["recordType", "custrecord_f3mm_deleted"];
+        let keyObjects = [
+            "custrecord_f3mm_contract_vendor",
+            "custrecord_f3mm_customer",
+            "custrecord_f3mm_department",
+            "custrecord_f3mm_primary_contact",
+            "custrecord_f3mm_sales_rep",
+            "custrecord_f3mm_status"
+        ];
+
+        if (includeHeader === true && records.length > 0) {
+            let record = records[0];
+            for (let key in record) {
+                if (keysToExclude.indexOf(key) > -1) {
+                    continue;
+                }
+
+                let columnName = key;
+                columnName = columnName.replace("custrecord_f3mm_", "");
+                columnName = columnName.replace(/_/gi, " ");
+
+                if (typeof record[key] === "object" || keyObjects.indexOf(key) > -1) {
+                    temp.push(columnName + " id");
+                    temp.push(columnName + " name");
+                } else {
+                    temp.push(columnName);
+                }
+            }
+
+            content.push(temp);
+        }
+
+        // Looping through the search Results
+        for (let i = 0; i < records.length; i++) {
+            temp = [];
+            let record = records[i];
+
+            // Looping through each column and assign it to the temp array
+            for (let key in record) {
+                if (keysToExclude.indexOf(key) > -1) {
+                    continue;
+                }
+
+                if (typeof record[key] === "object" || keyObjects.indexOf(key) > -1) {
+                    let obj = record[key] || {};
+                    temp.push(obj.value);
+                    temp.push(obj.text);
+                } else {
+                    temp.push(record[key]);
+                }
+            }
+
+            content.push(temp);
+        }
+
+        // Looping through the content array and assigning it to the contents string variable.
+        for (let z = 0; z < content.length; z++) {
+            contents += content[z].toString() + "\n";
+        }
+
+        return contents;
+    }
+
+
+    /**
+     * Create/Update a Contract based on json data passed
+     * @param {object} contract json object containing data for contract
+     * @returns {number} id of created / updated contract
+     */
+    public update(contract): {
+        id: any
+    } {
+
+        if (!contract) {
+            throw new Error("contract cannot be null.");
+        }
+
+        let record: any = {};
+        record.id = contract.id;
+        record[this.fields.primaryContact.id] = contract.custrecord_f3mm_primary_contact.value;
+        record[this.fields.primaryContactEmail.id] = contract.custrecord_f3mm_primary_contact_email;
+        record[this.fields.startDate.id] = contract.custrecord_f3mm_start_date;
+        record[this.fields.endDate.id] = contract.custrecord_f3mm_end_date;
+        record[this.fields.contractNumber.id] = contract.custrecord_f3mm_contract_number;
+        record[this.fields.name.id] = contract.custrecord_f3mm_contract_number;
+        record[this.fields.memo.id] = contract.custrecord_f3mm_memo;
+
+        let id = this.upsert(record);
+        let result = {
+            id: id
+        };
+        return result;
+    }
+
+
+    /**
+     * Create/Update a Contract based on json data passed
+     * @param {object} contract json object containing data for contract
+     * @returns {number} id of created / updated contract
+     */
+    public updateOrCreate(contract): {
+        id: any
+    } {
+
+        if (!contract) {
+            throw new Error("contract cannot be null.");
+        }
+
+        let record = this.prepareDataToUpsert(contract);
+
+        let id = this.upsert(record);
+        let result = {
+            id: id
+        };
+        return result;
+    }
+
 
     /**
      * Prepare record to insert in db
@@ -363,7 +584,7 @@ class ContractDAL extends BaseDAL {
      */
     private prepareDataToUpsert(contract: any) {
 
-        var record: any = {};
+        let record: any = {};
         record.id = contract.id;
         record[this.fields.customer.id] = contract.customer;
         record[this.fields.primaryContact.id] = contract.primary_contact;
@@ -380,221 +601,41 @@ class ContractDAL extends BaseDAL {
         record[this.fields.status.id] = contract.status;
         record[this.fields.poNumber.id] = contract.po_number;
         record[this.fields.duration.id] = contract.duration;
+        record[this.fields.notificationDaysPrior.id] = contract.notification_days;
+        record[this.fields.notification5DaysPrior.id] = contract.notification_5_days === "on" ? "T" : "F";
+        record[this.fields.notification3DaysPrior.id] = contract.notification_3_days === "on" ? "T" : "F";
+        record[this.fields.notification1DayPrior.id] = contract.notification_1_day === "on" ? "T" : "F";
+        record[this.fields.notificationOnExpiration.id] = contract.notification_expiration === "on" ? "T" : "F";
+        record[this.fields.notificationOnQuoteGenerate.id] = contract.notification_quote_generation === "on" ? "T" : "F";
+        record[this.fields.notificationOnRenewal.id] = contract.notification_renewal === "on" ? "T" : "F";
 
         if (!!contract.items) {
 
-            var contractItemsSublist = {
-                internalId: 'recmachcustrecord_f3mm_ci_contract',
-                keyField: 'id',
+            let contractItemsSublist = {
+                internalId: "recmachcustrecord_f3mm_ci_contract",
+                keyField: "id",
                 lineitems: []
             };
 
             contract.items.forEach(item => {
-                var lineitem = {};
-                lineitem['id'] = item.id;
-                lineitem['custrecord_f3mm_ci_quantity'] = item.quantity;
-                lineitem['custrecord_f3mm_ci_item'] = item.item_id;
-                lineitem['custrecord_f3mm_ci_price'] = item.price == "-1" ? "" : item.price;
-                lineitem['custrecord_f3mm_ci_amount'] = item.amount;
-                lineitem['custrecord_f3mm_ci_item_description'] = item.item_description || '';
-                lineitem['custrecord_f3mm_ci_price_level'] = item.price_level;
-                //lineitem['custrecord_f3mm_ci_taxcode'] = item.tax_code;
-                //lineitem['custrecord_f3mm_ci_taxrate'] = item.tax_rate;
+                let lineitem = {
+                    custrecord_f3mm_ci_amount: item.amount,
+                    custrecord_f3mm_ci_item: item.item_id,
+                    custrecord_f3mm_ci_item_description: item.item_description || "",
+                    custrecord_f3mm_ci_price: item.price === "-1" ? "" : item.price,
+                    custrecord_f3mm_ci_price_level: item.price_level,
+                    custrecord_f3mm_ci_quantity: item.quantity,
+                    id: item.id
+                };
 
                 contractItemsSublist.lineitems.push(lineitem);
             });
 
-            record['sublists'] = [];
-            record['sublists'].push(contractItemsSublist);
+            record.sublists = [];
+            record.sublists.push(contractItemsSublist);
         }
 
         return record;
     }
 
-    /**
-     * Delete Contract
-     * @param {object} contract json object containing data for contract
-     * @returns {number} id of created / updated contract
-     */
-    delete(contract): {
-        id: any
-    } {
-        if (!contract) {
-            throw new Error("contract cannot be null.");
-        }
-
-        var record: any = {};
-        record.id = contract.id;
-        record[this.fields.deleted.id] = 'T';
-
-        var id = this.upsert(record);
-        var result = {
-            id: id
-        };
-        return result;
-    }
-
-
-    /**
-     * Void Selected Contracts
-     * @param {object} contractIds array containing ids of contracts to void
-     * @returns {number} id of created / updated contract
-     */
-    void(contractIds): any[] {
-        if (!contractIds) {
-            throw new Error("contractIds cannot be null.");
-        }
-
-        var result = [];
-        var voidStatusId = 5;
-
-        contractIds.forEach(contractId=> {
-            try {
-                var record: any = {};
-                record.id = contractId;
-                record[this.fields.status.id] = voidStatusId; // void
-
-                var id = this.upsert(record);
-                result[contractId] = true;
-            } catch (e) {
-                F3.Util.Utility.logException('ContractDAL.void', e.toString());
-                result[contractId] = false;
-            }
-        });
-
-        return result;
-    }
-
-
-    /**
-     * Export records in csv format
-     * @param {object} params json object contain filters data
-     * @returns {object[]} array of json representation of contract objects
-     */
-    exportToCSV(params) {
-        var searchResult = this.search(params);
-        var records = searchResult.records;
-        var includeHeader = true;
-        var contents = '';
-
-        var content = [];
-        var temp = [];
-        var keysToExclude = ['recordType', 'custrecord_f3mm_deleted'];
-        var keyObjects = [
-            'custrecord_f3mm_contract_vendor',
-            'custrecord_f3mm_customer',
-            'custrecord_f3mm_department',
-            'custrecord_f3mm_primary_contact',
-            'custrecord_f3mm_sales_rep',
-            'custrecord_f3mm_status'
-        ];
-
-        if (includeHeader === true && records.length > 0) {
-            var record = records[0];
-            for (var key in record) {
-                if (keysToExclude.indexOf(key) > -1) {
-                    continue;
-                }
-
-                var columnName = key;
-                columnName = columnName.replace('custrecord_f3mm_', '');
-                columnName = columnName.replace(/_/gi, ' ');
-
-                if (typeof record[key] == 'object' || keyObjects.indexOf(key) > -1) {
-                    temp.push(columnName + ' id');
-                    temp.push(columnName + ' name');
-                }
-                else {
-                    temp.push(columnName);
-                }
-            }
-
-            content.push(temp);
-        }
-
-        // Looping through the search Results
-        for (var i = 0; i < records.length; i++) {
-            temp = [];
-            var record = records[i];
-
-            // Looping through each column and assign it to the temp array
-            for (var key in record) {
-                if (keysToExclude.indexOf(key) > -1) {
-                    continue;
-                }
-
-                if (typeof record[key] == 'object' || keyObjects.indexOf(key) > -1) {
-                    var obj = record[key] || {};
-                    temp.push(obj.value);
-                    temp.push(obj.text);
-                }
-                else {
-                    temp.push(record[key]);
-                }
-            }
-
-            content.push(temp);
-        }
-
-        // Looping through the content array and assigning it to the contents string variable.
-        for (var z = 0; z < content.length; z++) {
-            contents += content[z].toString() + '\n';
-        }
-
-        return contents;
-    }
-
-
-    /**
-     * Create/Update a Contract based on json data passed
-     * @param {object} contract json object containing data for contract
-     * @returns {number} id of created / updated contract
-     */
-    update(contract): {
-        id: any
-    } {
-
-        if (!contract) {
-            throw new Error("contract cannot be null.");
-        }
-
-        var record: any = {};
-        record.id = contract.id;
-        record[this.fields.primaryContact.id] = contract.custrecord_f3mm_primary_contact.value;
-        record[this.fields.primaryContactEmail.id] = contract.custrecord_f3mm_primary_contact_email;
-        record[this.fields.startDate.id] = contract.custrecord_f3mm_start_date;
-        record[this.fields.endDate.id] = contract.custrecord_f3mm_end_date;
-        record[this.fields.contractNumber.id] = contract.custrecord_f3mm_contract_number;
-        record[this.fields.name.id] = contract.custrecord_f3mm_contract_number;
-        record[this.fields.memo.id] = contract.custrecord_f3mm_memo;
-
-        var id = this.upsert(record);
-        var result = {
-            id: id
-        };
-        return result;
-    }
-
-
-    /**
-     * Create/Update a Contract based on json data passed
-     * @param {object} contract json object containing data for contract
-     * @returns {number} id of created / updated contract
-     */
-    updateOrCreate(contract): {
-        id: any
-    } {
-
-        if (!contract) {
-            throw new Error("contract cannot be null.");
-        }
-
-        var record = this.prepareDataToUpsert(contract);
-
-        var id = this.upsert(record);
-        var result = {
-            id: id
-        };
-        return result;
-    }
 }

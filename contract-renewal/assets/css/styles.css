@@ -214,7 +214,7 @@ div#jsGrid {
 }
 
 
-label.control-label {
+label.control-label, .checkbox label {
     text-transform: uppercase;
     font-weight: 300;
     color: #6f6f6f !important;
