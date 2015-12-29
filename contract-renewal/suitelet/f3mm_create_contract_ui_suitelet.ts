@@ -20,40 +20,9 @@
  */
 class CreateContractUISuitelet extends BaseUISuitelet {
 
-    private title: string = 'Create Contract';
-    private type: string = 'create';
+    public title: string = "Create Contract";
+    public type: string = "create";
 
-    /**
-     * Parse HTML Template and replace variables with required data
-     * @returns {string} returns processed html
-     */
-    private parseHtmlTemplate(html: string, data) {
-        var files = this.getDependencyFiles();
-        var suiteletScriptId = 'customscript_f3mm_create_contract_api_st';
-        var suiteletDeploymentId = 'customdeploy_f3mm_create_contract_api_st';
-        var apiSuiteletUrl = nlapiResolveURL('SUITELET', suiteletScriptId, suiteletDeploymentId, false);
-
-        var contractListingScriptId = 'customscript_f3mm_list_contracts_ui_st';
-        var contractListingDeploymentId = 'customdeploy_f3mm_list_contracts_ui_st';
-        var contractListingUrl = nlapiResolveURL('SUITELET', contractListingScriptId, contractListingDeploymentId, false);
-
-        html = html || '';
-
-        for (var i in files) {
-            var fileInfo = files[i];
-            html = html.replace('{{ ' + fileInfo.name + ' }}', fileInfo.url);
-        }
-
-        html = html.replace('{{ type }}', this.type);
-        html = html.replace(/{{ title }}/gi, data.title);
-        html = html.replace('{{ apiSuiteletUrl }}', apiSuiteletUrl);
-        html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
-        html = html.replace('{{ contractInfo }}', JSON.stringify(data.contract));
-        html = html.replace(/{{ viewContractUrl }}/gi, data.uiSuiteletUrl);
-        html = html.replace(/{{ contractListingUrl }}/gi, contractListingUrl);
-
-        return html;
-    }
 
     /**
      * Entry point for Request. Operations:
@@ -65,76 +34,108 @@ class CreateContractUISuitelet extends BaseUISuitelet {
      *  - send response
      */
     protected main(request: nlobjRequest, response: nlobjResponse) {
-        F3.Util.Utility.logDebug('CreateContractUISuitelet.main()', 'Start');
+        F3.Util.Utility.logDebug("CreateContractUISuitelet.main()", "Start");
 
         try {
-            var uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
-            var uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
-            var uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
+            let uiSuiteletScriptId = "customscript_f3mm_create_contract_ui_st";
+            let uiSuiteletDeploymentId = "customdeploy_f3mm_create_contract_ui_st";
+            let uiSuiteletUrl = nlapiResolveURL("SUITELET", uiSuiteletScriptId, uiSuiteletDeploymentId, false);
 
-            var editMode = request.getParameter('e');
-            var contractId = request.getParameter('cid');
-            var contract = null;
+            let editMode = request.getParameter("e");
+            let contractId = request.getParameter("cid");
+            let contract = null;
 
             if (!!contractId) {
                 contract = this._contractDAL.getWithDetails(contractId);
-                F3.Util.Utility.logDebug('CreateContractUISuitelet.main() // contract: ', JSON.stringify(contract));
+                F3.Util.Utility.logDebug("CreateContractUISuitelet.main() // contract: ", JSON.stringify(contract));
 
-                if ( !contract) {
-                    throw new Error('that record does not exist.');
+                if (!contract) {
+                    throw new Error("that record does not exist.");
                 }
 
-                uiSuiteletUrl = uiSuiteletUrl + '&cid=' + contractId;
+                uiSuiteletUrl = uiSuiteletUrl + "&cid=" + contractId;
 
-                if (editMode == 't') {
-                    this.title = 'Edit Contract';
-                    this.type = 'edit';
+                if (editMode === "t") {
+                    this.title = "Edit Contract";
+                    this.type = "edit";
                 } else {
-                    uiSuiteletUrl = uiSuiteletUrl + '&e=t';
-                    this.title = 'View Contract';
-                    this.type = 'view';
+                    uiSuiteletUrl = uiSuiteletUrl + "&e=t";
+                    this.title = "View Contract";
+                    this.type = "view";
                 }
+            } else {
+                this.title = "Create Contract";
+                this.type = "create";
             }
-            else {
-                this.title = 'Create Contract';
-                this.type = 'create';
-            }
 
-            this.title = '<i class="fa fa-file-text-o"></i> ' + this.title;
+            this.title = "<i class='fa fa-file-text-o'></i> " + this.title;
 
-            var standaloneParam = request.getParameter('standalone');
-            var standalone = standaloneParam == 'T' || standaloneParam == '1';
-            var standaloneClass = (standalone ? 'page-standalone' : 'page-inline');
+            let standaloneParam = request.getParameter("standalone");
+            let standalone = standaloneParam === "T" || standaloneParam === "1";
+            let standaloneClass = (standalone ? "page-standalone" : "page-inline");
 
-            var templateName = 'create_contract.html';
-            var htmlTemplate = this.getHtmlTemplate(templateName);
-            var processedHtml = this.parseHtmlTemplate(htmlTemplate, {
-                standaloneClass: standaloneClass,
-                uiSuiteletUrl: uiSuiteletUrl,
+            let templateName = "create_contract.html";
+            let htmlTemplate = this.getHtmlTemplate(templateName);
+            let processedHtml = this.parseHtmlTemplate(htmlTemplate, {
                 contract: contract,
-                title: this.title
+                standaloneClass: standaloneClass,
+                title: this.title,
+                uiSuiteletUrl: uiSuiteletUrl
             });
 
-            F3.Util.Utility.logDebug('CreateContractUISuitelet.main(); // this: ', JSON.stringify(this));
-            F3.Util.Utility.logDebug('CreateContractUISuitelet.main(); // this.title: ', this.title);
+            F3.Util.Utility.logDebug("CreateContractUISuitelet.main(); // this: ", JSON.stringify(this));
+            F3.Util.Utility.logDebug("CreateContractUISuitelet.main(); // this.title: ", this.title);
 
             // no need to create NetSuite form if standalone parameter is true
             if (standalone === true) {
                 response.write(processedHtml);
             } else {
-                var form = nlapiCreateForm(this.title);
-                var htmlField = form.addField('inlinehtml', 'inlinehtml', '');
+                let form = nlapiCreateForm(this.title);
+                let htmlField = form.addField("inlinehtml", "inlinehtml", "");
                 htmlField.setDefaultValue(processedHtml);
                 response.writePage(form);
             }
 
         } catch (ex) {
-            F3.Util.Utility.logException('CreateContractUISuitelet.main()', ex);
+            F3.Util.Utility.logException("CreateContractUISuitelet.main()", ex);
             throw ex;
         }
 
-        F3.Util.Utility.logDebug('CreateContractUISuitelet.main()', 'End');
+        F3.Util.Utility.logDebug("CreateContractUISuitelet.main()", "End");
     }
+
+    /**
+     * Parse HTML Template and replace variables with required data
+     * @returns {string} returns processed html
+     */
+    private parseHtmlTemplate(html: string, data) {
+        let files = this.getDependencyFiles();
+        let suiteletScriptId = "customscript_f3mm_create_contract_api_st";
+        let suiteletDeploymentId = "customdeploy_f3mm_create_contract_api_st";
+        let apiSuiteletUrl = nlapiResolveURL("SUITELET", suiteletScriptId, suiteletDeploymentId, false);
+
+        let contractListingScriptId = "customscript_f3mm_list_contracts_ui_st";
+        let contractListingDeploymentId = "customdeploy_f3mm_list_contracts_ui_st";
+        let contractListingUrl = nlapiResolveURL("SUITELET", contractListingScriptId, contractListingDeploymentId, false);
+
+        html = html || "";
+
+        for (let i in files) {
+            let fileInfo = files[i];
+            html = html.replace("{{ " + fileInfo.name + " }}", fileInfo.url);
+        }
+
+        html = html.replace("{{ type }}", this.type);
+        html = html.replace(/{{ title }}/gi, data.title);
+        html = html.replace("{{ apiSuiteletUrl }}", apiSuiteletUrl);
+        html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
+        html = html.replace("{{ contractInfo }}", JSON.stringify(data.contract));
+        html = html.replace(/{{ viewContractUrl }}/gi, data.uiSuiteletUrl);
+        html = html.replace(/{{ contractListingUrl }}/gi, contractListingUrl);
+
+        return html;
+    }
+
 }
 
 

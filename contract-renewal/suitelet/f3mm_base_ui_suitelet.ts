@@ -46,14 +46,14 @@ class BaseUISuitelet {
      * @returns {string} returns the html of template
      */
     protected getHtmlTemplate(templateName: string) {
-        var assetsFolderId = this._assetsFolderId;
-        var files = this._foldersDAL.getFiles(assetsFolderId);
-        var found = null;
-        var templateFile = null;
-        var html = null;
+        let assetsFolderId = this._assetsFolderId;
+        let files = this._foldersDAL.getFiles(assetsFolderId);
+        let found = null;
+        let templateFile = null;
+        let html = null;
 
         files.forEach(file => {
-            if (file.name == templateName) {
+            if (file.name === templateName) {
                 found = file;
             }
         });
@@ -70,13 +70,13 @@ class BaseUISuitelet {
      * Load all dependant asset files like js and css
      * @returns {object[]} returns array of files loaded from db
      */
-    protected getDependencyFiles() {
-        var assetsFolderId = this._assetsFolderId;
-        var files = this._foldersDAL.getFiles(assetsFolderId, true);
+    protected getDependencyFiles(): IFile[] {
+        let assetsFolderId = this._assetsFolderId;
+        let files = this._foldersDAL.getFiles(assetsFolderId, true);
 
         // TODO : need to fix this, since NetSuite does not provide a way to find all files of a folder recursively
         // TODO : therefore we have to make two calls to fetch all dependant files
-        var externalLibs = this._foldersDAL.getFiles(Config.LIBS_FOLDER_ID, true);
+        let externalLibs = this._foldersDAL.getFiles(Config.LIBS_FOLDER_ID, true);
         return files.concat(externalLibs);
     }
 }

@@ -1,6 +1,8 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
+/// <reference path="../../_typescript-refs/underscore.d.ts" />
 /// <reference path="./f3mm_create_contract_ui_manager.ts" />
 /// <reference path="./f3mm_list_contracts_ui_manager.ts" />
+
 /**
  * Created by zshaikh on 11/18/2015.
  * -
@@ -16,16 +18,14 @@ $(() => {
 
     // set underscore template settings
     _.templateSettings = {
-        interpolate: /\{\{=(.+?)\}\}/g,
         evaluate: /\{\{(.+?)\}\}/g,
+        interpolate: /\{\{=(.+?)\}\}/g
     };
 
-
-    if(typeof  CreateContractUIManager != "undefined") {
+    if (typeof CreateContractUIManager !== "undefined") {
         // HACK : store it in global variable for debugging purpose
         window.createContractUIManager = new CreateContractUIManager();
-    }
-    else if(typeof  ListContractsUIManager != "undefined") {
+    } else if (typeof  ListContractsUIManager !== "undefined") {
         // HACK : store it in global variable for debugging purpose
         window.listContractsUIManager = new ListContractsUIManager();
     }

@@ -45,33 +45,33 @@ var CommonDAL = (function (_super) {
         var filters = [];
         var cols = [];
         var queryFilters = [];
-        cols.push(new nlobjSearchColumn('firstname').setSort());
-        cols.push(new nlobjSearchColumn('lastname'));
-        cols.push(new nlobjSearchColumn('entityid'));
-        cols.push(new nlobjSearchColumn('company'));
-        cols.push(new nlobjSearchColumn('email'));
+        cols.push(new nlobjSearchColumn("firstname").setSort());
+        cols.push(new nlobjSearchColumn("lastname"));
+        cols.push(new nlobjSearchColumn("entityid"));
+        cols.push(new nlobjSearchColumn("company"));
+        cols.push(new nlobjSearchColumn("email"));
         if (!!options) {
             var query = options.query;
-            if (F3.Util.Utility.isBlankOrNull(query) == false) {
+            if (F3.Util.Utility.isBlankOrNull(query) === false) {
                 var queryToSearch = null;
-                var splittedQuery = query.split(':');
+                var splittedQuery = query.split(":");
                 if (splittedQuery.length > 1) {
                     queryToSearch = splittedQuery[1].trim();
                 }
                 else {
                     queryToSearch = query.trim();
                 }
-                queryFilters.push(['entityid', 'contains', queryToSearch]);
+                queryFilters.push(["entityid", "contains", queryToSearch]);
             }
         }
-        filters.push(['isinactive', 'is', 'F']);
+        filters.push(["isinactive", "is", "F"]);
         if (queryFilters.length > 0) {
-            filters.push('and');
+            filters.push("and");
             filters.push(queryFilters);
         }
         // serialize data
-        var jsonConverterTimer = F3.Util.StopWatch.start('Convert objects to json manually.');
-        var result = this.getAll(filters, cols, 'contact');
+        var jsonConverterTimer = F3.Util.StopWatch.start("Convert objects to json manually.");
+        var result = this.getAll(filters, cols, "contact");
         jsonConverterTimer.stop();
         return result;
     };

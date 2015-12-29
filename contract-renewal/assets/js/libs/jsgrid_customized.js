@@ -600,7 +600,7 @@
             var props = name.split('.');
             var fieldValue = item[props.shift()];
 
-            while (props.length > 0) {
+            while (fieldValue && props.length > 0) {
                 fieldValue = fieldValue[props.shift()];
             }
 
