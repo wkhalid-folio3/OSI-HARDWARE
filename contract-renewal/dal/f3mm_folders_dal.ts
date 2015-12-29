@@ -12,10 +12,10 @@
  */
 
 interface IFile {
-    name: string;
-    url: string;
     filetype: string;
+    name: string;
     parent: string;
+    url: string;
 }
 
 /**

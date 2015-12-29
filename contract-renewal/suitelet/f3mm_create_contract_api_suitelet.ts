@@ -51,37 +51,37 @@ class CreateContractAPISuitelet {
      */
     public main(request: nlobjRequest, response: nlobjResponse) {
 
-        F3.Util.Utility.logDebug('CreateContractAPISuitelet.main();', null);
-        let mainRequestTimer = F3.Util.StopWatch.start('CreateContractAPISuitelet.main();');
+        F3.Util.Utility.logDebug("CreateContractAPISuitelet.main();", null);
+        let mainRequestTimer = F3.Util.StopWatch.start("CreateContractAPISuitelet.main();");
 
-        let action = request.getParameter('action');
-        let params = request.getParameter('params');
-        let format = request.getParameter('format');
-        let callback = request.getParameter('callback');
+        let action = request.getParameter("action");
+        let params = request.getParameter("params");
+        let format = request.getParameter("format");
+        let callback = request.getParameter("callback");
 
         if (!!params) {
             params = JSON.parse(params);
         }
 
-        F3.Util.Utility.logDebug('CreateContractAPISuitelet.main(); // action = ', action);
-        F3.Util.Utility.logDebug('CreateContractAPISuitelet.main(); // params = ', JSON.stringify(params));
+        F3.Util.Utility.logDebug("CreateContractAPISuitelet.main(); // action = ", action);
+        F3.Util.Utility.logDebug("CreateContractAPISuitelet.main(); // params = ", JSON.stringify(params));
 
         let result: IResult = this.executeAction(action, params);
 
-        if (format === 'csv') {
-            let file = nlapiCreateFile('contracts.csv', 'CSV', result.data);
-            response.setContentType('CSV', 'contracts.csv', 'inline');
+        if (format === "csv") {
+            let file = nlapiCreateFile("contracts.csv", "CSV", result.data);
+            response.setContentType("CSV", "contracts.csv", "inline");
             response.write(file.getValue());
         } else {
 
             let json = JSON.stringify(result);
-            F3.Util.Utility.logDebug('Response: ', json);
+            F3.Util.Utility.logDebug("Response: ", json);
 
             if (!!callback) {
-                json = callback + '(' + json + ')';
+                json = callback + "(" + json + ")";
             }
 
-            response.setContentType('JSON');
+            response.setContentType("JSON");
             response.writeLine(json);
         }
 
@@ -96,67 +96,67 @@ class CreateContractAPISuitelet {
      */
     private executeAction(action: string, params: {}): IResult {
 
-        var commonDAL = new CommonDAL();
-        var contractDAL = new ContractDAL();
+        let commonDAL = new CommonDAL();
+        let contractDAL = new ContractDAL();
 
-        var result: IResult = {
+        let result: IResult = {
             data: null,
-            status_code: 200,
-            status: 'OK',
-            message: ''
+            message: "",
+            status: "OK",
+            status_code: 200
         };
 
-        nlapiLogExecution('DEBUG', 'title', null);
+        nlapiLogExecution("DEBUG", "title", null);
 
         try {
 
-            var executedActionResult = null;
-            var actionExecuted = true;
+            let executedActionResult = null;
+            let actionExecuted = true;
 
             switch (action) {
-                case 'get_contracts':
+                case "get_contracts":
                     executedActionResult = contractDAL.search(params);
                     break;
-                case 'get_customers':
+                case "get_customers":
                     executedActionResult = commonDAL.getCustomers(params);
                     break;
-                case 'get_contacts':
+                case "get_contacts":
                     executedActionResult = commonDAL.getContacts(params);
                     break;
-                case 'get_vendors':
+                case "get_vendors":
                     executedActionResult = commonDAL.getVendors(params);
                     break;
-                case 'get_departments':
+                case "get_departments":
                     executedActionResult = commonDAL.getDepartments(params);
                     break;
-                case 'get_employees':
+                case "get_employees":
                     executedActionResult = commonDAL.getEmployees(params);
                     break;
-                case 'get_pricelevels':
+                case "get_pricelevels":
                     executedActionResult = commonDAL.getPriceLevels(params);
                     break;
-                case 'get_taxcodes':
+                case "get_taxcodes":
                     executedActionResult = commonDAL.getTaxItems(params);
                     break;
-                case 'get_items':
+                case "get_items":
                     executedActionResult = commonDAL.getItems(params);
                     break;
-                case 'generate_quote':
+                case "generate_quote":
                     executedActionResult = contractDAL.generateQuote(params);
                     break;
-                case 'update_contract':
+                case "update_contract":
                     executedActionResult = contractDAL.update(params);
                     break;
-                case 'delete_contract':
+                case "delete_contract":
                     executedActionResult = contractDAL.delete(params);
                     break;
-                case 'void_contract':
+                case "void_contract":
                     executedActionResult = contractDAL.void(params.contractIds);
                     break;
-                case 'export_to_csv':
+                case "export_to_csv":
                     executedActionResult = contractDAL.exportToCSV(params);
                     break;
-                case 'submit':
+                case "submit":
                     executedActionResult = contractDAL.updateOrCreate(params);
                     break;
                 default:
@@ -167,19 +167,19 @@ class CreateContractAPISuitelet {
             if (actionExecuted === true) {
                 result.data = executedActionResult;
                 result.status_code = 200;
-                result.status = 'OK';
-                result.message = 'success';
+                result.status = "OK";
+                result.message = "success";
             } else {
                 result.status_code = 400;
-                result.status = 'Bad Request';
+                result.status = "Bad Request";
                 result.message = "invalid parameters";
             }
 
         } catch (ex) {
-            F3.Util.Utility.logException('CreateContractAPISuitelet.executeAction();', ex.toString());
+            F3.Util.Utility.logException("CreateContractAPISuitelet.executeAction();", ex.toString());
 
             result.status_code = 500;
-            result.status = 'Internal server error';
+            result.status = "Internal server error";
             result.message = ex.toString();
         }
 

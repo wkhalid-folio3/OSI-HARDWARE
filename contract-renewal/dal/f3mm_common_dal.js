@@ -103,7 +103,7 @@ var CommonDAL = (function (_super) {
         var multiCurrency = nlapiGetContext().getFeature('MULTICURRENCY');
         var multiPrice = nlapiGetContext().getFeature('MULTPRICE');
         var quantityPricing = nlapiGetContext().getFeature('QUANTITYPRICING');
-        var priceID = '';
+        var priceID = "";
         // Set the ID for the sublist and the price field. Note that if all pricing-related features
         // are disabled, you will set the price in the rate field. See Pricing Sublist Feature Dependencies
         // for details.
@@ -112,8 +112,9 @@ var CommonDAL = (function (_super) {
         else {
             priceID = "price";
             if (multiCurrency) {
-                //var internalId = nlapiSearchRecord('currency', null, new nlobjSearchFilter('symbol', null, 'contains', currencyID))[0].getId();
-                //for USD as default curremcy id - TODO: generalize in future for more than one currency support
+                // var filters = new nlobjSearchFilter('symbol', null, 'contains', currencyID);
+                // var internalId = nlapiSearchRecord('currency', null, filters)[0].getId();
+                // for USD as default curremcy id - TODO: generalize in future for more than one currency support
                 var internalId = 1;
                 // Append the currency ID to the sublist name
                 priceID = priceID + internalId;
@@ -135,19 +136,19 @@ var CommonDAL = (function (_super) {
         var filters = [];
         var cols = [];
         try {
-            cols.push(new nlobjSearchColumn('tranid').setSort());
-            cols.push(new nlobjSearchColumn('trandate'));
+            cols.push(new nlobjSearchColumn("tranid").setSort());
+            cols.push(new nlobjSearchColumn("trandate"));
             if (!!options) {
                 var contractId = options.contractId;
-                if (F3.Util.Utility.isBlankOrNull(contractId) == false) {
-                    filters.push(new nlobjSearchFilter('custbody_f3mm_quote_contract', null, 'anyof', [contractId]));
+                if (F3.Util.Utility.isBlankOrNull(contractId) === false) {
+                    filters.push(new nlobjSearchFilter("custbody_f3mm_quote_contract", null, "anyof", [contractId]));
                 }
             }
             // load data from db
-            result = this.getAll(filters, cols, 'estimate');
+            result = this.getAll(filters, cols, "estimate");
         }
         catch (ex) {
-            F3.Util.Utility.logException('CommonDAL.getQuotes()', ex);
+            F3.Util.Utility.logException("CommonDAL.getQuotes()", ex);
             throw ex;
         }
         return result;
@@ -162,26 +163,26 @@ var CommonDAL = (function (_super) {
         var cols = [];
         var result = null;
         try {
-            cols.push(new nlobjSearchColumn('displayname').setSort());
-            cols.push(new nlobjSearchColumn('baseprice'));
-            cols.push(new nlobjSearchColumn('salesdescription'));
-            cols.push(new nlobjSearchColumn('itemid'));
+            cols.push(new nlobjSearchColumn("displayname").setSort());
+            cols.push(new nlobjSearchColumn("baseprice"));
+            cols.push(new nlobjSearchColumn("salesdescription"));
+            cols.push(new nlobjSearchColumn("itemid"));
             if (!!options) {
                 var query = options.query;
-                if (F3.Util.Utility.isBlankOrNull(query) == false) {
-                    filters.push(new nlobjSearchFilter('displayname', null, 'startswith', query));
+                if (F3.Util.Utility.isBlankOrNull(query) === false) {
+                    filters.push(new nlobjSearchFilter("displayname", null, "startswith", query));
                 }
                 var itemIds = options.itemIds;
                 if (!!itemIds && itemIds.length > 0) {
-                    filters.push(new nlobjSearchFilter('internalid', null, 'anyof', itemIds));
+                    filters.push(new nlobjSearchFilter("internalid", null, "anyof", itemIds));
                 }
             }
-            filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
+            filters.push(new nlobjSearchFilter("isinactive", null, "is", "F"));
             // load data from db
-            result = this.getAll(filters, cols, 'item');
+            result = this.getAll(filters, cols, "item");
         }
         catch (ex) {
-            F3.Util.Utility.logException('CommonDAL.getItems()', ex);
+            F3.Util.Utility.logException("CommonDAL.getItems()", ex);
             throw ex;
         }
         return result;
@@ -194,13 +195,13 @@ var CommonDAL = (function (_super) {
     CommonDAL.prototype.getVendors = function (options) {
         var filters = [];
         var cols = [];
-        cols.push(new nlobjSearchColumn('firstname'));
-        cols.push(new nlobjSearchColumn('lastname'));
-        cols.push(new nlobjSearchColumn('companyname'));
-        cols.push(new nlobjSearchColumn('isperson'));
-        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
-        filters.push(new nlobjSearchFilter('custentity_f3mm_show_vendor_on_contract', null, 'is', 'T'));
-        var result = this.getAll(filters, cols, 'vendor');
+        cols.push(new nlobjSearchColumn("firstname"));
+        cols.push(new nlobjSearchColumn("lastname"));
+        cols.push(new nlobjSearchColumn("companyname"));
+        cols.push(new nlobjSearchColumn("isperson"));
+        filters.push(new nlobjSearchFilter("isinactive", null, "is", "F"));
+        filters.push(new nlobjSearchFilter("custentity_f3mm_show_vendor_on_contract", null, "is", "T"));
+        var result = this.getAll(filters, cols, "vendor");
         return result;
     };
     /**
@@ -211,9 +212,9 @@ var CommonDAL = (function (_super) {
     CommonDAL.prototype.getDepartments = function (options) {
         var filters = [];
         var cols = [];
-        cols.push(new nlobjSearchColumn('name').setSort());
-        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
-        var result = this.getAll(filters, cols, 'department');
+        cols.push(new nlobjSearchColumn("name").setSort());
+        filters.push(new nlobjSearchFilter("isinactive", null, "is", "F"));
+        var result = this.getAll(filters, cols, "department");
         return result;
     };
     /**
@@ -225,27 +226,27 @@ var CommonDAL = (function (_super) {
         var filters = [];
         var cols = [];
         var queryFilters = [];
-        cols.push(new nlobjSearchColumn('isperson'));
-        cols.push(new nlobjSearchColumn('firstname'));
-        cols.push(new nlobjSearchColumn('lastname'));
-        cols.push(new nlobjSearchColumn('companyname'));
-        cols.push(new nlobjSearchColumn('entityid').setSort());
+        cols.push(new nlobjSearchColumn("isperson"));
+        cols.push(new nlobjSearchColumn("firstname"));
+        cols.push(new nlobjSearchColumn("lastname"));
+        cols.push(new nlobjSearchColumn("companyname"));
+        cols.push(new nlobjSearchColumn("entityid").setSort());
         if (!!options) {
             var query = options.query;
-            if (F3.Util.Utility.isBlankOrNull(query) == false) {
-                queryFilters.push(['companyname', 'startswith', query]);
-                queryFilters.push('or');
-                queryFilters.push(['entityid', 'startswith', query]);
+            if (F3.Util.Utility.isBlankOrNull(query) === false) {
+                queryFilters.push(["companyname", "startswith", query]);
+                queryFilters.push("or");
+                queryFilters.push(["entityid", "startswith", query]);
             }
         }
-        filters.push(['isinactive', 'is', 'F']);
+        filters.push(["isinactive", "is", "F"]);
         if (queryFilters.length > 0) {
-            filters.push('and');
+            filters.push("and");
             filters.push(queryFilters);
         }
         // serialize data
-        var jsonConverterTimer = F3.Util.StopWatch.start('Convert objects to json manually.');
-        var result = this.getAll(filters, cols, 'customer');
+        var jsonConverterTimer = F3.Util.StopWatch.start("Convert objects to json manually.");
+        var result = this.getAll(filters, cols, "customer");
         jsonConverterTimer.stop();
         return result;
     };
@@ -260,13 +261,14 @@ var CommonDAL = (function (_super) {
         var taxItems = taxGroups.concat(taxCodes);
         taxItems.sort(function (a, b) {
             var nameA = a.itemid.toLowerCase(), nameB = b.itemid.toLowerCase();
+            // sort string ascending
             if (nameA < nameB) {
                 return -1;
             }
             if (nameA > nameB) {
                 return 1;
             }
-            return 0; //default return value (no sorting)
+            return 0; // default return value (no sorting)
         });
         return taxItems;
     };
@@ -278,18 +280,18 @@ var CommonDAL = (function (_super) {
     CommonDAL.prototype.getTaxGroups = function (options) {
         var filters = [];
         var cols = [];
-        cols.push(new nlobjSearchColumn('itemid').setSort());
-        cols.push(new nlobjSearchColumn('rate'));
+        cols.push(new nlobjSearchColumn("itemid").setSort());
+        cols.push(new nlobjSearchColumn("rate"));
         if (!!options) {
             var query = options.query;
-            if (F3.Util.Utility.isBlankOrNull(query) == false) {
-                filters.push(new nlobjSearchFilter('itemid', null, 'startswith', query));
+            if (F3.Util.Utility.isBlankOrNull(query) === false) {
+                filters.push(new nlobjSearchFilter("itemid", null, "startswith", query));
             }
         }
-        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
+        filters.push(new nlobjSearchFilter("isinactive", null, "is", "F"));
         // serialize data
-        var jsonConverterTimer = F3.Util.StopWatch.start('Convert objects to json manually.');
-        var result = this.getAll(filters, cols, 'taxgroup');
+        var jsonConverterTimer = F3.Util.StopWatch.start("Convert objects to json manually.");
+        var result = this.getAll(filters, cols, "taxgroup");
         jsonConverterTimer.stop();
         return result;
     };
@@ -301,18 +303,18 @@ var CommonDAL = (function (_super) {
     CommonDAL.prototype.getTaxCodes = function (options) {
         var filters = [];
         var cols = [];
-        cols.push(new nlobjSearchColumn('itemid').setSort());
-        cols.push(new nlobjSearchColumn('rate'));
+        cols.push(new nlobjSearchColumn("itemid").setSort());
+        cols.push(new nlobjSearchColumn("rate"));
         if (!!options) {
             var query = options.query;
-            if (F3.Util.Utility.isBlankOrNull(query) == false) {
-                filters.push(new nlobjSearchFilter('itemid', null, 'startswith', query));
+            if (F3.Util.Utility.isBlankOrNull(query) === false) {
+                filters.push(new nlobjSearchFilter("itemid", null, "startswith", query));
             }
         }
-        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
+        filters.push(new nlobjSearchFilter("isinactive", null, "is", "F"));
         // serialize data
-        var jsonConverterTimer = F3.Util.StopWatch.start('Convert objects to json manually.');
-        var result = this.getAll(filters, cols, 'salestaxitem');
+        var jsonConverterTimer = F3.Util.StopWatch.start("Convert objects to json manually.");
+        var result = this.getAll(filters, cols, "salestaxitem");
         jsonConverterTimer.stop();
         return result;
     };

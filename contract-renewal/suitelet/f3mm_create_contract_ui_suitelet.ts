@@ -23,7 +23,6 @@ class CreateContractUISuitelet extends BaseUISuitelet {
     public title: string = "Create Contract";
     public type: string = "create";
 
-
     /**
      * Entry point for Request. Operations:
      *  - Process request

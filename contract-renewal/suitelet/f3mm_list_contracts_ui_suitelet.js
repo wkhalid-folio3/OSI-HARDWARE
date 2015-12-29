@@ -24,70 +24,71 @@ var __extends = (this && this.__extends) || function (d, b) {
  */
 var ListContractsUISuitelet = (function (_super) {
     __extends(ListContractsUISuitelet, _super);
-    function ListContractsUISuitelet() {
-        _super.apply(this, arguments);
-        this.title = 'Contracts';
+    function ListContractsUISuitelet(request, response) {
+        _super.call(this, request, response);
+        this.title = "Contracts";
     }
-    /**
-     * Parse HTML Template and replace variables with required data
-     * @returns {string} returns processed html
-     */
-    ListContractsUISuitelet.prototype.parseHtmlTemplate = function (html, data) {
-        var files = this.getDependencyFiles();
-        var suiteletScriptId = 'customscript_f3mm_create_contract_api_st';
-        var suiteletDeploymentId = 'customdeploy_f3mm_create_contract_api_st';
-        var apiSuiteletUrl = nlapiResolveURL('SUITELET', suiteletScriptId, suiteletDeploymentId, false);
-        var createSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
-        var createSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
-        var createSuiteletUrl = nlapiResolveURL('SUITELET', createSuiteletScriptId, createSuiteletDeploymentId, false);
-        html = html || '';
-        for (var i in files) {
-            var fileInfo = files[i];
-            html = html.replace('{{ ' + fileInfo.name + ' }}', fileInfo.url);
-        }
-        html = html.replace(/{{ title }}/gi, data.title);
-        html = html.replace(/{{ apiSuiteletUrl }}/gi, apiSuiteletUrl);
-        html = html.replace(/{{ createSuiteletUrl }}/gi, createSuiteletUrl);
-        html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
-        return html;
-    };
     /**
      * main method
      */
     ListContractsUISuitelet.prototype.main = function (request, response) {
-        F3.Util.Utility.logDebug('ListContractsUISuitelet.main()', 'Start');
+        F3.Util.Utility.logDebug("ListContractsUISuitelet.main()", "Start");
         try {
-            var standaloneParam = request.getParameter('standalone');
-            var standalone = standaloneParam == 'T' || standaloneParam == '1';
-            var standaloneClass = (standalone ? 'page-standalone' : 'page-inline');
-            this.title = '<i class="fa fa-file-text-o"></i> List Contracts';
-            var templateName = 'list_contracts.html';
+            var standaloneParam = request.getParameter("standalone");
+            var standalone = standaloneParam === "T" || standaloneParam === "1";
+            var standaloneClass = (standalone ? "page-standalone" : "page-inline");
+            this.title = "<i class=\"fa fa-file-text-o\"></i> List Contracts";
+            var templateName = "list_contracts.html";
             var htmlTemplate = this.getHtmlTemplate(templateName);
             var processedHtml = this.parseHtmlTemplate(htmlTemplate, {
                 standaloneClass: standaloneClass,
                 title: this.title
             });
-            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this: ', JSON.stringify(this));
-            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // typeof this: ', typeof (this));
-            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this instanceof ListContractsUISuitelet: ', this instanceof ListContractsUISuitelet);
-            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this.parseHtmlTemplate: ', this.parseHtmlTemplate);
-            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this.title: ', this.title);
+            F3.Util.Utility.logDebug("ListContractsUISuitelet.main(); // this: ", JSON.stringify(this));
+            F3.Util.Utility.logDebug("ListContractsUISuitelet.main(); // typeof this: ", typeof (this));
+            F3.Util.Utility.logDebug("ListContractsUISuitelet.main(); // this.parseHtmlTemplate: ", this.parseHtmlTemplate);
+            F3.Util.Utility.logDebug("ListContractsUISuitelet.main(); // this.title: ", this.title);
             // no need to create NetSuite form if standalone parameter is true
             if (standalone === true) {
                 response.write(processedHtml);
             }
             else {
                 var form = nlapiCreateForm(this.title);
-                var htmlField = form.addField('inlinehtml', 'inlinehtml', '');
+                var htmlField = form.addField("inlinehtml", "inlinehtml", "");
                 htmlField.setDefaultValue(processedHtml);
                 response.writePage(form);
             }
         }
         catch (ex) {
-            F3.Util.Utility.logException('ListContractsUISuitelet.main()', ex);
+            F3.Util.Utility.logException("ListContractsUISuitelet.main()", ex);
             throw ex;
         }
-        F3.Util.Utility.logDebug('ListContractsUISuitelet.main()', 'End');
+        F3.Util.Utility.logDebug("ListContractsUISuitelet.main()", "End");
+    };
+    /**
+     * Parse HTML Template and replace variables with required data
+     * @returns {string} returns processed html
+     */
+    ListContractsUISuitelet.prototype.parseHtmlTemplate = function (html, data) {
+        var files = this.getDependencyFiles();
+        var suiteletScriptId = "customscript_f3mm_create_contract_api_st";
+        var suiteletDeploymentId = "customdeploy_f3mm_create_contract_api_st";
+        var apiSuiteletUrl = nlapiResolveURL("SUITELET", suiteletScriptId, suiteletDeploymentId, false);
+        var createSuiteletScriptId = "customscript_f3mm_create_contract_ui_st";
+        var createSuiteletDeploymentId = "customdeploy_f3mm_create_contract_ui_st";
+        var createSuiteletUrl = nlapiResolveURL("SUITELET", createSuiteletScriptId, createSuiteletDeploymentId, false);
+        html = html || "";
+        for (var i in files) {
+            if (files.hasOwnProperty(i)) {
+                var fileInfo = files[i];
+                html = html.replace("{{ " + fileInfo.name + " }}", fileInfo.url);
+            }
+        }
+        html = html.replace(/{{ title }}/gi, data.title);
+        html = html.replace(/{{ apiSuiteletUrl }}/gi, apiSuiteletUrl);
+        html = html.replace(/{{ createSuiteletUrl }}/gi, createSuiteletUrl);
+        html = html.replace(/{{ standaloneClass }}/gi, data.standaloneClass);
+        return html;
     };
     return ListContractsUISuitelet;
 })(BaseUISuitelet);

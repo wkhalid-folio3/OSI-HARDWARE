@@ -28,6 +28,7 @@ var BaseUISuitelet = (function () {
      *  - send response
      */
     BaseUISuitelet.prototype.main = function (request, response) {
+        //
     };
     /**
      * Get HTML template for Create / View / Edit Screen

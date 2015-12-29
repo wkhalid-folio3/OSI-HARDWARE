@@ -25,18 +25,20 @@ var JsonHelper = (function () {
             var allFields = record.getAllFields();
             // iterate over columns of body fields
             for (var index in allFields) {
-                var field = allFields[index];
-                var name_1 = field;
-                var val = record.getFieldValue(field);
-                var text = record.getFieldText(field);
-                if (!!text && name_1 !== "internalid") {
-                    result[name_1] = {
-                        text: text,
-                        value: val
-                    };
-                }
-                else {
-                    result[name_1] = val;
+                if (allFields.hasOwnProperty(index)) {
+                    var field = allFields[index];
+                    var name_1 = field;
+                    var val = record.getFieldValue(field);
+                    var text = record.getFieldText(field);
+                    if (!!text && name_1 !== "internalid") {
+                        result[name_1] = {
+                            text: text,
+                            value: val
+                        };
+                    }
+                    else {
+                        result[name_1] = val;
+                    }
                 }
             }
             // serialize child records
@@ -44,9 +46,11 @@ var JsonHelper = (function () {
             var lineItemGroups = record.getAllLineItems();
             // iterate over child record types
             for (var lineItemIndex in lineItemGroups) {
-                var key = lineItemGroups[lineItemIndex];
-                var sublistItems = JsonHelper.getSublistItemsJson(record, key);
-                result.sublists[key] = sublistItems;
+                if (lineItemGroups.hasOwnProperty(lineItemIndex)) {
+                    var key = lineItemGroups[lineItemIndex];
+                    var sublistItems = JsonHelper.getSublistItemsJson(record, key);
+                    result.sublists[key] = sublistItems;
+                }
             }
         }
         return result;
