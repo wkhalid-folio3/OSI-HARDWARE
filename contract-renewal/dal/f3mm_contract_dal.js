@@ -275,7 +275,8 @@ var ContractDAL = (function (_super) {
                 filters.push(new nlobjSearchFilter(this.fields.startDate.id, null, "onorafter", params.start_date));
             }
             if (!F3.Util.Utility.isBlankOrNull(params.end_date)) {
-                filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, "onorbefore", params.end_date));
+                var end_date_criterion = params.end_date_criterion || "onorbefore";
+                filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, end_date_criterion, params.end_date));
             }
             // exclude deleted & inactive records
             filters.push(new nlobjSearchFilter("isinactive", null, "is", params.isinactive === true ? "T" : "F"));

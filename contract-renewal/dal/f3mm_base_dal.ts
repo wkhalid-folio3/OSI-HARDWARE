@@ -55,10 +55,10 @@ class BaseDAL {
             columns = columns ? columns : this.getFields(options);
             internalId = internalId || this.internalId;
 
-            F3.Util.Utility.logDebug("BaseDAL.getAll(); // filters: ", JSON.stringify(filters));
-            F3.Util.Utility.logDebug("BaseDAL.getAll(); // columns: ", JSON.stringify(columns));
-            F3.Util.Utility.logDebug("BaseDAL.getAll(); // internalId: ", JSON.stringify(internalId));
-            F3.Util.Utility.logDebug("BaseDAL.getAll(); // options: ", JSON.stringify(options));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // filters: ", JSON.stringify(filters));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // columns: ", JSON.stringify(columns));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // internalId: ", JSON.stringify(internalId));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // options: ", JSON.stringify(options));
 
             let search = nlapiCreateSearch(internalId, filters, columns);
             let searchResults = search.runSearch();
@@ -90,7 +90,7 @@ class BaseDAL {
      */
     public upsert(record, removeExistingLineItems? : boolean) {
 
-        F3.Util.Utility.logDebug("BaseDAL.upsert(); // item = ", JSON.stringify(record));
+        // F3.Util.Utility.logDebug("BaseDAL.upsert(); // item = ", JSON.stringify(record));
 
         let id = null;
         let dbRecord = null;
@@ -122,7 +122,7 @@ class BaseDAL {
 
                 id = nlapiSubmitRecord(dbRecord, true);
 
-                F3.Util.Utility.logDebug("BaseDAL.upsert(); // id = ", id);
+                // F3.Util.Utility.logDebug("BaseDAL.upsert(); // id = ", id);
             }
         } catch (e) {
             F3.Util.Utility.logException("BaseDAL.upsert", e.toString());
@@ -166,7 +166,7 @@ class BaseDAL {
 
         itemData.forEach(sublist => {
 
-            F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // sublist = ", JSON.stringify(sublist));
+            // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // sublist = ", JSON.stringify(sublist));
 
             if (removeExistingLineItems === true) {
                 let existingItemsCount = dbRecord.getLineItemCount(sublist.internalId);
@@ -177,7 +177,7 @@ class BaseDAL {
 
             sublist.lineitems.forEach((lineitem, index) => {
 
-                F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // lineitem = ", JSON.stringify(lineitem));
+                // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // lineitem = ", JSON.stringify(lineitem));
 
                 let linenum = dbRecord.findLineItemValue(sublist.internalId, sublist.keyField, lineitem[sublist.keyField]);
                 if (linenum > -1) {
@@ -186,7 +186,7 @@ class BaseDAL {
                     dbRecord.selectNewLineItem(sublist.internalId);
                 }
 
-                F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // linenum = ", linenum);
+                // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // linenum = ", linenum);
 
                 for (let lineitemIndex in lineitem) {
                     dbRecord.setCurrentLineItemValue(sublist.internalId, lineitemIndex, lineitem[lineitemIndex]);

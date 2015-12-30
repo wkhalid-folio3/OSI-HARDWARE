@@ -49,10 +49,10 @@ var BaseDAL = (function () {
             filters = filters ? filters : [];
             columns = columns ? columns : this.getFields(options);
             internalId = internalId || this.internalId;
-            F3.Util.Utility.logDebug("BaseDAL.getAll(); // filters: ", JSON.stringify(filters));
-            F3.Util.Utility.logDebug("BaseDAL.getAll(); // columns: ", JSON.stringify(columns));
-            F3.Util.Utility.logDebug("BaseDAL.getAll(); // internalId: ", JSON.stringify(internalId));
-            F3.Util.Utility.logDebug("BaseDAL.getAll(); // options: ", JSON.stringify(options));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // filters: ", JSON.stringify(filters));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // columns: ", JSON.stringify(columns));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // internalId: ", JSON.stringify(internalId));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // options: ", JSON.stringify(options));
             var search = nlapiCreateSearch(internalId, filters, columns);
             var searchResults = search.runSearch();
             var resultIndex = options.startIndex || 0;
@@ -76,7 +76,7 @@ var BaseDAL = (function () {
      * @returns {number} id of the inserted or updated record
      */
     BaseDAL.prototype.upsert = function (record, removeExistingLineItems) {
-        F3.Util.Utility.logDebug("BaseDAL.upsert(); // item = ", JSON.stringify(record));
+        // F3.Util.Utility.logDebug("BaseDAL.upsert(); // item = ", JSON.stringify(record));
         var id = null;
         var dbRecord = null;
         try {
@@ -103,7 +103,6 @@ var BaseDAL = (function () {
                     }
                 }
                 id = nlapiSubmitRecord(dbRecord, true);
-                F3.Util.Utility.logDebug("BaseDAL.upsert(); // id = ", id);
             }
         }
         catch (e) {
@@ -140,7 +139,7 @@ var BaseDAL = (function () {
      */
     BaseDAL.prototype.upsertLineItems = function (dbRecord, itemData, removeExistingLineItems) {
         itemData.forEach(function (sublist) {
-            F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // sublist = ", JSON.stringify(sublist));
+            // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // sublist = ", JSON.stringify(sublist));
             if (removeExistingLineItems === true) {
                 var existingItemsCount = dbRecord.getLineItemCount(sublist.internalId);
                 for (var j = 1; j <= existingItemsCount; j++) {
@@ -148,7 +147,7 @@ var BaseDAL = (function () {
                 }
             }
             sublist.lineitems.forEach(function (lineitem, index) {
-                F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // lineitem = ", JSON.stringify(lineitem));
+                // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // lineitem = ", JSON.stringify(lineitem));
                 var linenum = dbRecord.findLineItemValue(sublist.internalId, sublist.keyField, lineitem[sublist.keyField]);
                 if (linenum > -1) {
                     dbRecord.selectLineItem(sublist.internalId, linenum);
@@ -156,7 +155,7 @@ var BaseDAL = (function () {
                 else {
                     dbRecord.selectNewLineItem(sublist.internalId);
                 }
-                F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // linenum = ", linenum);
+                // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // linenum = ", linenum);
                 for (var lineitemIndex in lineitem) {
                     dbRecord.setCurrentLineItemValue(sublist.internalId, lineitemIndex, lineitem[lineitemIndex]);
                 }

@@ -297,7 +297,8 @@ class ContractDAL extends BaseDAL {
             }
 
             if (!F3.Util.Utility.isBlankOrNull(params.end_date)) {
-                filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, "onorbefore", params.end_date));
+                let end_date_criterion = params.end_date_criterion || "onorbefore";
+                filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, end_date_criterion, params.end_date));
             }
 
             // exclude deleted & inactive records

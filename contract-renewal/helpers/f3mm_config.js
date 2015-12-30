@@ -6,6 +6,7 @@ var Config = (function () {
     }
     Config.ASSETS_FOLDER_ID = 2754;
     Config.LIBS_FOLDER_ID = 2768;
+    Config.FROM_EMAIL_ID = "-5";
     return Config;
 })();
 //# sourceMappingURL=f3mm_config.js.map
