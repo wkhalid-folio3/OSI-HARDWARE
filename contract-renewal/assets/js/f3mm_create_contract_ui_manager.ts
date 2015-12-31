@@ -89,14 +89,14 @@ class CreateContractUIManager {
 
         try {
 
-            var validated = this.validateFields();
+            let validated = this.validateFields();
 
             // if not valid then return
             if (validated === false) {
                 return;
             }
 
-            var serializedData = $('.form-horizontal :input').serializeObject();
+            let serializedData = $(".form-horizontal :input").serializeObject();
 
             if (!!this._contractInfo) {
                 serializedData.id = this._contractInfo.id;
@@ -111,12 +111,12 @@ class CreateContractUIManager {
             }
 
             serializedData.items = [];
-            var items = $('#jsGrid').data().JSGrid.data;
+            let items = $("#jsGrid").data().JSGrid.data;
             $.each(items, function(index, item) {
                 serializedData.items.push({
+                    amount: item.amount,
                     id: item.id,
                     item_id: item.itemid,
-                    amount: item.amount,
                     price: item.price,
                     quantity: item.quantity,
                     item_description: item.description,

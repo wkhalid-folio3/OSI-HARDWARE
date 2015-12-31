@@ -71,7 +71,7 @@ var CreateContractUIManager = (function () {
             if (validated === false) {
                 return;
             }
-            var serializedData = $('.form-horizontal :input').serializeObject();
+            var serializedData = $(".form-horizontal :input").serializeObject();
             if (!!this._contractInfo) {
                 serializedData.id = this._contractInfo.id;
             }
@@ -82,12 +82,12 @@ var CreateContractUIManager = (function () {
                 serializedData.primary_contact = validated.primaryContactId;
             }
             serializedData.items = [];
-            var items = $('#jsGrid').data().JSGrid.data;
+            var items = $("#jsGrid").data().JSGrid.data;
             $.each(items, function (index, item) {
                 serializedData.items.push({
+                    amount: item.amount,
                     id: item.id,
                     item_id: item.itemid,
-                    amount: item.amount,
                     price: item.price,
                     quantity: item.quantity,
                     item_description: item.description,

@@ -109,6 +109,9 @@ var CreateContractAPISuitelet = (function () {
                 case "update_contract":
                     executedActionResult = contractDAL.update(params);
                     break;
+                case "changeStatus":
+                    executedActionResult = contractDAL.changeStatus(params);
+                    break;
                 case "delete_contract":
                     executedActionResult = contractDAL.delete(params);
                     break;

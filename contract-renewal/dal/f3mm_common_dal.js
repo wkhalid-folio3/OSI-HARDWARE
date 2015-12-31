@@ -131,6 +131,33 @@ var CommonDAL = (function (_super) {
      * @param {object} options
      * @returns {object[]} array of quotes fetched from database
      */
+    CommonDAL.prototype.searchQuotes = function (options) {
+        var result = null;
+        var filters = [];
+        var cols = [];
+        try {
+            cols.push(new nlobjSearchColumn("tranid").setSort());
+            cols.push(new nlobjSearchColumn("trandate"));
+            if (!!options) {
+                var contractIds = options.contractIds;
+                if (F3.Util.Utility.isBlankOrNull(contractIds) === false) {
+                    filters.push(new nlobjSearchFilter("custbody_f3mm_quote_contract", null, "anyof", [contractIds]));
+                }
+            }
+            // load data from db
+            result = this.getAll(filters, cols, "estimate");
+        }
+        catch (ex) {
+            F3.Util.Utility.logException("CommonDAL.getQuotes()", ex);
+            throw ex;
+        }
+        return result;
+    };
+    /**
+     * Get Quotes of a Contract
+     * @param {object} options
+     * @returns {object[]} array of quotes fetched from database
+     */
     CommonDAL.prototype.getQuotes = function (options) {
         var result = null;
         var filters = [];

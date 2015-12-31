@@ -176,7 +176,7 @@ var ContractDAL = (function (_super) {
             var contractItemIds = contractItems.map(function (ci) { return ci.id; });
             var itemIds = contractItems
                 .filter(function (ci) { return !!ci.custrecord_f3mm_ci_item; })
-                .map(function (ci) { return parseInt(ci.custrecord_f3mm_ci_item.value); });
+                .map(function (ci) { return parseInt(ci.custrecord_f3mm_ci_item.value, 10); });
             if (itemIds && itemIds.length) {
                 items = commonDAL.getItems({
                     itemIds: itemIds
@@ -278,12 +278,15 @@ var ContractDAL = (function (_super) {
                 var end_date_criterion = params.end_date_criterion || "onorbefore";
                 filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, end_date_criterion, params.end_date));
             }
+            if (!F3.Util.Utility.isBlankOrNull(params.sales_rep)) {
+                filters.push(new nlobjSearchFilter(this.fields.salesRep.id, null, "anyof", params.sales_rep));
+            }
             // exclude deleted & inactive records
             filters.push(new nlobjSearchFilter("isinactive", null, "is", params.isinactive === true ? "T" : "F"));
         }
         filters.push(new nlobjSearchFilter(this.fields.deleted.id, null, "is", "F"));
         result.records = _super.prototype.getAll.call(this, filters, null, null, params);
-        if (!!result.records) {
+        if (result.records && result.records.length) {
             var contractIds = result.records.map(function (record) { return record.id; });
             var contractItems = this.searchContractItems({ contractIds: contractIds });
             result.records.forEach(function (record) {
@@ -342,6 +345,7 @@ var ContractDAL = (function (_super) {
                 });
             }
             var quoteId = nlapiSubmitRecord(quote);
+            EmailHelper.sendQuoteGenerationEmail(contract, quoteId);
             result = {
                 id: quoteId
             };
@@ -468,6 +472,24 @@ var ContractDAL = (function (_super) {
      * @param {object} contract json object containing data for contract
      * @returns {number} id of created / updated contract
      */
+    ContractDAL.prototype.changeStatus = function (options) {
+        if (!options || !options.cid) {
+            throw new Error("contract id cannot be null.");
+        }
+        var record = {};
+        record.id = options.cid;
+        record[this.fields.status.id] = options.status;
+        var id = this.upsert(record);
+        var result = {
+            id: id
+        };
+        return result;
+    };
+    /**
+     * Create/Update a Contract based on json data passed
+     * @param {object} contract json object containing data for contract
+     * @returns {number} id of created / updated contract
+     */
     ContractDAL.prototype.update = function (contract) {
         if (!contract) {
             throw new Error("contract cannot be null.");
@@ -526,7 +548,7 @@ var ContractDAL = (function (_super) {
         record[this.fields.status.id] = contract.status;
         record[this.fields.poNumber.id] = contract.po_number;
         record[this.fields.duration.id] = contract.duration;
-        record[this.fields.notificationDaysPrior.id] = contract.notification_days;
+        record[this.fields.notificationDaysPrior.id] = contract.notification_days || "0";
         record[this.fields.notification5DaysPrior.id] = contract.notification_5_days === "on" ? "T" : "F";
         record[this.fields.notification3DaysPrior.id] = contract.notification_3_days === "on" ? "T" : "F";
         record[this.fields.notification1DayPrior.id] = contract.notification_1_day === "on" ? "T" : "F";
@@ -547,7 +569,7 @@ var ContractDAL = (function (_super) {
                     custrecord_f3mm_ci_price: item.price === "-1" ? "" : item.price,
                     custrecord_f3mm_ci_price_level: item.price_level,
                     custrecord_f3mm_ci_quantity: item.quantity,
-                    id: item.id
+                    id: item.id || null
                 };
                 contractItemsSublist.lineitems.push(lineitem);
             });

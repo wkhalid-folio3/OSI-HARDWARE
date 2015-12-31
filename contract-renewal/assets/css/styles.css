@@ -11,11 +11,15 @@
 
 
 
-.f3mm-contract-renewal {
+.f3mm-contract-renewal, .f3mm-contract-approval {
     font-size: 12px;
     font-family: Arial,Helvetica,sans-serif;
 }
 .alert { font-size: 12px; }
+
+.f3mm-contract-approval table {
+    font-size: 1em;
+}
 
 .page-standalone .f3mm-contract-renewal {margin-top: 20px;}
 

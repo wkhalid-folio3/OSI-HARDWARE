@@ -189,7 +189,13 @@ class BaseDAL {
                 // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // linenum = ", linenum);
 
                 for (let lineitemIndex in lineitem) {
-                    dbRecord.setCurrentLineItemValue(sublist.internalId, lineitemIndex, lineitem[lineitemIndex]);
+                    if (lineitem.hasOwnProperty(lineitemIndex)) {
+                        // keyFields contains the id
+                        // donot update id
+                        if (lineitemIndex !== sublist.keyField) {
+                            dbRecord.setCurrentLineItemValue(sublist.internalId, lineitemIndex, lineitem[lineitemIndex]);
+                        }
+                    }
                 }
 
                 dbRecord.commitLineItem(sublist.internalId);

@@ -182,7 +182,7 @@ class ContractDAL extends BaseDAL {
             let contractItemIds = contractItems.map(ci => ci.id);
             let itemIds = contractItems
                 .filter(ci => !!ci.custrecord_f3mm_ci_item)
-                .map(ci => parseInt(ci.custrecord_f3mm_ci_item.value));
+                .map(ci => parseInt(ci.custrecord_f3mm_ci_item.value, 10));
 
             if (itemIds && itemIds.length) {
                 items = commonDAL.getItems({
@@ -301,6 +301,10 @@ class ContractDAL extends BaseDAL {
                 filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, end_date_criterion, params.end_date));
             }
 
+            if (!F3.Util.Utility.isBlankOrNull(params.sales_rep)) {
+                filters.push(new nlobjSearchFilter(this.fields.salesRep.id, null, "anyof", params.sales_rep));
+            }
+
             // exclude deleted & inactive records
             filters.push(new nlobjSearchFilter("isinactive", null, "is", params.isinactive === true ? "T" : "F"));
         }
@@ -309,7 +313,7 @@ class ContractDAL extends BaseDAL {
 
         result.records = super.getAll(filters, null, null, params);
 
-        if (!!result.records) {
+        if (result.records && result.records.length) {
             let contractIds = result.records.map(record => record.id);
             let contractItems = this.searchContractItems({contractIds: contractIds});
             result.records.forEach(record => {
@@ -383,6 +387,8 @@ class ContractDAL extends BaseDAL {
             }
 
             let quoteId = nlapiSubmitRecord(quote);
+
+            EmailHelper.sendQuoteGenerationEmail(contract, quoteId);
 
             result = {
                 id: quoteId
@@ -533,6 +539,32 @@ class ContractDAL extends BaseDAL {
      * @param {object} contract json object containing data for contract
      * @returns {number} id of created / updated contract
      */
+    public changeStatus(options): {
+        id: any
+    } {
+
+        if (!options || !options.cid) {
+            throw new Error("contract id cannot be null.");
+        }
+
+        let record: any = {};
+        record.id = options.cid;
+        record[this.fields.status.id] = options.status;
+
+        let id = this.upsert(record);
+        let result = {
+            id: id
+        };
+        return result;
+    }
+
+
+
+    /**
+     * Create/Update a Contract based on json data passed
+     * @param {object} contract json object containing data for contract
+     * @returns {number} id of created / updated contract
+     */
     public update(contract): {
         id: any
     } {
@@ -606,7 +638,7 @@ class ContractDAL extends BaseDAL {
         record[this.fields.status.id] = contract.status;
         record[this.fields.poNumber.id] = contract.po_number;
         record[this.fields.duration.id] = contract.duration;
-        record[this.fields.notificationDaysPrior.id] = contract.notification_days;
+        record[this.fields.notificationDaysPrior.id] = contract.notification_days || "0";
         record[this.fields.notification5DaysPrior.id] = contract.notification_5_days === "on" ? "T" : "F";
         record[this.fields.notification3DaysPrior.id] = contract.notification_3_days === "on" ? "T" : "F";
         record[this.fields.notification1DayPrior.id] = contract.notification_1_day === "on" ? "T" : "F";
@@ -630,7 +662,7 @@ class ContractDAL extends BaseDAL {
                     custrecord_f3mm_ci_price: item.price === "-1" ? "" : item.price,
                     custrecord_f3mm_ci_price_level: item.price_level,
                     custrecord_f3mm_ci_quantity: item.quantity,
-                    id: item.id
+                    id: item.id || null
                 };
 
                 contractItemsSublist.lineitems.push(lineitem);
