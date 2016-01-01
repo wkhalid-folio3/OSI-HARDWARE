@@ -1,5 +1,6 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="../dal/f3mm_contract_dal.ts" />
+/// <reference path="./f3mm_config.ts" />
 
 /**
  * Created by zshaikh on 31/12/2015.

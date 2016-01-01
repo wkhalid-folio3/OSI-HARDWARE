@@ -122,6 +122,10 @@ var ContractDAL = (function (_super) {
                 id: "custrecord_f3mm_status",
                 type: "list"
             },
+            systemId: {
+                id: "custrecord_f3mm_system_id",
+                type: "text"
+            },
             totalQuantitySeats: {
                 id: "custrecord_f3mm_total_qty_seats",
                 type: "number"
@@ -548,6 +552,7 @@ var ContractDAL = (function (_super) {
         record[this.fields.status.id] = contract.status;
         record[this.fields.poNumber.id] = contract.po_number;
         record[this.fields.duration.id] = contract.duration;
+        record[this.fields.systemId.id] = contract.system_id;
         record[this.fields.notificationDaysPrior.id] = contract.notification_days || "0";
         record[this.fields.notification5DaysPrior.id] = contract.notification_5_days === "on" ? "T" : "F";
         record[this.fields.notification3DaysPrior.id] = contract.notification_3_days === "on" ? "T" : "F";

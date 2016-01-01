@@ -1,3 +1,9 @@
+/// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
+/// <reference path="../dal/f3mm_contract_dal.ts" />
+/// <reference path="../dal/f3mm_folders_dal.ts" />
+/// <reference path="../helpers/f3mm_config.ts" />
+/// <reference path="../helpers/f3mm_contract_status_enum.ts" />
+
 /**
  * Created by zshaikh on 30/12/2015.
  */

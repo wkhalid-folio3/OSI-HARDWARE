@@ -67,6 +67,8 @@ class CreateContractUIManager {
         $(".btn-generate-quote").on("click", this.generateQuote.bind(this));
         $("#entity_popup_link").on("click", this.openExistingCustomerWindow.bind(this));
         $("#entity_popup_new").on("click", this.openNewCustomerWindow.bind(this));
+        $("#contact_popup_link").on("click", this.openExistingContactWindow.bind(this));
+        $("#contact_popup_new").on("click", this.openNewContactWindow.bind(this));
         $(".duration-dropdown").on("change", this.durationDropdownChanged.bind(this));
         $(".start-date-text").parent().on("changeDate", this.durationDropdownChanged.bind(this));
 
@@ -79,6 +81,7 @@ class CreateContractUIManager {
             $("#history_grid").jsGrid("refresh");
         });
 
+        $('[rel="tooltip"]').tooltip();
     }
 
     /**
@@ -1083,7 +1086,20 @@ class CreateContractUIManager {
         }
     }
 
+    private getSelectedContact() {
 
+        let result = null;
+        let $primaryContactDropdown = $(".primary-contact-dropdown");
+        let contactText = $primaryContactDropdown.val();
+        let contactId = $primaryContactDropdown.attr("data-selected-id");
+
+        // validate customer
+        if (!!contactId && contactText !== "") {
+            result = contactId;
+        }
+
+        return result;
+    }
     private getSelectedCustomer() {
 
         let result = null;
@@ -1100,9 +1116,31 @@ class CreateContractUIManager {
     }
 
 
+    private openNewContactWindow() {
+        let url = '/app/common/entity/contact.nl?target=main:contact&label=Primary+Contact';
+        // setSelectValue(document.forms['main_form'].elements['entity'], -1);
+        // document.forms['main_form'].elements['entity_display'].value = '';
+        // document.forms['main_form'].elements['entity_display'].isvalid = true;
+        // NS.form.setValid(true);
+        // Syncentity(true);
+        nlOpenWindow(url, '_blank', '');
+        return false;
+    }
+    private openExistingContactWindow() {
+        let selectValue = this.getSelectedContact();
+
+        if (!!selectValue) {
+            nlOpenWindow('/app/common/entity/contact.nl?id=' + selectValue + '', '_blank', '');
+        } else {
+            alert('Please choose an entry first.');
+        }
+
+        return false;
+    }
+
     private openNewCustomerWindow() {
 
-        let url = 'https://system.na1.netsuite.com/app/common/entity/custjob.nl?target=main:entity&label=Customer&stage=prospect';
+        let url = '/app/common/entity/custjob.nl?target=main:entity&label=Customer&stage=prospect';
         // setSelectValue(document.forms['main_form'].elements['entity'], -1);
         // document.forms['main_form'].elements['entity_display'].value = '';
         // document.forms['main_form'].elements['entity_display'].isvalid = true;
@@ -1345,6 +1383,7 @@ class CreateContractUIManager {
 
         $('.contract-number-text', $form).val(contract.custrecord_f3mm_contract_number);
         $('.po-number-text', $form).val(contract.custrecord_f3mm_po_number);
+        $('.system-id-text', $form).val(contract.custrecord_f3mm_system_id);
 
         if (!!contract.custrecord_f3mm_sales_rep) {
             $('.sales-rep-dropdown', $form).val(contract.custrecord_f3mm_sales_rep.value);

@@ -70,9 +70,15 @@
                         <div class="row">
                             <div class="col-sm-8">
 
-                                <div class="form-group">
-                                    <label for="contract_number" class="control-label">Contract # <span
-                                            class="mandatory">*</span></label>
+                                <div class="form-group"
+                                     data-html="true"
+                                     rel="tooltip"
+                                     title="Enter contract# here. If no vendor based contract# exists, enter in the following format; <br> (vendor)(numeric value)-(customer) <br> Example: Foundry1-Blur Studio">
+                                    <label for="contract_number" class="control-label">
+                                        Contract #
+                                        <span class="mandatory">*</span>
+                                        <i class="fa fa-info-circle" ></i>
+                                    </label>
 
                                     <div class="">
                                         <input type="text" class="form-control contract-number-text"
@@ -113,7 +119,7 @@
                                     <label for="primary_contact" class="control-label">End User <span
                                             class="mandatory">*</span></label>
 
-                                    <div class="">
+                                    <div class="input-group">
                                         <!--<select class="form-control customer-dropdown"-->
                                         <!--id="customer"-->
                                         <!--name="customer">-->
@@ -124,6 +130,11 @@
                                                id="primary_contact"
                                                name="primary_contact"
                                                type="text"/>
+
+                                        <span  class="input-group-addon input-group-addon-transparent">
+                                            <a id="contact_popup_new" title="New" href='javascript:void("entity_new")'><img src="/uirefresh/img/field/add.png" /></a>
+                                            <a href="#" id="contact_popup_link" title="Open"><img src="/uirefresh/img/field/open.png" /></a>
+                                        </span>
 
                                         <!--<img class="Typeahead-spinner" src="img/spinner.gif">-->
                                         <!--<span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>-->
@@ -174,6 +185,18 @@
                     <div class="col-sm-4">
                         <div class="row">
                             <div class="col-sm-8">
+
+
+                                <div class="form-group">
+                                    <label for="system_id" class="control-label">System ID</label>
+
+                                    <div class="">
+                                        <input type="text" class="form-control system-id-text"
+                                               id="system_id"
+                                               name="system_id"
+                                                size="250" />
+                                    </div>
+                                </div>
 
                                 <div class="form-group">
                                     <label for="po_number" class="control-label">PO #</label>
@@ -517,6 +540,14 @@
             <div class="col-sm-4">
                 <div class="row">
                     <div class="col-sm-8">
+
+                        <div class="form-group">
+                            <label for="po_number" class="control-label">System ID</label>
+
+                            <div class="">
+                                {{= custrecord_f3mm_system_id }}
+                            </div>
+                        </div>
 
                         <div class="form-group">
                             <label for="po_number" class="control-label">PO #</label>
