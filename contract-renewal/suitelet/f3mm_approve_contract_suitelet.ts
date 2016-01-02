@@ -9,18 +9,19 @@
  */
 
 class ApproveContractSuitelet {
-    constructor(request: nlobjRequest, response: nlobjResponse) {
+    constructor(request:nlobjRequest, response:nlobjResponse) {
         this.main(request, response);
     }
 
     /**
      * main method
      */
-    public main(request: nlobjRequest, response: nlobjResponse) {
+    public main(request:nlobjRequest, response:nlobjResponse) {
         F3.Util.Utility.logDebug("ApproveContractSuitelet.main()", "START");
 
         let context = nlapiGetContext();
         let userId = context.getUser();
+        let isCustomer = request.getParameter('customer') === "T";
         let apiSuiteletScriptId = "customscript_f3mm_create_contract_api_st";
         let apiSuiteletDeploymentId = "customdeploy_f3mm_create_contract_api_st";
         let apiSuiteletUrl = nlapiResolveURL("SUITELET", apiSuiteletScriptId, apiSuiteletDeploymentId);
@@ -30,16 +31,26 @@ class ApproveContractSuitelet {
         let externalLibs = foldersDAL.getFiles(Config.LIBS_FOLDER_ID, true);
         files = files.concat(externalLibs);
 
-        let options = {
-            sales_rep: [
-                userId
-            ],
-            status: [
-                ContractStatus.PENDING_REP_APPROVAL,
-                ContractStatus.PENDING_CUSTOMER_APPROVAL,
-                ContractStatus.APPROVED
-            ]
-        };
+        let options = {};
+        if (isCustomer === true ) {
+            options = {
+                customer: userId,
+                status: [
+                    ContractStatus.PENDING_CUSTOMER_APPROVAL,
+                    ContractStatus.APPROVED
+                ]
+            }
+        } else {
+            options = {
+                sales_rep: userId,
+                status: [
+                    ContractStatus.PENDING_REP_APPROVAL,
+                    ContractStatus.PENDING_CUSTOMER_APPROVAL,
+                    ContractStatus.APPROVED
+                ]
+            }
+        }
+
         let pendingContracts = contractDAL.search(options).records;
         F3.Util.Utility.logDebug("ApproveContractSuitelet.main(); // pendingContracts: ", JSON.stringify(pendingContracts));
 
@@ -57,7 +68,6 @@ class ApproveContractSuitelet {
                                     <th style="width: 12%">Contract #</th>
                                     <th style="width: 16%">Customer</th>
                                     <th style="width: 14%">Primary Contact</th>
-                                    <th style="width: 14%">Contract Vendor</th>
                                     <th style="width: 8%">Start Date</th>
                                     <th style="width: 8%">End Date</th>
                                     <th style="width: 18%">Status</th>
@@ -137,52 +147,87 @@ class ApproveContractSuitelet {
                     let primaryContactId = contract[contractFields.primaryContact.id].value;
                     let buttonHtml = "";
 
-                    if (contractStatusId === ContractStatus.APPROVED) {
-                        buttonHtml = "Approved";
-                    } else if (contractStatusId === ContractStatus.PENDING_CUSTOMER_APPROVAL) {
-                        buttonHtml = `<a href="javascript:;"
+                    if (isCustomer === true) {
+                        if (contractStatusId === ContractStatus.APPROVED) {
+                            buttonHtml = "Approved";
+                        } else if (contractStatusId === ContractStatus.PENDING_CUSTOMER_APPROVAL) {
+                            buttonHtml = `<a href="javascript:;"
+                                    data-type="customer"
+                                    data-id="${contract.internalid}"
+                                    class="btn btn-sm btn-primary btn-approve">
+                                    Approve
+                                </a>`;
+                        }
+
+                        contractRowsHtml += `<tr class="jsgrid-row">
+                            <td>
+                                ${contract[contractFields.contractNumber.id]}
+                            </td>
+                            <td>
+                                ${contract[contractFields.customer.id].text}
+                            </td>
+                            <td>
+                                ${contract[contractFields.primaryContact.id].text}
+                            </td>
+                            <td>${contract[contractFields.startDate.id]}</td>
+                            <td>${contract[contractFields.endDate.id]}</td>
+                            <td>${contract[contractFields.status.id].text}</td>
+                            <td>
+                                ${buttonHtml}
+                            </td>
+                        </tr>`;
+
+                    } else {
+                        if (contractStatusId === ContractStatus.APPROVED) {
+                            buttonHtml = "Approved";
+                        } else if (contractStatusId === ContractStatus.PENDING_CUSTOMER_APPROVAL) {
+                            buttonHtml = `<a href="javascript:;"
                                     data-type="customer"
                                     data-id="${contract.internalid}"
                                     class="btn btn-sm btn-primary btn-generate-quote">
                                     Generate Quote
                                 </a>`;
-                    } else {
-                        buttonHtml = `<a href="javascript:;"
+                        } else {
+                            buttonHtml = `<a href="javascript:;"
                                     data-type="salesrep"
                                     data-id="${contract.internalid}"
                                     class="btn btn-sm btn-primary btn-approve">
                                     Approve
                                 </a>`;
+                        }
+
+
+                        contractRowsHtml += `<tr class="jsgrid-row">
+                            <td>
+                                <a href="${contractSuiteletUrl}&cid=${contract.internalid}" target="_blank">
+                                    ${contract[contractFields.contractNumber.id]}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="/app/common/entity/custjob.nl?id=${customerId}" target="_blank">
+                                    ${contract[contractFields.customer.id].text}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="/app/common/entity/contact.nl?id=${primaryContactId}" target="_blank">
+                                    ${contract[contractFields.primaryContact.id].text}
+                                </a>
+                            </td>
+                            <!--td>
+                                <a href="/app/common/entity/vendor.nl?id=${vendorId}" target="_blank">
+                                    ${contract[contractFields.contractVendor.id].text}
+                                </a>
+                            </td-->
+                            <td>${contract[contractFields.startDate.id]}</td>
+                            <td>${contract[contractFields.endDate.id]}</td>
+                            <td>${contract[contractFields.status.id].text}</td>
+                            <td>
+                                ${buttonHtml}
+                            </td>
+                        </tr>`;
                     }
 
-                    contractRowsHtml += `<tr class="jsgrid-row">
-                        <td>
-                            <a href="${contractSuiteletUrl}&cid=${contract.internalid}" target="_blank">
-                                ${contract[contractFields.contractNumber.id]}
-                            </a>
-                        </td>
-                        <td>
-                            <a href="/app/common/entity/custjob.nl?id=${customerId}" target="_blank">
-                                ${contract[contractFields.customer.id].text}
-                            </a>
-                        </td>
-                        <td>
-                            <a href="/app/common/entity/contact.nl?id=${primaryContactId}" target="_blank">
-                                ${contract[contractFields.primaryContact.id].text}
-                            </a>
-                        </td>
-                        <td>
-                            <a href="/app/common/entity/vendor.nl?id=${vendorId}" target="_blank">
-                                ${contract[contractFields.contractVendor.id].text}
-                            </a>
-                        </td>
-                        <td>${contract[contractFields.startDate.id]}</td>
-                        <td>${contract[contractFields.endDate.id]}</td>
-                        <td>${contract[contractFields.status.id].text}</td>
-                        <td>
-                            ${buttonHtml}
-                        </td>
-                    </tr>`;
+
                 }
             }
         } else {

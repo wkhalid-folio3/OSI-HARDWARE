@@ -524,6 +524,9 @@ var ContractDAL = (function (_super) {
         }
         var record = this.prepareDataToUpsert(contract);
         var id = this.upsert(record);
+        if (contract.is_renew === "on") {
+            EmailHelper.sendRenewEmail(record);
+        }
         var result = {
             id: id
         };

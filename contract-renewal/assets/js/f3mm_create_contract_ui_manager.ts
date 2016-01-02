@@ -81,7 +81,10 @@ class CreateContractUIManager {
             $("#history_grid").jsGrid("refresh");
         });
 
-        $('[rel="tooltip"]').tooltip();
+        $('[data-toggle="popover"]').popover({
+            container: 'body',
+            html: true
+        });
     }
 
     /**
@@ -1384,6 +1387,12 @@ class CreateContractUIManager {
         $('.contract-number-text', $form).val(contract.custrecord_f3mm_contract_number);
         $('.po-number-text', $form).val(contract.custrecord_f3mm_po_number);
         $('.system-id-text', $form).val(contract.custrecord_f3mm_system_id);
+
+        if (!!contract.id) {
+            $('.form-group-is-renew').show();
+        } else {
+            $('.form-group-is-renew').hide();
+        }
 
         if (!!contract.custrecord_f3mm_sales_rep) {
             $('.sales-rep-dropdown', $form).val(contract.custrecord_f3mm_sales_rep.value);
