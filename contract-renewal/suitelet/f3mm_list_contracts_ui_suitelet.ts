@@ -20,27 +20,76 @@
  */
 class ListContractsUISuitelet extends BaseUISuitelet {
 
-    private title: string = 'Contracts';
+    private title: string = "Contracts";
+
+    constructor(request: nlobjRequest, response: nlobjResponse) {
+        super(request, response);
+    }
+
+    /**
+     * main method
+     */
+    public main(request: nlobjRequest, response: nlobjResponse) {
+        F3.Util.Utility.logDebug("ListContractsUISuitelet.main()", "Start");
+
+        try {
+
+            let standaloneParam = request.getParameter("standalone");
+            let standalone = standaloneParam === "T" || standaloneParam === "1";
+            let standaloneClass = (standalone ? "page-standalone" : "page-inline");
+
+            this.title = "<i class=\"fa fa-file-text-o\"></i> List Contracts";
+            let templateName = "list_contracts.html";
+            let htmlTemplate = this.getHtmlTemplate(templateName);
+            let processedHtml = this.parseHtmlTemplate(htmlTemplate, {
+                standaloneClass: standaloneClass,
+                title: this.title
+            });
+
+            F3.Util.Utility.logDebug("ListContractsUISuitelet.main(); // this: ", JSON.stringify(this));
+            F3.Util.Utility.logDebug("ListContractsUISuitelet.main(); // typeof this: ", typeof(this));
+            F3.Util.Utility.logDebug("ListContractsUISuitelet.main(); // this.parseHtmlTemplate: ", this.parseHtmlTemplate);
+            F3.Util.Utility.logDebug("ListContractsUISuitelet.main(); // this.title: ", this.title);
+
+            // no need to create NetSuite form if standalone parameter is true
+            if (standalone === true) {
+                response.write(processedHtml);
+            } else {
+                let form = nlapiCreateForm(this.title);
+                let htmlField = form.addField("inlinehtml", "inlinehtml", "");
+                htmlField.setDefaultValue(processedHtml);
+                response.writePage(form);
+            }
+
+        } catch (ex) {
+            F3.Util.Utility.logException("ListContractsUISuitelet.main()", ex);
+            throw ex;
+        }
+
+        F3.Util.Utility.logDebug("ListContractsUISuitelet.main()", "End");
+    }
 
     /**
      * Parse HTML Template and replace variables with required data
      * @returns {string} returns processed html
      */
     private parseHtmlTemplate(html: string, data) {
-        var files = this.getDependencyFiles();
-        var suiteletScriptId = 'customscript_f3mm_create_contract_api_st';
-        var suiteletDeploymentId = 'customdeploy_f3mm_create_contract_api_st';
-        var apiSuiteletUrl = nlapiResolveURL('SUITELET', suiteletScriptId, suiteletDeploymentId, false);
+        let files = this.getDependencyFiles();
+        let suiteletScriptId = "customscript_f3mm_create_contract_api_st";
+        let suiteletDeploymentId = "customdeploy_f3mm_create_contract_api_st";
+        let apiSuiteletUrl = nlapiResolveURL("SUITELET", suiteletScriptId, suiteletDeploymentId, false);
 
-        var createSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
-        var createSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
-        var createSuiteletUrl = nlapiResolveURL('SUITELET', createSuiteletScriptId, createSuiteletDeploymentId, false);
+        let createSuiteletScriptId = "customscript_f3mm_create_contract_ui_st";
+        let createSuiteletDeploymentId = "customdeploy_f3mm_create_contract_ui_st";
+        let createSuiteletUrl = nlapiResolveURL("SUITELET", createSuiteletScriptId, createSuiteletDeploymentId, false);
 
-        html = html || '';
+        html = html || "";
 
-        for (var i in files) {
-            var fileInfo = files[i];
-            html = html.replace('{{ ' + fileInfo.name + ' }}', fileInfo.url);
+        for (let i in files) {
+            if (files.hasOwnProperty(i)) {
+                let fileInfo = files[i];
+                html = html.replace("{{ " + fileInfo.name + " }}", fileInfo.url);
+            }
         }
 
         html = html.replace(/{{ title }}/gi, data.title);
@@ -50,54 +99,6 @@ class ListContractsUISuitelet extends BaseUISuitelet {
 
         return html;
     }
-
-
-    /**
-     * main method
-     */
-    main(request: nlobjRequest, response: nlobjResponse) {
-        F3.Util.Utility.logDebug('ListContractsUISuitelet.main()', 'Start');
-
-        try {
-
-            var standaloneParam = request.getParameter('standalone');
-            var standalone = standaloneParam == 'T' || standaloneParam == '1';
-            var standaloneClass = (standalone ? 'page-standalone' : 'page-inline');
-
-            this.title = '<i class="fa fa-file-text-o"></i> List Contracts';
-            var templateName = 'list_contracts.html';
-            var htmlTemplate = this.getHtmlTemplate(templateName);
-            var processedHtml = this.parseHtmlTemplate(htmlTemplate, {
-                standaloneClass: standaloneClass,
-                title: this.title
-            });
-
-            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this: ', JSON.stringify(this));
-            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // typeof this: ', typeof(this));
-            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this instanceof ListContractsUISuitelet: ', this instanceof ListContractsUISuitelet);
-            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this.parseHtmlTemplate: ', this.parseHtmlTemplate);
-            F3.Util.Utility.logDebug('ListContractsUISuitelet.main(); // this.title: ', this.title);
-
-
-
-            // no need to create NetSuite form if standalone parameter is true
-            if (standalone === true) {
-                response.write(processedHtml);
-            } else {
-                var form = nlapiCreateForm(this.title);
-                var htmlField = form.addField('inlinehtml', 'inlinehtml', '');
-                htmlField.setDefaultValue(processedHtml);
-                response.writePage(form);
-            }
-
-        } catch (ex) {
-            F3.Util.Utility.logException('ListContractsUISuitelet.main()', ex);
-            throw ex;
-        }
-
-        F3.Util.Utility.logDebug('ListContractsUISuitelet.main()', 'End');
-    }
-
 }
 
 /**

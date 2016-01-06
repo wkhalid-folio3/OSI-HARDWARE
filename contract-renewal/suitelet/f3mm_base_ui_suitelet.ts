@@ -38,7 +38,7 @@ class BaseUISuitelet {
      *  - send response
      */
     protected main(request: nlobjRequest, response: nlobjResponse) {
-
+        //
     }
 
     /**

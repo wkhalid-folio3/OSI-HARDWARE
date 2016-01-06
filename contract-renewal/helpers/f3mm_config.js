@@ -4,8 +4,12 @@
 var Config = (function () {
     function Config() {
     }
-    Config.ASSETS_FOLDER_ID = 2754;
-    Config.LIBS_FOLDER_ID = 2768;
+    //public static ASSETS_FOLDER_ID: number = 2754;
+    //public static LIBS_FOLDER_ID: number = 2768;
+    //public static FROM_EMAIL_ID: string = "-5";
+    Config.FROM_EMAIL_ID = "25253";
+    Config.ASSETS_FOLDER_ID = 12712;
+    Config.LIBS_FOLDER_ID = 20230;
     return Config;
 })();
 //# sourceMappingURL=f3mm_config.js.map

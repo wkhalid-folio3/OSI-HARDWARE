@@ -122,6 +122,10 @@ var ContractDAL = (function (_super) {
                 id: "custrecord_f3mm_status",
                 type: "list"
             },
+            systemId: {
+                id: "custrecord_f3mm_system_id",
+                type: "text"
+            },
             totalQuantitySeats: {
                 id: "custrecord_f3mm_total_qty_seats",
                 type: "number"
@@ -176,7 +180,7 @@ var ContractDAL = (function (_super) {
             var contractItemIds = contractItems.map(function (ci) { return ci.id; });
             var itemIds = contractItems
                 .filter(function (ci) { return !!ci.custrecord_f3mm_ci_item; })
-                .map(function (ci) { return parseInt(ci.custrecord_f3mm_ci_item.value); });
+                .map(function (ci) { return parseInt(ci.custrecord_f3mm_ci_item.value, 10); });
             if (itemIds && itemIds.length) {
                 items = commonDAL.getItems({
                     itemIds: itemIds
@@ -193,19 +197,24 @@ var ContractDAL = (function (_super) {
                 contractId: id
             });
             // attach history
-            contract.history = this.getHistory(id);
+            var contractHistory = this.getHistory(id);
+            var historyFieldsToExclude = ["Inactive", "Deleted?", "Owner"];
             var contractItemsHistory = this.getHistory(contractItemIds, "customrecord_f3mm_contract_item");
             if (!!contractItemsHistory) {
                 contractItemsHistory = contractItemsHistory.filter(function (cih) { return cih.field.text === "Item"; });
-                contract.history = contract.history.concat(contractItemsHistory);
-                contract.history.sort(function (item1, item2) {
-                    return new Date(item2.date) - new Date(item1.date);
+                contractHistory = contractHistory.filter(function (ch) { return historyFieldsToExclude.indexOf(ch.field.text) <= 0; });
+                contractHistory = contractHistory.concat(contractItemsHistory);
+                contractHistory.sort(function (item1, item2) {
+                    var date1 = new Date(item1.date);
+                    var date2 = new Date(item2.date);
+                    return date2 - date1;
                 });
+                contract.history = contractHistory;
             }
             contractItems.forEach(function (contractItem) {
                 if (!!contractItem.custrecord_f3mm_ci_item) {
                     var itemId = contractItem.custrecord_f3mm_ci_item.value;
-                    var foundItem = items.filter(function (item) { return item.id == itemId; })[0];
+                    var foundItem = items.filter(function (item) { return item.id === itemId; })[0];
                     if (!!foundItem) {
                         contractItem.custrecord_f3mm_ci_item.baseprice = foundItem.baseprice;
                         contractItem.custrecord_f3mm_ci_item.displayname = foundItem.displayname;
@@ -258,36 +267,40 @@ var ContractDAL = (function (_super) {
         var filters = [];
         if (!!params) {
             if (!F3.Util.Utility.isBlankOrNull(params.contract_number)) {
-                filters.push(new nlobjSearchFilter(this.fields.contractNumber.id, null, 'contains', params.contract_number));
+                filters.push(new nlobjSearchFilter(this.fields.contractNumber.id, null, "contains", params.contract_number));
             }
             if (!F3.Util.Utility.isBlankOrNull(params.status)) {
-                filters.push(new nlobjSearchFilter(this.fields.status.id, null, 'anyof', params.status));
+                filters.push(new nlobjSearchFilter(this.fields.status.id, null, "anyof", params.status));
             }
             if (!F3.Util.Utility.isBlankOrNull(params.customer)) {
-                filters.push(new nlobjSearchFilter(this.fields.customer.id, null, 'anyof', params.customer));
+                filters.push(new nlobjSearchFilter(this.fields.customer.id, null, "anyof", params.customer));
             }
             if (!F3.Util.Utility.isBlankOrNull(params.start_date)) {
-                filters.push(new nlobjSearchFilter(this.fields.startDate.id, null, 'onorafter', params.start_date));
+                filters.push(new nlobjSearchFilter(this.fields.startDate.id, null, "onorafter", params.start_date));
             }
             if (!F3.Util.Utility.isBlankOrNull(params.end_date)) {
-                filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, 'onorbefore', params.end_date));
+                var end_date_criterion = params.end_date_criterion || "onorbefore";
+                filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, end_date_criterion, params.end_date));
+            }
+            if (!F3.Util.Utility.isBlankOrNull(params.sales_rep)) {
+                filters.push(new nlobjSearchFilter(this.fields.salesRep.id, null, "anyof", params.sales_rep));
             }
             // exclude deleted & inactive records
-            filters.push(new nlobjSearchFilter('isinactive', null, 'is', params.isinactive == true ? 'T' : 'F'));
+            filters.push(new nlobjSearchFilter("isinactive", null, "is", params.isinactive === true ? "T" : "F"));
         }
-        filters.push(new nlobjSearchFilter(this.fields.deleted.id, null, 'is', 'F'));
+        filters.push(new nlobjSearchFilter(this.fields.deleted.id, null, "is", "F"));
         result.records = _super.prototype.getAll.call(this, filters, null, null, params);
-        if (!!result.records) {
+        if (result.records && result.records.length) {
             var contractIds = result.records.map(function (record) { return record.id; });
             var contractItems = this.searchContractItems({ contractIds: contractIds });
             result.records.forEach(function (record) {
                 record.sublists = record.sublists || {};
-                var filtered = contractItems.filter(function (ci) { return ci.custrecord_f3mm_ci_contract.value == record.id; });
+                var filtered = contractItems.filter(function (ci) { return ci.custrecord_f3mm_ci_contract.value === record.id; });
                 record.sublists.recmachcustrecord_f3mm_ci_contract = filtered;
             });
         }
         // count records
-        var columns = [new nlobjSearchColumn('internalid', null, 'count').setLabel('total')];
+        var columns = [new nlobjSearchColumn("internalid", null, "count").setLabel("total")];
         var count = _super.prototype.getAll.call(this, filters, columns)[0];
         result.total = count.total;
         return result;
@@ -311,32 +324,32 @@ var ContractDAL = (function (_super) {
             // TODO : need to set due date base on customer requirement
             // var dueDate = new Date();
             // dueDate.setDate(dueDate.getDate() + 7); // add 7 days
-            quote.setFieldValue('expectedclosedate', nlapiDateToString(expectedClosingDate)); // mandatory field
-            quote.setFieldValue('trandate', nlapiDateToString(tranDate)); // mandatory field
-            quote.setFieldValue('duedate', nlapiDateToString(dueDate)); // mandatory field
+            quote.setFieldValue("expectedclosedate", nlapiDateToString(expectedClosingDate)); // mandatory field
+            quote.setFieldValue("trandate", nlapiDateToString(tranDate)); // mandatory field
+            quote.setFieldValue("duedate", nlapiDateToString(dueDate)); // mandatory field
             // entityStatuses for references
             var proposalStatusId = "10";
-            quote.setFieldValue('entitystatus', proposalStatusId); // proposal
-            quote.setFieldValue('salesrep', contract[this.fields.salesRep.id].value);
-            quote.setFieldValue('entity', contract[this.fields.customer.id].value);
-            quote.setFieldValue('custbody_f3mm_quote_contract', contractId); // attach contract record
-            quote.setFieldValue('department', contract[this.fields.department.id].value);
-            quote.setFieldValue('custbody_estimate_end_user', contract[this.fields.primaryContact.id].value);
-            quote.setFieldValue('custbody_end_user_email', contract[this.fields.primaryContactEmail.id]);
-            quote.setFieldValue('memo', contract[this.fields.memo.id]);
+            quote.setFieldValue("entitystatus", proposalStatusId); // proposal
+            quote.setFieldValue("salesrep", contract[this.fields.salesRep.id].value);
+            quote.setFieldValue("entity", contract[this.fields.customer.id].value);
+            quote.setFieldValue("custbody_f3mm_quote_contract", contractId); // attach contract record
+            quote.setFieldValue("department", contract[this.fields.department.id].value);
+            quote.setFieldValue("custbody_estimate_end_user", contract[this.fields.primaryContact.id].value);
+            quote.setFieldValue("custbody_end_user_email", contract[this.fields.primaryContactEmail.id]);
+            quote.setFieldValue("memo", contract[this.fields.memo.id]);
             var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
             if (!!contractItems) {
                 contractItems.forEach(function (contractItem) {
-                    quote.selectNewLineItem('item');
-                    quote.setCurrentLineItemValue('item', 'item', contractItem.custrecord_f3mm_ci_item.value);
-                    quote.setCurrentLineItemValue('item', 'quantity', contractItem.custrecord_f3mm_ci_quantity);
-                    quote.setCurrentLineItemValue('item', 'price', contractItem.custrecord_f3mm_ci_price_level.value);
-                    quote.setCurrentLineItemValue('item', 'rate', contractItem.custrecord_f3mm_ci_price);
-                    // quote.setCurrentLineItemValue('item', 'taxcode', contractItem.custrecord_f3mm_ci_taxcode.value);
-                    quote.commitLineItem('item');
+                    quote.selectNewLineItem("item");
+                    quote.setCurrentLineItemValue("item", "item", contractItem.custrecord_f3mm_ci_item.value);
+                    quote.setCurrentLineItemValue("item", "quantity", contractItem.custrecord_f3mm_ci_quantity);
+                    quote.setCurrentLineItemValue("item", "price", contractItem.custrecord_f3mm_ci_price_level.value);
+                    quote.setCurrentLineItemValue("item", "rate", contractItem.custrecord_f3mm_ci_price);
+                    quote.commitLineItem("item");
                 });
             }
             var quoteId = nlapiSubmitRecord(quote);
+            EmailHelper.sendQuoteGenerationEmail(contract, quoteId);
             result = {
                 id: quoteId
             };
@@ -463,6 +476,24 @@ var ContractDAL = (function (_super) {
      * @param {object} contract json object containing data for contract
      * @returns {number} id of created / updated contract
      */
+    ContractDAL.prototype.changeStatus = function (options) {
+        if (!options || !options.cid) {
+            throw new Error("contract id cannot be null.");
+        }
+        var record = {};
+        record.id = options.cid;
+        record[this.fields.status.id] = options.status;
+        var id = this.upsert(record);
+        var result = {
+            id: id
+        };
+        return result;
+    };
+    /**
+     * Create/Update a Contract based on json data passed
+     * @param {object} contract json object containing data for contract
+     * @returns {number} id of created / updated contract
+     */
     ContractDAL.prototype.update = function (contract) {
         if (!contract) {
             throw new Error("contract cannot be null.");
@@ -493,6 +524,9 @@ var ContractDAL = (function (_super) {
         }
         var record = this.prepareDataToUpsert(contract);
         var id = this.upsert(record);
+        if (contract.is_renew === "on") {
+            EmailHelper.sendRenewEmail(record);
+        }
         var result = {
             id: id
         };
@@ -521,7 +555,8 @@ var ContractDAL = (function (_super) {
         record[this.fields.status.id] = contract.status;
         record[this.fields.poNumber.id] = contract.po_number;
         record[this.fields.duration.id] = contract.duration;
-        record[this.fields.notificationDaysPrior.id] = contract.notification_days;
+        record[this.fields.systemId.id] = contract.system_id;
+        record[this.fields.notificationDaysPrior.id] = contract.notification_days || "0";
         record[this.fields.notification5DaysPrior.id] = contract.notification_5_days === "on" ? "T" : "F";
         record[this.fields.notification3DaysPrior.id] = contract.notification_3_days === "on" ? "T" : "F";
         record[this.fields.notification1DayPrior.id] = contract.notification_1_day === "on" ? "T" : "F";
@@ -542,7 +577,7 @@ var ContractDAL = (function (_super) {
                     custrecord_f3mm_ci_price: item.price === "-1" ? "" : item.price,
                     custrecord_f3mm_ci_price_level: item.price_level,
                     custrecord_f3mm_ci_quantity: item.quantity,
-                    id: item.id
+                    id: item.id || null
                 };
                 contractItemsSublist.lineitems.push(lineitem);
             });

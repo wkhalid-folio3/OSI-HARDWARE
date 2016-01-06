@@ -473,7 +473,7 @@ var ListContractsUIManager = (function () {
                 name: "custrecord_f3mm_primary_contact_email",
                 title: "Primary Contact Email",
                 type: "text",
-                width: 150,
+                width: 150
             }, {
                 editing: false,
                 name: "custrecord_f3mm_contract_vendor.text",
@@ -496,7 +496,7 @@ var ListContractsUIManager = (function () {
                 name: "custrecord_f3mm_start_date",
                 title: "Start Date",
                 type: "text",
-                width: 100,
+                width: 100
             }, {
                 editTemplate: function (_, item) {
                     var $html = $("<div class=\"input-group input-group-sm date end-date\">\n                    <input type=\"text\" class=\"form-control\" />\n                    <span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-calendar\"></i></span>\n                    </div>");

@@ -6,8 +6,7 @@
  * - f3mm_base_dal.ts
  * -
  */
-public class JsonHelper {
-
+class JsonHelper {
 
     /**
      * Convert any record object of type `nlobjRecord` into json
@@ -28,18 +27,20 @@ public class JsonHelper {
 
             // iterate over columns of body fields
             for (let index in allFields) {
-                let field = allFields[index];
-                let name = field;
-                let val: any = record.getFieldValue(field);
-                let text: any = record.getFieldText(field);
+                if (allFields.hasOwnProperty(index)) {
+                    let field = allFields[index];
+                    let name = field;
+                    let val: any = record.getFieldValue(field);
+                    let text: any = record.getFieldText(field);
 
-                if (!!text && name !== "internalid") {
-                    result[name] = {
-                        text: text,
-                        value: val
-                    };
-                } else {
-                    result[name] = val;
+                    if (!!text && name !== "internalid") {
+                        result[name] = {
+                            text: text,
+                            value: val
+                        };
+                    } else {
+                        result[name] = val;
+                    }
                 }
             }
 
@@ -49,14 +50,12 @@ public class JsonHelper {
 
             // iterate over child record types
             for (let lineItemIndex in lineItemGroups) {
-
-                let key = lineItemGroups[lineItemIndex];
-
-                let sublistItems = JsonHelper.getSublistItemsJson(record, key);
-
-                result.sublists[key] = sublistItems;
+                if (lineItemGroups.hasOwnProperty(lineItemIndex)) {
+                    let key = lineItemGroups[lineItemIndex];
+                    let sublistItems = JsonHelper.getSublistItemsJson(record, key);
+                    result.sublists[key] = sublistItems;
+                }
             }
-
         }
 
         return result;

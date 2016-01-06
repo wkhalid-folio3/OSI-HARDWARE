@@ -21,18 +21,18 @@
  *  - Insert / Update Records
  */
 class BaseDAL {
-    internalId: string = '';
-    fields: {};
+    public internalId: string = "";
+    public fields: {};
 
     /**
      * Load a record with specified id and and return in json format
      * @param {string} id id of record to load
      * @returns {object} json representation of record
      */
-    get(id: string): any {
-        var record = nlapiLoadRecord(this.internalId, id);
+    public get(id: string): any {
+        let record = nlapiLoadRecord(this.internalId, id);
 
-        var json = JsonHelper.getJsonForFullRecord(record);
+        let json = JsonHelper.getJsonForFullRecord(record);
 
         return json;
     }
@@ -44,10 +44,10 @@ class BaseDAL {
      * @param {string?} internalId optional parameter, if null then internal id of this calss will be used
      * @returns {object[]} json representation of records
      */
-    getAll(filters: nlobjSearchFilter[], columns: nlobjSearchColumn[], internalId ? : string, options?: any): {}[] {
+    public getAll(filters: nlobjSearchFilter[], columns: nlobjSearchColumn[], internalId? : string, options?: any): {}[] {
 
-        var recs = null;
-        var arr = [];
+        let recs = null;
+        let arr = [];
 
         try {
             options = options || {};
@@ -55,23 +55,23 @@ class BaseDAL {
             columns = columns ? columns : this.getFields(options);
             internalId = internalId || this.internalId;
 
-            F3.Util.Utility.logDebug('BaseDAL.getAll(); // filters: ', JSON.stringify(filters));
-            F3.Util.Utility.logDebug('BaseDAL.getAll(); // columns: ', JSON.stringify(columns));
-            F3.Util.Utility.logDebug('BaseDAL.getAll(); // internalId: ', JSON.stringify(internalId));
-            F3.Util.Utility.logDebug('BaseDAL.getAll(); // options: ', JSON.stringify(options));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // filters: ", JSON.stringify(filters));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // columns: ", JSON.stringify(columns));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // internalId: ", JSON.stringify(internalId));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // options: ", JSON.stringify(options));
 
-            var search = nlapiCreateSearch(internalId, filters, columns);
-            var searchResults = search.runSearch();
-            var resultIndex = options.startIndex || 0;
-            var resultStep = options.pageSize || 1000;
-            var resultSet = searchResults.getResults(resultIndex, resultIndex + resultStep);
+            let search = nlapiCreateSearch(internalId, filters, columns);
+            let searchResults = search.runSearch();
+            let resultIndex = options.startIndex || 0;
+            let resultStep = options.pageSize || 1000;
+            let resultSet = searchResults.getResults(resultIndex, resultIndex + resultStep);
             recs = resultSet;
 
             if (recs && recs.length > 0) {
                 arr = JsonHelper.getJsonArray(recs);
             }
         } catch (e) {
-            F3.Util.Utility.logException('BaseDAL.getAll', e.toString());
+            F3.Util.Utility.logException("BaseDAL.getAll", e.toString());
             throw e;
         }
 
@@ -79,26 +79,6 @@ class BaseDAL {
     }
 
 
-    /**
-     * Gets all fields of current class to perform search
-     * @returns {nlobjSearchColumn[]} array of fields
-     */
-    private getFields(options?: any): nlobjSearchColumn[] {
-        var cols = [];
-
-        for (var key in this.fields) {
-            var field = this.fields[key];
-            var fieldName = field.id || field.toString();
-            var searchCol = new nlobjSearchColumn(fieldName, null, null);
-            if(options.sortFields && options.sortFields[fieldName]) {
-                var order = options.sortFields[fieldName];
-                searchCol.setSort(order == "desc"); // true: desc, false: asc
-            }
-            cols.push(searchCol);
-        }
-
-        return cols;
-    }
 
 
 
@@ -108,12 +88,12 @@ class BaseDAL {
      * @param {boolean?} removeExistingLineItems default to false
      * @returns {number} id of the inserted or updated record
      */
-    upsert(record, removeExistingLineItems ? : boolean) {
+    public upsert(record, removeExistingLineItems? : boolean) {
 
-        F3.Util.Utility.logDebug('BaseDAL.upsert(); // item = ', JSON.stringify(record));
+        // F3.Util.Utility.logDebug("BaseDAL.upsert(); // item = ", JSON.stringify(record));
 
-        var id = null;
-        var dbRecord = null;
+        let id = null;
+        let dbRecord = null;
 
         try {
 
@@ -128,10 +108,10 @@ class BaseDAL {
                 // we donot want to add id in the body fields
                 delete record.id;
 
-                for (var key in record) {
+                for (let key in record) {
                     if (!F3.Util.Utility.isBlankOrNull(key)) {
-                        var itemData = record[key];
-                        if (key == 'sublists' && !!itemData) {
+                        let itemData = record[key];
+                        if (key === "sublists" && !!itemData) {
                             // update line items
                             this.upsertLineItems(dbRecord, itemData, removeExistingLineItems);
                         } else {
@@ -142,15 +122,37 @@ class BaseDAL {
 
                 id = nlapiSubmitRecord(dbRecord, true);
 
-                F3.Util.Utility.logDebug('BaseDAL.upsert(); // id = ', id);
+                // F3.Util.Utility.logDebug("BaseDAL.upsert(); // id = ", id);
             }
         } catch (e) {
-            F3.Util.Utility.logException('BaseDAL.upsert', e.toString());
+            F3.Util.Utility.logException("BaseDAL.upsert", e.toString());
             throw e;
         }
 
         return id;
     }
+
+    /**
+     * Gets all fields of current class to perform search
+     * @returns {nlobjSearchColumn[]} array of fields
+     */
+    private getFields(options?: any): nlobjSearchColumn[] {
+        let cols = [];
+
+        for (let key in this.fields) {
+            let field = this.fields[key];
+            let fieldName = field.id || field.toString();
+            let searchCol = new nlobjSearchColumn(fieldName, null, null);
+            if (options.sortFields && options.sortFields[fieldName]) {
+                let order = options.sortFields[fieldName];
+                searchCol.setSort(order === "desc"); // true: desc, false: asc
+            }
+            cols.push(searchCol);
+        }
+
+        return cols;
+    }
+
 
     /**
      * insert / update line items.
@@ -160,41 +162,46 @@ class BaseDAL {
      * @param {boolean?} removeExistingLineItems default to false
      * @returns {void}
      */
-    private upsertLineItems(dbRecord, itemData, removeExistingLineItems ? : boolean) {
+    private upsertLineItems(dbRecord, itemData, removeExistingLineItems? : boolean) {
 
         itemData.forEach(sublist => {
 
-            F3.Util.Utility.logDebug('BaseDAL.upsertLineItems(); // sublist = ', JSON.stringify(sublist));
+            // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // sublist = ", JSON.stringify(sublist));
 
             if (removeExistingLineItems === true) {
-                var existingItemsCount = dbRecord.getLineItemCount(sublist.internalId);
-                for (var j = 1; j <= existingItemsCount; j++) {
-                    dbRecord.removeLineItem(sublist.internalId, '1');
+                let existingItemsCount = dbRecord.getLineItemCount(sublist.internalId);
+                for (let j = 1; j <= existingItemsCount; j++) {
+                    dbRecord.removeLineItem(sublist.internalId, "1");
                 }
             }
 
             sublist.lineitems.forEach((lineitem, index) => {
 
-                F3.Util.Utility.logDebug('BaseDAL.upsertLineItems(); // lineitem = ', JSON.stringify(lineitem));
+                // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // lineitem = ", JSON.stringify(lineitem));
 
-                var linenum = dbRecord.findLineItemValue(sublist.internalId, sublist.keyField, lineitem[sublist.keyField]);
+                let linenum = dbRecord.findLineItemValue(sublist.internalId, sublist.keyField, lineitem[sublist.keyField]);
                 if (linenum > -1) {
                     dbRecord.selectLineItem(sublist.internalId, linenum);
                 } else {
                     dbRecord.selectNewLineItem(sublist.internalId);
                 }
 
-                F3.Util.Utility.logDebug('BaseDAL.upsertLineItems(); // linenum = ', linenum);
+                // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // linenum = ", linenum);
 
-                for (var linenum in lineitem) {
-                    dbRecord.setCurrentLineItemValue(sublist.internalId, linenum, lineitem[linenum]);
+                for (let lineitemIndex in lineitem) {
+                    if (lineitem.hasOwnProperty(lineitemIndex)) {
+                        // keyFields contains the id
+                        // donot update id
+                        if (lineitemIndex !== sublist.keyField) {
+                            dbRecord.setCurrentLineItemValue(sublist.internalId, lineitemIndex, lineitem[lineitemIndex]);
+                        }
+                    }
                 }
 
                 dbRecord.commitLineItem(sublist.internalId);
             });
 
         });
-
 
     }
 

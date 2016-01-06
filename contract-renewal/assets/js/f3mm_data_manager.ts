@@ -408,25 +408,25 @@ class DataManager {
     public generateQuote(params, callback) {
         try {
 
-            var options = {
-                'action': 'generate_quote'
+            let options = {
+                "action": "generate_quote"
             };
 
-            var filters = {
-                'params': JSON.stringify(params)
+            let filters = {
+                "params": JSON.stringify(params)
             };
 
             $.extend(options, filters);
 
             return jQuery.get(this._serverUrl, options, function(result) {
-                console.log('generateQuote(); // jquery complete: ', arguments);
+                console.log("generateQuote(); // jquery complete: ", arguments);
 
                 callback && callback(result);
 
             });
 
         } catch (e) {
-            console.error('ERROR', 'Error during main DataManager.generateQuote()', e.toString());
+            console.error("ERROR", "Error during main DataManager.generateQuote()", e.toString());
 
             callback && callback(null);
         }

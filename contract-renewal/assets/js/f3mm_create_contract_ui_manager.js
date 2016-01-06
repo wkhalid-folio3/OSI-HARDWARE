@@ -48,6 +48,8 @@ var CreateContractUIManager = (function () {
         $(".btn-generate-quote").on("click", this.generateQuote.bind(this));
         $("#entity_popup_link").on("click", this.openExistingCustomerWindow.bind(this));
         $("#entity_popup_new").on("click", this.openNewCustomerWindow.bind(this));
+        $("#contact_popup_link").on("click", this.openExistingContactWindow.bind(this));
+        $("#contact_popup_new").on("click", this.openNewContactWindow.bind(this));
         $(".duration-dropdown").on("change", this.durationDropdownChanged.bind(this));
         $(".start-date-text").parent().on("changeDate", this.durationDropdownChanged.bind(this));
         // whenever tab is switched, refresh the grid
@@ -57,6 +59,10 @@ var CreateContractUIManager = (function () {
         });
         $("a[data-toggle='tab']").on("shown.bs.tab", function (e) {
             $("#history_grid").jsGrid("refresh");
+        });
+        $('[data-toggle="popover"]').popover({
+            container: 'body',
+            html: true
         });
     }
     /**
@@ -71,7 +77,7 @@ var CreateContractUIManager = (function () {
             if (validated === false) {
                 return;
             }
-            var serializedData = $('.form-horizontal :input').serializeObject();
+            var serializedData = $(".form-horizontal :input").serializeObject();
             if (!!this._contractInfo) {
                 serializedData.id = this._contractInfo.id;
             }
@@ -82,12 +88,12 @@ var CreateContractUIManager = (function () {
                 serializedData.primary_contact = validated.primaryContactId;
             }
             serializedData.items = [];
-            var items = $('#jsGrid').data().JSGrid.data;
+            var items = $("#jsGrid").data().JSGrid.data;
             $.each(items, function (index, item) {
                 serializedData.items.push({
+                    amount: item.amount,
                     id: item.id,
                     item_id: item.itemid,
-                    amount: item.amount,
                     price: item.price,
                     quantity: item.quantity,
                     item_description: item.description,
@@ -527,7 +533,7 @@ var CreateContractUIManager = (function () {
                             price: contractItem.custrecord_f3mm_ci_price,
                             priceLevels: contractItem.custrecord_f3mm_ci_item.priceLevels,
                             price_level: (priceLevel && priceLevel.value) || "0",
-                            quantity: contractItem.custrecord_f3mm_ci_quantity,
+                            quantity: contractItem.custrecord_f3mm_ci_quantity
                         });
                     }
                 });
@@ -913,6 +919,17 @@ var CreateContractUIManager = (function () {
             $el.focus();
         }
     };
+    CreateContractUIManager.prototype.getSelectedContact = function () {
+        var result = null;
+        var $primaryContactDropdown = $(".primary-contact-dropdown");
+        var contactText = $primaryContactDropdown.val();
+        var contactId = $primaryContactDropdown.attr("data-selected-id");
+        // validate customer
+        if (!!contactId && contactText !== "") {
+            result = contactId;
+        }
+        return result;
+    };
     CreateContractUIManager.prototype.getSelectedCustomer = function () {
         var result = null;
         var $customerDropdown = $(".customer-dropdown");
@@ -924,8 +941,28 @@ var CreateContractUIManager = (function () {
         }
         return result;
     };
+    CreateContractUIManager.prototype.openNewContactWindow = function () {
+        var url = '/app/common/entity/contact.nl?target=main:contact&label=Primary+Contact';
+        // setSelectValue(document.forms['main_form'].elements['entity'], -1);
+        // document.forms['main_form'].elements['entity_display'].value = '';
+        // document.forms['main_form'].elements['entity_display'].isvalid = true;
+        // NS.form.setValid(true);
+        // Syncentity(true);
+        nlOpenWindow(url, '_blank', '');
+        return false;
+    };
+    CreateContractUIManager.prototype.openExistingContactWindow = function () {
+        var selectValue = this.getSelectedContact();
+        if (!!selectValue) {
+            nlOpenWindow('/app/common/entity/contact.nl?id=' + selectValue + '', '_blank', '');
+        }
+        else {
+            alert('Please choose an entry first.');
+        }
+        return false;
+    };
     CreateContractUIManager.prototype.openNewCustomerWindow = function () {
-        var url = 'https://system.na1.netsuite.com/app/common/entity/custjob.nl?target=main:entity&label=Customer&stage=prospect';
+        var url = '/app/common/entity/custjob.nl?target=main:entity&label=Customer&stage=prospect';
         // setSelectValue(document.forms['main_form'].elements['entity'], -1);
         // document.forms['main_form'].elements['entity_display'].value = '';
         // document.forms['main_form'].elements['entity_display'].isvalid = true;
@@ -1145,6 +1182,13 @@ var CreateContractUIManager = (function () {
         var $form = $('.form-horizontal');
         $('.contract-number-text', $form).val(contract.custrecord_f3mm_contract_number);
         $('.po-number-text', $form).val(contract.custrecord_f3mm_po_number);
+        $('.system-id-text', $form).val(contract.custrecord_f3mm_system_id);
+        if (!!contract.id) {
+            $('.form-group-is-renew').show();
+        }
+        else {
+            $('.form-group-is-renew').hide();
+        }
         if (!!contract.custrecord_f3mm_sales_rep) {
             $('.sales-rep-dropdown', $form).val(contract.custrecord_f3mm_sales_rep.value);
         }

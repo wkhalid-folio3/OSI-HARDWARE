@@ -116,6 +116,10 @@ class ContractDAL extends BaseDAL {
             id: "custrecord_f3mm_status",
             type: "list"
         },
+        systemId: {
+            id: "custrecord_f3mm_system_id",
+            type: "text"
+        },
         totalQuantitySeats: {
             id: "custrecord_f3mm_total_qty_seats",
             type: "number"
@@ -182,7 +186,7 @@ class ContractDAL extends BaseDAL {
             let contractItemIds = contractItems.map(ci => ci.id);
             let itemIds = contractItems
                 .filter(ci => !!ci.custrecord_f3mm_ci_item)
-                .map(ci => parseInt(ci.custrecord_f3mm_ci_item.value));
+                .map(ci => parseInt(ci.custrecord_f3mm_ci_item.value, 10));
 
             if (itemIds && itemIds.length) {
                 items = commonDAL.getItems({
@@ -203,21 +207,26 @@ class ContractDAL extends BaseDAL {
             });
 
             // attach history
-            contract.history = this.getHistory(id);
+            let contractHistory = this.getHistory(id);
 
+            let historyFieldsToExclude = ["Inactive", "Deleted?", "Owner"];
             let contractItemsHistory = this.getHistory(contractItemIds, "customrecord_f3mm_contract_item");
             if (!!contractItemsHistory) {
                 contractItemsHistory = contractItemsHistory.filter(cih => cih.field.text === "Item");
-                contract.history = contract.history.concat(contractItemsHistory);
-                contract.history.sort((item1, item2) => {
-                    return new Date(item2.date) - new Date(item1.date);
+                contractHistory = contractHistory.filter(ch => historyFieldsToExclude.indexOf(ch.field.text) <= 0);
+                contractHistory = contractHistory.concat(contractItemsHistory);
+                contractHistory.sort((item1, item2) => {
+                    let date1: any = new Date(item1.date);
+                    let date2: any = new Date(item2.date);
+                    return date2 - date1;
                 });
+                contract.history = contractHistory;
             }
 
             contractItems.forEach(contractItem => {
                 if (!!contractItem.custrecord_f3mm_ci_item) {
                     let itemId = contractItem.custrecord_f3mm_ci_item.value;
-                    let foundItem = items.filter(item => item.id == itemId)[0];
+                    let foundItem = items.filter(item => item.id === itemId)[0];
                     if (!!foundItem) {
                         contractItem.custrecord_f3mm_ci_item.baseprice = foundItem.baseprice;
                         contractItem.custrecord_f3mm_ci_item.displayname = foundItem.displayname;
@@ -267,7 +276,7 @@ class ContractDAL extends BaseDAL {
      * @param {object} params json object contain filters data
      * @returns {object[]} array of json representation of contract objects
      */
-    public search(params) {
+    public search(params: any) {
         let result = {
             records: null,
             total: 0
@@ -276,46 +285,51 @@ class ContractDAL extends BaseDAL {
 
         if (!!params) {
             if (!F3.Util.Utility.isBlankOrNull(params.contract_number)) {
-                filters.push(new nlobjSearchFilter(this.fields.contractNumber.id, null, 'contains', params.contract_number));
+                filters.push(new nlobjSearchFilter(this.fields.contractNumber.id, null, "contains", params.contract_number));
             }
 
             if (!F3.Util.Utility.isBlankOrNull(params.status)) {
-                filters.push(new nlobjSearchFilter(this.fields.status.id, null, 'anyof', params.status));
+                filters.push(new nlobjSearchFilter(this.fields.status.id, null, "anyof", params.status));
             }
 
             if (!F3.Util.Utility.isBlankOrNull(params.customer)) {
-                filters.push(new nlobjSearchFilter(this.fields.customer.id, null, 'anyof', params.customer));
+                filters.push(new nlobjSearchFilter(this.fields.customer.id, null, "anyof", params.customer));
             }
 
             if (!F3.Util.Utility.isBlankOrNull(params.start_date)) {
-                filters.push(new nlobjSearchFilter(this.fields.startDate.id, null, 'onorafter', params.start_date));
+                filters.push(new nlobjSearchFilter(this.fields.startDate.id, null, "onorafter", params.start_date));
             }
 
             if (!F3.Util.Utility.isBlankOrNull(params.end_date)) {
-                filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, 'onorbefore', params.end_date));
+                let end_date_criterion = params.end_date_criterion || "onorbefore";
+                filters.push(new nlobjSearchFilter(this.fields.endDate.id, null, end_date_criterion, params.end_date));
+            }
+
+            if (!F3.Util.Utility.isBlankOrNull(params.sales_rep)) {
+                filters.push(new nlobjSearchFilter(this.fields.salesRep.id, null, "anyof", params.sales_rep));
             }
 
             // exclude deleted & inactive records
-            filters.push(new nlobjSearchFilter('isinactive', null, 'is', params.isinactive == true ? 'T' : 'F'));
+            filters.push(new nlobjSearchFilter("isinactive", null, "is", params.isinactive === true ? "T" : "F"));
         }
 
-        filters.push(new nlobjSearchFilter(this.fields.deleted.id, null, 'is', 'F'));
+        filters.push(new nlobjSearchFilter(this.fields.deleted.id, null, "is", "F"));
 
         result.records = super.getAll(filters, null, null, params);
 
-        if (!!result.records) {
+        if (result.records && result.records.length) {
             let contractIds = result.records.map(record => record.id);
             let contractItems = this.searchContractItems({contractIds: contractIds});
             result.records.forEach(record => {
                 record.sublists = record.sublists || {};
-                let filtered = contractItems.filter(ci => ci.custrecord_f3mm_ci_contract.value == record.id);
+                let filtered = contractItems.filter(ci => ci.custrecord_f3mm_ci_contract.value === record.id);
                 record.sublists.recmachcustrecord_f3mm_ci_contract = filtered;
             });
         }
 
 
         // count records
-        let columns = [new nlobjSearchColumn('internalid', null, 'count').setLabel('total')];
+        let columns = [new nlobjSearchColumn("internalid", null, "count").setLabel("total")];
         let count = super.getAll(filters, columns)[0];
         result.total = count.total;
 
@@ -348,36 +362,37 @@ class ContractDAL extends BaseDAL {
             // var dueDate = new Date();
             // dueDate.setDate(dueDate.getDate() + 7); // add 7 days
 
-            quote.setFieldValue('expectedclosedate', nlapiDateToString(expectedClosingDate)); // mandatory field
-            quote.setFieldValue('trandate', nlapiDateToString(tranDate)); // mandatory field
-            quote.setFieldValue('duedate', nlapiDateToString(dueDate)); // mandatory field
+            quote.setFieldValue("expectedclosedate", nlapiDateToString(expectedClosingDate)); // mandatory field
+            quote.setFieldValue("trandate", nlapiDateToString(tranDate)); // mandatory field
+            quote.setFieldValue("duedate", nlapiDateToString(dueDate)); // mandatory field
 
             // entityStatuses for references
             let proposalStatusId = "10";
-            quote.setFieldValue('entitystatus', proposalStatusId); // proposal
-            quote.setFieldValue('salesrep', contract[this.fields.salesRep.id].value);
-            quote.setFieldValue('entity', contract[this.fields.customer.id].value);
-            quote.setFieldValue('custbody_f3mm_quote_contract', contractId); // attach contract record
-            quote.setFieldValue('department', contract[this.fields.department.id].value);
+            quote.setFieldValue("entitystatus", proposalStatusId); // proposal
+            quote.setFieldValue("salesrep", contract[this.fields.salesRep.id].value);
+            quote.setFieldValue("entity", contract[this.fields.customer.id].value);
+            quote.setFieldValue("custbody_f3mm_quote_contract", contractId); // attach contract record
+            quote.setFieldValue("department", contract[this.fields.department.id].value);
 
-            quote.setFieldValue('custbody_estimate_end_user', contract[this.fields.primaryContact.id].value);
-            quote.setFieldValue('custbody_end_user_email', contract[this.fields.primaryContactEmail.id]);
-            quote.setFieldValue('memo', contract[this.fields.memo.id]);
+            quote.setFieldValue("custbody_estimate_end_user", contract[this.fields.primaryContact.id].value);
+            quote.setFieldValue("custbody_end_user_email", contract[this.fields.primaryContactEmail.id]);
+            quote.setFieldValue("memo", contract[this.fields.memo.id]);
 
             let contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
             if (!!contractItems) {
                 contractItems.forEach(contractItem => {
-                    quote.selectNewLineItem('item');
-                    quote.setCurrentLineItemValue('item', 'item', contractItem.custrecord_f3mm_ci_item.value);
-                    quote.setCurrentLineItemValue('item', 'quantity', contractItem.custrecord_f3mm_ci_quantity);
-                    quote.setCurrentLineItemValue('item', 'price', contractItem.custrecord_f3mm_ci_price_level.value);
-                    quote.setCurrentLineItemValue('item', 'rate', contractItem.custrecord_f3mm_ci_price);
-                    // quote.setCurrentLineItemValue('item', 'taxcode', contractItem.custrecord_f3mm_ci_taxcode.value);
-                    quote.commitLineItem('item');
+                    quote.selectNewLineItem("item");
+                    quote.setCurrentLineItemValue("item", "item", contractItem.custrecord_f3mm_ci_item.value);
+                    quote.setCurrentLineItemValue("item", "quantity", contractItem.custrecord_f3mm_ci_quantity);
+                    quote.setCurrentLineItemValue("item", "price", contractItem.custrecord_f3mm_ci_price_level.value);
+                    quote.setCurrentLineItemValue("item", "rate", contractItem.custrecord_f3mm_ci_price);
+                    quote.commitLineItem("item");
                 });
             }
 
             let quoteId = nlapiSubmitRecord(quote);
+
+            EmailHelper.sendQuoteGenerationEmail(contract, quoteId);
 
             result = {
                 id: quoteId
@@ -528,6 +543,32 @@ class ContractDAL extends BaseDAL {
      * @param {object} contract json object containing data for contract
      * @returns {number} id of created / updated contract
      */
+    public changeStatus(options): {
+        id: any
+    } {
+
+        if (!options || !options.cid) {
+            throw new Error("contract id cannot be null.");
+        }
+
+        let record: any = {};
+        record.id = options.cid;
+        record[this.fields.status.id] = options.status;
+
+        let id = this.upsert(record);
+        let result = {
+            id: id
+        };
+        return result;
+    }
+
+
+
+    /**
+     * Create/Update a Contract based on json data passed
+     * @param {object} contract json object containing data for contract
+     * @returns {number} id of created / updated contract
+     */
     public update(contract): {
         id: any
     } {
@@ -570,6 +611,11 @@ class ContractDAL extends BaseDAL {
         let record = this.prepareDataToUpsert(contract);
 
         let id = this.upsert(record);
+
+        if( contract.is_renew === "on") {
+            EmailHelper.sendRenewEmail(record);
+        }
+
         let result = {
             id: id
         };
@@ -601,7 +647,8 @@ class ContractDAL extends BaseDAL {
         record[this.fields.status.id] = contract.status;
         record[this.fields.poNumber.id] = contract.po_number;
         record[this.fields.duration.id] = contract.duration;
-        record[this.fields.notificationDaysPrior.id] = contract.notification_days;
+        record[this.fields.systemId.id] = contract.system_id;
+        record[this.fields.notificationDaysPrior.id] = contract.notification_days || "0";
         record[this.fields.notification5DaysPrior.id] = contract.notification_5_days === "on" ? "T" : "F";
         record[this.fields.notification3DaysPrior.id] = contract.notification_3_days === "on" ? "T" : "F";
         record[this.fields.notification1DayPrior.id] = contract.notification_1_day === "on" ? "T" : "F";
@@ -625,7 +672,7 @@ class ContractDAL extends BaseDAL {
                     custrecord_f3mm_ci_price: item.price === "-1" ? "" : item.price,
                     custrecord_f3mm_ci_price_level: item.price_level,
                     custrecord_f3mm_ci_quantity: item.quantity,
-                    id: item.id
+                    id: item.id || null
                 };
 
                 contractItemsSublist.lineitems.push(lineitem);

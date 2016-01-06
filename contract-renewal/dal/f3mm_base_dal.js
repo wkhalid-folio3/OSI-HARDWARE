@@ -22,7 +22,7 @@
  */
 var BaseDAL = (function () {
     function BaseDAL() {
-        this.internalId = '';
+        this.internalId = "";
     }
     /**
      * Load a record with specified id and and return in json format
@@ -49,10 +49,10 @@ var BaseDAL = (function () {
             filters = filters ? filters : [];
             columns = columns ? columns : this.getFields(options);
             internalId = internalId || this.internalId;
-            F3.Util.Utility.logDebug('BaseDAL.getAll(); // filters: ', JSON.stringify(filters));
-            F3.Util.Utility.logDebug('BaseDAL.getAll(); // columns: ', JSON.stringify(columns));
-            F3.Util.Utility.logDebug('BaseDAL.getAll(); // internalId: ', JSON.stringify(internalId));
-            F3.Util.Utility.logDebug('BaseDAL.getAll(); // options: ', JSON.stringify(options));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // filters: ", JSON.stringify(filters));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // columns: ", JSON.stringify(columns));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // internalId: ", JSON.stringify(internalId));
+            // F3.Util.Utility.logDebug("BaseDAL.getAll(); // options: ", JSON.stringify(options));
             var search = nlapiCreateSearch(internalId, filters, columns);
             var searchResults = search.runSearch();
             var resultIndex = options.startIndex || 0;
@@ -64,28 +64,10 @@ var BaseDAL = (function () {
             }
         }
         catch (e) {
-            F3.Util.Utility.logException('BaseDAL.getAll', e.toString());
+            F3.Util.Utility.logException("BaseDAL.getAll", e.toString());
             throw e;
         }
         return arr;
-    };
-    /**
-     * Gets all fields of current class to perform search
-     * @returns {nlobjSearchColumn[]} array of fields
-     */
-    BaseDAL.prototype.getFields = function (options) {
-        var cols = [];
-        for (var key in this.fields) {
-            var field = this.fields[key];
-            var fieldName = field.id || field.toString();
-            var searchCol = new nlobjSearchColumn(fieldName, null, null);
-            if (options.sortFields && options.sortFields[fieldName]) {
-                var order = options.sortFields[fieldName];
-                searchCol.setSort(order == "desc"); // true: desc, false: asc
-            }
-            cols.push(searchCol);
-        }
-        return cols;
     };
     /**
      * Either inserts or updates data. Upsert = Up[date] + [In]sert
@@ -94,7 +76,7 @@ var BaseDAL = (function () {
      * @returns {number} id of the inserted or updated record
      */
     BaseDAL.prototype.upsert = function (record, removeExistingLineItems) {
-        F3.Util.Utility.logDebug('BaseDAL.upsert(); // item = ', JSON.stringify(record));
+        // F3.Util.Utility.logDebug("BaseDAL.upsert(); // item = ", JSON.stringify(record));
         var id = null;
         var dbRecord = null;
         try {
@@ -111,7 +93,7 @@ var BaseDAL = (function () {
                 for (var key in record) {
                     if (!F3.Util.Utility.isBlankOrNull(key)) {
                         var itemData = record[key];
-                        if (key == 'sublists' && !!itemData) {
+                        if (key === "sublists" && !!itemData) {
                             // update line items
                             this.upsertLineItems(dbRecord, itemData, removeExistingLineItems);
                         }
@@ -121,14 +103,31 @@ var BaseDAL = (function () {
                     }
                 }
                 id = nlapiSubmitRecord(dbRecord, true);
-                F3.Util.Utility.logDebug('BaseDAL.upsert(); // id = ', id);
             }
         }
         catch (e) {
-            F3.Util.Utility.logException('BaseDAL.upsert', e.toString());
+            F3.Util.Utility.logException("BaseDAL.upsert", e.toString());
             throw e;
         }
         return id;
+    };
+    /**
+     * Gets all fields of current class to perform search
+     * @returns {nlobjSearchColumn[]} array of fields
+     */
+    BaseDAL.prototype.getFields = function (options) {
+        var cols = [];
+        for (var key in this.fields) {
+            var field = this.fields[key];
+            var fieldName = field.id || field.toString();
+            var searchCol = new nlobjSearchColumn(fieldName, null, null);
+            if (options.sortFields && options.sortFields[fieldName]) {
+                var order = options.sortFields[fieldName];
+                searchCol.setSort(order === "desc"); // true: desc, false: asc
+            }
+            cols.push(searchCol);
+        }
+        return cols;
     };
     /**
      * insert / update line items.
@@ -140,15 +139,15 @@ var BaseDAL = (function () {
      */
     BaseDAL.prototype.upsertLineItems = function (dbRecord, itemData, removeExistingLineItems) {
         itemData.forEach(function (sublist) {
-            F3.Util.Utility.logDebug('BaseDAL.upsertLineItems(); // sublist = ', JSON.stringify(sublist));
+            // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // sublist = ", JSON.stringify(sublist));
             if (removeExistingLineItems === true) {
                 var existingItemsCount = dbRecord.getLineItemCount(sublist.internalId);
                 for (var j = 1; j <= existingItemsCount; j++) {
-                    dbRecord.removeLineItem(sublist.internalId, '1');
+                    dbRecord.removeLineItem(sublist.internalId, "1");
                 }
             }
             sublist.lineitems.forEach(function (lineitem, index) {
-                F3.Util.Utility.logDebug('BaseDAL.upsertLineItems(); // lineitem = ', JSON.stringify(lineitem));
+                // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // lineitem = ", JSON.stringify(lineitem));
                 var linenum = dbRecord.findLineItemValue(sublist.internalId, sublist.keyField, lineitem[sublist.keyField]);
                 if (linenum > -1) {
                     dbRecord.selectLineItem(sublist.internalId, linenum);
@@ -156,9 +155,15 @@ var BaseDAL = (function () {
                 else {
                     dbRecord.selectNewLineItem(sublist.internalId);
                 }
-                F3.Util.Utility.logDebug('BaseDAL.upsertLineItems(); // linenum = ', linenum);
-                for (var linenum in lineitem) {
-                    dbRecord.setCurrentLineItemValue(sublist.internalId, linenum, lineitem[linenum]);
+                // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // linenum = ", linenum);
+                for (var lineitemIndex in lineitem) {
+                    if (lineitem.hasOwnProperty(lineitemIndex)) {
+                        // keyFields contains the id
+                        // donot update id
+                        if (lineitemIndex !== sublist.keyField) {
+                            dbRecord.setCurrentLineItemValue(sublist.internalId, lineitemIndex, lineitem[lineitemIndex]);
+                        }
+                    }
                 }
                 dbRecord.commitLineItem(sublist.internalId);
             });
