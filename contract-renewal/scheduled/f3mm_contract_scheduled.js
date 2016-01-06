@@ -20,8 +20,8 @@ var ContractScheduled = (function () {
         F3.Util.Utility.logDebug("ContractScheduled.scheduled()", "START");
         var today = new Date();
         var params = {
-            end_date: nlapiDateToString(today),
-            end_date_criterion: "onorafter",
+            // end_date: nlapiDateToString(today),
+            // end_date_criterion: "onorafter",
             status: [
                 ContractStatus.PENDING_REP_APPROVAL,
                 ContractStatus.PENDING_CUSTOMER_APPROVAL,

@@ -76,6 +76,18 @@ var CreateContractAPISuitelet = (function () {
             var executedActionResult = null;
             var actionExecuted = true;
             switch (action) {
+                case "send_email":
+                    // we are using scriptable template to send email
+                    var emailMerger = nlapiCreateEmailMerger(27);
+                    var customerId = "1213";
+                    // setting transaction in email merge
+                    emailMerger.setCustomRecord("customrecord_f3mm_contract", "21");
+                    var mergeResult = emailMerger.merge();
+                    var emailSubject = "test subject";
+                    var emailBody = mergeResult.getBody();
+                    var sender = "-5";
+                    nlapiSendEmail(sender, customerId, emailSubject, emailBody, null, null, null, null);
+                    break;
                 case "get_contracts":
                     executedActionResult = contractDAL.search(params);
                     break;

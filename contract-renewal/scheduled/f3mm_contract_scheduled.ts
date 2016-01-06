@@ -28,8 +28,8 @@ class ContractScheduled {
 
         let today = new Date();
         let params = {
-            end_date: nlapiDateToString(today),
-            end_date_criterion: "onorafter",
+            // end_date: nlapiDateToString(today),
+            // end_date_criterion: "onorafter",
             status: [
                 ContractStatus.PENDING_REP_APPROVAL,
                 ContractStatus.PENDING_CUSTOMER_APPROVAL,

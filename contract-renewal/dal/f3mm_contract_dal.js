@@ -285,6 +285,9 @@ var ContractDAL = (function (_super) {
             if (!F3.Util.Utility.isBlankOrNull(params.sales_rep)) {
                 filters.push(new nlobjSearchFilter(this.fields.salesRep.id, null, "anyof", params.sales_rep));
             }
+            if (!F3.Util.Utility.isBlankOrNull(params.vendor)) {
+                filters.push(new nlobjSearchFilter(this.fields.contractVendor.id, null, "anyof", params.vendor));
+            }
             // exclude deleted & inactive records
             filters.push(new nlobjSearchFilter("isinactive", null, "is", params.isinactive === true ? "T" : "F"));
         }

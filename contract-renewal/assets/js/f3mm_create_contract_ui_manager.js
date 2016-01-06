@@ -251,22 +251,22 @@ var CreateContractUIManager = (function () {
      */
     CreateContractUIManager.prototype.bindPrimaryContactDropdown = function ($contactsDropdown) {
         var _this = this;
-        if (!$contactsDropdown.data('itempicker_created')) {
+        if (!$contactsDropdown.data("itempicker_created")) {
             var typeaheadOptions = {
+                highlight: true,
                 hint: false,
-                minLength: 3,
-                highlight: true
+                minLength: 3
             };
             var contactsDataset = {
-                name: 'primary-contacts',
-                limit: 500,
                 display: function (obj) {
                     var name = obj.entityid;
                     if (!!obj.company && !!obj.company.text) {
-                        name = obj.company.text + ' : ' + obj.entityid;
+                        name = obj.company.text + " : " + obj.entityid;
                     }
                     return name;
                 },
+                limit: 500,
+                name: "primary-contacts",
                 source: function (query, sync, async) {
                     setTimeout(function () {
                         _this._dataManager.getPrimaryContacts({
@@ -276,17 +276,13 @@ var CreateContractUIManager = (function () {
                                 async(contacts.data);
                             }
                             catch (e) {
-                                console.error('ERROR', 'Error during async binding.', e.toString());
+                                console.error("ERROR", "Error during async binding.", e.toString());
                             }
                         });
                     }, 10);
                 },
                 templates: {
-                    empty: [
-                        '<div class="empty-message">',
-                        'unable to find any contacts that match the current query',
-                        '</div>'
-                    ].join('\n')
+                    empty: "<div class=\"empty-message\">\n                        unable to find any contacts that match the current query\n                        </div>"
                 }
             };
             $contactsDropdown.typeahead(typeaheadOptions, contactsDataset);
@@ -296,7 +292,7 @@ var CreateContractUIManager = (function () {
                 var selectedId = $this.attr('data-selected-id');
                 var selectedText = $this.attr('data-selected-text');
                 var text = selectedText;
-                var isMatched = text == val;
+                var isMatched = text === val;
                 console.log('text: ', text);
                 console.log('val: ', val);
                 console.log('text == val: ', text == val);
@@ -466,10 +462,10 @@ var CreateContractUIManager = (function () {
                 _this.loaded();
             }, 10);
         });
-        $(document.body).on('focusin', '.customer-dropdown', function (ev) {
+        $(document.body).on("focusin", ".customer-dropdown", function (ev) {
             _this.bindCustomerDropdown($(ev.target));
         });
-        $(document.body).on('focusin', '.primary-contact-dropdown', function (ev) {
+        $(document.body).on("focusin", ".primary-contact-dropdown", function (ev) {
             _this.bindPrimaryContactDropdown($(ev.target));
         });
     };
@@ -481,7 +477,7 @@ var CreateContractUIManager = (function () {
         var existingData = $("#jsGrid").data().JSGrid.data;
         var quantities = _.pluck(existingData, "quantity");
         // calculate quantity from all items
-        var totalQuantitySeats = _.reduce(quantities, function (memo, num) { return memo + parseInt(num); }, 0);
+        var totalQuantitySeats = _.reduce(quantities, function (memo, num) { return memo + parseInt(num, 10); }, 0);
         // set quantity in total quantity seats textbox
         $(".total-quantity-seats-text").val(totalQuantitySeats);
     };
@@ -594,7 +590,7 @@ var CreateContractUIManager = (function () {
                 type: "decimal_number",
                 width: 50
             }];
-        if (this._viewType !== 'view') {
+        if (this._viewType !== "view") {
             gridFields.push({
                 editButton: false,
                 modeSwitchButton: false,
@@ -628,25 +624,12 @@ var CreateContractUIManager = (function () {
             alert("Please select an item");
             return;
         }
-        if (parseInt(data.quantity) <= 0) {
+        if (parseInt(data.quantity, 10) <= 0) {
             args.cancel = true;
             alert("Quantity cannot be less than or equal to 0");
             return;
         }
-        //var taxCode = $updateRow.data('selected-tax-code');
-        //if (!!taxCode) {
-        //    data.taxcodeid = taxCode.id;
-        //    data.taxcode = taxCode.itemid;
-        //    data.taxrate = taxCode.rate + '%';
-        //}
-        //
-        //if (!data.taxcode) {
-        //    args.preserve = true;
-        //    args.cancel = true;
-        //    alert("Please select tax code");
-        //    return;
-        //}
-        if (data.price_level == "0") {
+        if (data.price_level === "0") {
             args.preserve = true;
             args.cancel = true;
             alert("Please select price level");
@@ -680,13 +663,13 @@ var CreateContractUIManager = (function () {
             alert("Please select an item");
             return;
         }
-        if (parseInt(args.item.quantity) <= 0) {
+        if (parseInt(args.item.quantity, 10) <= 0) {
             args.preserve = true;
             args.cancel = true;
             alert("Quantity cannot be less than or equal to 0");
             return;
         }
-        if (args.item.price_level == "0") {
+        if (args.item.price_level === "0") {
             args.preserve = true;
             args.cancel = true;
             alert("Please select price level");
@@ -699,7 +682,7 @@ var CreateContractUIManager = (function () {
         var existingData = $("#jsGrid").data().JSGrid.data;
         var found = false;
         existingData.forEach(function (item) {
-            if (item.itemid == args.item.itemid) {
+            if (item.itemid === args.item.itemid) {
                 found = true;
             }
         });
@@ -721,7 +704,7 @@ var CreateContractUIManager = (function () {
         var $quantity = $tr.find(".quantity input");
         var $price = $tr.find(".price input");
         var isEditing = $tr.hasClass("jsgrid-edit-row");
-        var quantity = parseInt($quantity.val());
+        var quantity = parseInt($quantity.val(), 10);
         var price = parseFloat($price.val());
         var totalPrice = (price * quantity).toFixed(2);
         if (isEditing) {
@@ -757,7 +740,7 @@ var CreateContractUIManager = (function () {
         else {
             $priceTextbox.attr("disabled", "disabled");
             var selectedPriceLevel = _.find(priceLevels, function (priceLevel) {
-                return priceLevel.pricelevel == selectedPriceLevelId;
+                return priceLevel.pricelevel === selectedPriceLevelId;
             });
             if (!!suggestion && selectedPriceLevel != null) {
                 var discountPercent = Math.abs(parseFloat(selectedPriceLevel.discount || 0));
@@ -795,7 +778,7 @@ var CreateContractUIManager = (function () {
             $priceTextbox.attr("disabled", "disabled");
             var priceLevels = jsGridItem.priceLevels;
             var selectedPriceLevel = _.find(priceLevels, function (priceLevel) {
-                return priceLevel.pricelevel == selectedPriceLevelId;
+                return priceLevel.pricelevel === selectedPriceLevelId;
             });
             if (!!suggestion && selectedPriceLevel != null) {
                 var discountPercent = Math.abs(parseFloat(selectedPriceLevel.discount || 0));
@@ -834,28 +817,25 @@ var CreateContractUIManager = (function () {
      */
     CreateContractUIManager.prototype.bindItemPicker = function ($el) {
         var _this = this;
-        if (!$el.data('itempicker_created')) {
-            console.log('bind item picker control.', $el);
+        if (!$el.data("itempicker_created")) {
+            console.log("bind item picker control.", $el);
             var options = {
+                highlight: true,
                 hint: false,
-                minLength: 3,
-                highlight: true
+                minLength: 3
             };
             var dataSet = {
-                name: 'Items',
-                limit: 500,
                 display: function (obj) {
+                    obj.displayname = obj.custitem_long_name || obj.displayname || obj.itemid;
                     return obj.displayname;
                 },
+                name: "Items",
+                limit: 500,
                 source: function (q, s, a) {
                     _this.itemsPickerSource(q, s, a);
                 },
                 templates: {
-                    empty: [
-                        '<div class="empty-message">',
-                        'unable to find any items that match the current query',
-                        '</div>'
-                    ].join('\n')
+                    empty: "<div class=\"empty-message\">\n                        unable to find any items that match the current query\n                        </div>"
                 }
             };
             $el.typeahead(options, dataSet);
@@ -907,15 +887,15 @@ var CreateContractUIManager = (function () {
                     var quantity = 1; // default to 1
                     var listPriceId = 1; // default to 1
                     var price = parseFloat(suggestion.baseprice).toFixed(2);
-                    $tr.data('price-levels', priceLevels);
-                    $tr.find('.description textarea').val(suggestion.salesdescription);
-                    $tr.find('.quantity input').val(quantity);
-                    $tr.find('.price input').val(price);
-                    $tr.find('.quantity input').focus();
-                    $tr.find('.price-level select').val(listPriceId).focus().trigger('change');
+                    $tr.data("price-levels", priceLevels);
+                    $tr.find(".description textarea").val(suggestion.salesdescription);
+                    $tr.find(".quantity input").val(quantity);
+                    $tr.find(".price input").val(price);
+                    $tr.find(".quantity input").focus();
+                    $tr.find(".price-level select").val(listPriceId).focus().trigger("change");
                 });
             });
-            $el.data('itempicker_created', true);
+            $el.data("itempicker_created", true);
             $el.focus();
         }
     };

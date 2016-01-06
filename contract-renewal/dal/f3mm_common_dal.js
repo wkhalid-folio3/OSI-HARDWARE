@@ -63,6 +63,10 @@ var CommonDAL = (function (_super) {
                 }
                 queryFilters.push(["entityid", "contains", queryToSearch]);
             }
+            if (F3.Util.Utility.isBlankOrNull(options.customerId) === false) {
+                filters.push(["company", "anyof", options.customerId]);
+                filters.push("and");
+            }
         }
         filters.push(["isinactive", "is", "F"]);
         if (queryFilters.length > 0) {
@@ -194,17 +198,43 @@ var CommonDAL = (function (_super) {
             cols.push(new nlobjSearchColumn("baseprice"));
             cols.push(new nlobjSearchColumn("salesdescription"));
             cols.push(new nlobjSearchColumn("itemid"));
+            if (Config.IS_PROD === true) {
+                cols.push(new nlobjSearchColumn("custitem_long_name"));
+            }
+            var queryFilters = [];
             if (!!options) {
-                var query = options.query;
-                if (F3.Util.Utility.isBlankOrNull(query) === false) {
-                    filters.push(new nlobjSearchFilter("displayname", null, "startswith", query));
+                if (!!options.query) {
+                    var query = options.query;
+                    var queryToSearch = null;
+                    var splittedQuery = query.split(":");
+                    if (splittedQuery.length > 1) {
+                        queryToSearch = splittedQuery[splittedQuery.length - 1].trim();
+                    }
+                    else {
+                        queryToSearch = query.trim();
+                    }
+                    if (Config.IS_PROD === true) {
+                        queryFilters.push(["custitem_long_name", "startswith", queryToSearch]);
+                    }
+                    else {
+                        if (F3.Util.Utility.isBlankOrNull(query) === false) {
+                            queryFilters.push(["displayname", "startswith", queryToSearch]);
+                            queryFilters.push("or");
+                            queryFilters.push(["itemid", "contains", queryToSearch]);
+                        }
+                    }
                 }
                 var itemIds = options.itemIds;
                 if (!!itemIds && itemIds.length > 0) {
-                    filters.push(new nlobjSearchFilter("internalid", null, "anyof", itemIds));
+                    if (queryFilters.length > 0) {
+                        queryFilters.push("or");
+                    }
+                    queryFilters.push(["internalid", "anyof", itemIds]);
                 }
             }
-            filters.push(new nlobjSearchFilter("isinactive", null, "is", "F"));
+            filters.push(["isinactive", "is", "F"]);
+            filters.push("and");
+            filters.push(queryFilters);
             // load data from db
             result = this.getAll(filters, cols, "item");
         }

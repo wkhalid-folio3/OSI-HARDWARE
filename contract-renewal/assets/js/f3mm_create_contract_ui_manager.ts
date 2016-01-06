@@ -296,25 +296,24 @@ class CreateContractUIManager {
      */
     public bindPrimaryContactDropdown($contactsDropdown) {
 
-        if (!$contactsDropdown.data('itempicker_created')) {
+        if (!$contactsDropdown.data("itempicker_created")) {
 
-            var typeaheadOptions = {
+            let typeaheadOptions = {
+                highlight: true,
                 hint: false,
-                minLength: 3,
-                highlight: true
+                minLength: 3
             };
-            var contactsDataset = {
-                name: 'primary-contacts',
-                limit: 500,
+            let contactsDataset = {
                 display: (obj) => {
-                    var name = obj.entityid;
+                    let name = obj.entityid;
                     if (!!obj.company && !!obj.company.text) {
-                        name = obj.company.text + ' : ' + obj.entityid;
+                        name = obj.company.text + " : " + obj.entityid;
                     }
                     return name;
                 },
+                limit: 500,
+                name: "primary-contacts",
                 source: (query, sync, async) => {
-
                     setTimeout(() => {
                         this._dataManager.getPrimaryContacts({
                             query: query
@@ -322,18 +321,15 @@ class CreateContractUIManager {
                             try {
                                 async(contacts.data);
                             } catch (e) {
-                                console.error('ERROR', 'Error during async binding.', e.toString());
+                                console.error("ERROR", "Error during async binding.", e.toString());
                             }
                         });
                     }, 10);
-
                 },
                 templates: {
-                    empty: [
-                        '<div class="empty-message">',
-                        'unable to find any contacts that match the current query',
-                        '</div>'
-                    ].join('\n')
+                    empty: `<div class="empty-message">
+                        unable to find any contacts that match the current query
+                        </div>`
                 }
             };
 
@@ -341,12 +337,12 @@ class CreateContractUIManager {
             $contactsDropdown.bind('typeahead:change', function(ev, val) {
                 console.log('typeahead:change: ', arguments);
 
-                var $this = $(this);
+                let $this = $(this);
 
-                var selectedId = $this.attr('data-selected-id');
-                var selectedText = $this.attr('data-selected-text');
-                var text = selectedText;
-                var isMatched = text == val;
+                let selectedId = $this.attr('data-selected-id');
+                let selectedText = $this.attr('data-selected-text');
+                let text = selectedText;
+                let isMatched = text === val;
 
                 console.log('text: ', text);
                 console.log('val: ', val);
@@ -369,12 +365,12 @@ class CreateContractUIManager {
             }).bind('typeahead:select', function(ev, obj) {
                 console.log('typeahead:select: ', arguments);
 
-                var name = obj.entityid;
+                let name = obj.entityid;
                 if (!!obj.company && !!obj.company.text) {
                     name = obj.company.text + ' : ' + obj.entityid;
                 }
 
-                var $this = $(this);
+                let $this = $(this);
                 $this.attr('data-selected-id', obj.id);
                 $this.attr('data-selected-text', name);
 
@@ -396,12 +392,12 @@ class CreateContractUIManager {
 
         if (!$customerDropdown.data('itempicker_created')) {
 
-            var typeaheadOptions = {
+            let typeaheadOptions = {
                 hint: false,
                 minLength: 3,
                 highlight: true
             };
-            var customerDataset = {
+            let customerDataset = {
                 name: 'customers',
                 limit: 500,
                 display: (obj) => {
@@ -442,12 +438,12 @@ class CreateContractUIManager {
             $customerDropdown.bind('typeahead:change', function(ev, val) {
                 console.log('typeahead:change: ', arguments);
 
-                var $this = $(this);
+                let $this = $(this);
 
-                var selectedId = $this.attr('data-selected-id');
-                var selectedText = $this.attr('data-selected-text');
-                var text = selectedText;
-                var isMatched = text == val;
+                let selectedId = $this.attr('data-selected-id');
+                let selectedText = $this.attr('data-selected-text');
+                let text = selectedText;
+                let isMatched = text == val;
 
                 console.log('text: ', text);
                 console.log('val: ', val);
@@ -469,13 +465,13 @@ class CreateContractUIManager {
             }).bind('typeahead:select', function(ev, suggestion) {
                 console.log('typeahead:select: ', arguments);
 
-                var name = suggestion.isperson === 'T' ? (suggestion.firstname + ' ' + suggestion.lastname) : suggestion.companyname;
-                var text = suggestion.entityid;
+                let name = suggestion.isperson === 'T' ? (suggestion.firstname + ' ' + suggestion.lastname) : suggestion.companyname;
+                let text = suggestion.entityid;
                 if (!!suggestion.altname) {
                     text = text + ' ' + suggestion.altname;
                 }
 
-                var $this = $(this);
+                let $this = $(this);
                 $this.attr('data-selected-id', suggestion.id);
                 $this.attr('data-selected-text', text);
             });
@@ -498,12 +494,12 @@ class CreateContractUIManager {
 
             // make it async
             setTimeout(() => {
-                var select = document.getElementById('vendor');
+                let select = document.getElementById('vendor');
                 if (result.status_code === 200) {
 
                     // add each item on UI
                     $.each(result.data, function(i, item) {
-                        var name = item.isperson === 'T' ? (item.firstname + ' ' + item.lastname) : item.companyname;
+                        let name = item.isperson === 'T' ? (item.firstname + ' ' + item.lastname) : item.companyname;
                         if (!!name) {
                             select.options[select.options.length] = new Option(name, item.id);
                         }
@@ -519,12 +515,12 @@ class CreateContractUIManager {
 
             // make it async
             setTimeout(() => {
-                var select = document.getElementById('sales_rep');
+                let select = document.getElementById('sales_rep');
                 if (result.status_code === 200) {
 
                     // add each item on UI
                     $.each(result.data, function(i, item) {
-                        var name = (item.firstname + ' ' + item.lastname).trim();
+                        let name = (item.firstname + ' ' + item.lastname).trim();
                         if (!!name) {
                             select.options[select.options.length] = new Option(name, item.id);
                         }
@@ -539,12 +535,12 @@ class CreateContractUIManager {
 
             // make it async
             setTimeout(() => {
-                var select = document.getElementById('department');
+                let select = document.getElementById('department');
                 if (result.status_code === 200) {
 
                     // add each item on UI
                     $.each(result.data, function(i, item) {
-                        var name = item.name.trim();
+                        let name = item.name.trim();
                         if (!!name) {
                             select.options[select.options.length] = new Option(name, item.id);
                         }
@@ -556,11 +552,11 @@ class CreateContractUIManager {
         });
 
 
-        $(document.body).on('focusin', '.customer-dropdown', (ev) => {
+        $(document.body).on("focusin", ".customer-dropdown", (ev) => {
             this.bindCustomerDropdown($(ev.target));
         });
 
-        $(document.body).on('focusin', '.primary-contact-dropdown', (ev) => {
+        $(document.body).on("focusin", ".primary-contact-dropdown", (ev) => {
             this.bindPrimaryContactDropdown($(ev.target));
         });
 
@@ -577,7 +573,7 @@ class CreateContractUIManager {
         let quantities = _.pluck(existingData, "quantity");
 
         // calculate quantity from all items
-        let totalQuantitySeats = _.reduce(quantities, (memo, num) => memo + parseInt(num), 0);
+        let totalQuantitySeats = _.reduce(quantities, (memo, num) => memo + parseInt(num,10), 0);
 
         // set quantity in total quantity seats textbox
         $(".total-quantity-seats-text").val(totalQuantitySeats);
@@ -703,7 +699,7 @@ class CreateContractUIManager {
         }];
 
 
-        if (this._viewType !== 'view') {
+        if (this._viewType !== "view") {
             gridFields.push({
                 editButton: false,
                 modeSwitchButton: false,
@@ -723,12 +719,12 @@ class CreateContractUIManager {
     private onGridItemUpdating(args) {
         console.log('onItemUpdating: ', JSON.stringify(args.item));
 
-        var data = args.item;
+        let data = args.item;
         data.price = parseFloat(data.price).toFixed(2);
         data.amount = parseFloat(args.row.next().find('.amount').html()).toFixed(2);
 
-        var $updateRow = args.row.next();
-        var suggestion = $updateRow.data('data-selected-suggestion');
+        let $updateRow = args.row.next();
+        let suggestion = $updateRow.data('data-selected-suggestion');
 
         console.log('onItemUpdating: ', JSON.stringify(suggestion));
 
@@ -746,33 +742,18 @@ class CreateContractUIManager {
             return;
         }
 
-        if (parseInt(data.quantity) <= 0) {
+        if (parseInt(data.quantity, 10) <= 0) {
             args.cancel = true;
             alert("Quantity cannot be less than or equal to 0");
             return;
         }
 
-        //var taxCode = $updateRow.data('selected-tax-code');
-        //if (!!taxCode) {
-        //    data.taxcodeid = taxCode.id;
-        //    data.taxcode = taxCode.itemid;
-        //    data.taxrate = taxCode.rate + '%';
-        //}
-        //
-        //if (!data.taxcode) {
-        //    args.preserve = true;
-        //    args.cancel = true;
-        //    alert("Please select tax code");
-        //    return;
-        //}
-
-        if (data.price_level == "0") {
+        if (data.price_level === "0") {
             args.preserve = true;
             args.cancel = true;
             alert("Please select price level");
             return;
-        }
-        else {
+        } else {
             // make it string
             data.price_level = data.price_level + "";
         }
@@ -806,14 +787,14 @@ class CreateContractUIManager {
             return;
         }
 
-        if (parseInt(args.item.quantity) <= 0) {
+        if (parseInt(args.item.quantity, 10) <= 0) {
             args.preserve = true;
             args.cancel = true;
             alert("Quantity cannot be less than or equal to 0");
             return;
         }
 
-        if (args.item.price_level == "0") {
+        if (args.item.price_level === "0") {
             args.preserve = true;
             args.cancel = true;
             alert("Please select price level");
@@ -828,7 +809,7 @@ class CreateContractUIManager {
         let found = false;
 
         existingData.forEach(item => {
-            if (item.itemid == args.item.itemid) {
+            if (item.itemid === args.item.itemid) {
                 found = true;
             }
         });
@@ -854,7 +835,7 @@ class CreateContractUIManager {
         let $price = $tr.find(".price input");
 
         let isEditing = $tr.hasClass("jsgrid-edit-row");
-        let quantity = parseInt($quantity.val());
+        let quantity = parseInt($quantity.val(), 10);
         let price = parseFloat($price.val());
         let totalPrice = (price * quantity).toFixed(2);
 
@@ -893,7 +874,7 @@ class CreateContractUIManager {
             $priceTextbox.attr("disabled", "disabled");
 
             let selectedPriceLevel = _.find(priceLevels, priceLevel => {
-                return priceLevel.pricelevel == selectedPriceLevelId;
+                return priceLevel.pricelevel === selectedPriceLevelId;
             });
 
             if (!!suggestion && selectedPriceLevel != null) {
@@ -937,7 +918,7 @@ class CreateContractUIManager {
 
             let priceLevels: IPriceLevel[] = jsGridItem.priceLevels;
             let selectedPriceLevel = _.find(priceLevels, priceLevel => {
-                return priceLevel.pricelevel == selectedPriceLevelId;
+                return priceLevel.pricelevel === selectedPriceLevelId;
             });
 
             if (!!suggestion && selectedPriceLevel != null) {
@@ -986,31 +967,30 @@ class CreateContractUIManager {
      */
     private bindItemPicker($el) {
 
-        if (!$el.data('itempicker_created')) {
+        if (!$el.data("itempicker_created")) {
 
-            console.log('bind item picker control.', $el);
+            console.log("bind item picker control.", $el);
 
-            var options = {
+            let options = {
+                highlight: true,
                 hint: false,
-                minLength: 3,
-                highlight: true
+                minLength: 3
             };
 
-            var dataSet = {
-                name: 'Items',
-                limit: 500,
+            let dataSet = {
                 display: function(obj) {
+                    obj.displayname = obj.custitem_long_name || obj.displayname || obj.itemid;
                     return obj.displayname;
                 },
+                name: "Items",
+                limit: 500,
                 source: (q, s, a) => {
                     this.itemsPickerSource(q, s, a);
                 },
                 templates: {
-                    empty: [
-                        '<div class="empty-message">',
-                        'unable to find any items that match the current query',
-                        '</div>'
-                    ].join('\n')
+                    empty: `<div class="empty-message">
+                        unable to find any items that match the current query
+                        </div>`
                 }
 
             };
@@ -1019,12 +999,12 @@ class CreateContractUIManager {
             $el.bind('typeahead:change', function() {
                 console.log('typeahead:change: ', arguments);
 
-                var $this = $(this);
-                var $tr = $this.parents('tr:first');
-                var selectedId = $this.attr('data-selected-id');
-                var selectedText = $this.attr('data-selected-text');
-                var val = $this.val();
-                var isMatched = selectedText == val;
+                let $this = $(this);
+                let $tr = $this.parents('tr:first');
+                let selectedId = $this.attr('data-selected-id');
+                let selectedText = $this.attr('data-selected-text');
+                let val = $this.val();
+                let isMatched = selectedText == val;
 
                 console.log('selectedText: ', selectedText);
                 console.log('val: ', val);
@@ -1045,8 +1025,8 @@ class CreateContractUIManager {
 
             }).bind('typeahead:select', (ev, suggestion) => {
 
-                var $this = $(ev.target);
-                var $tr = $this.parents('tr:first');
+                let $this = $(ev.target);
+                let $tr = $this.parents('tr:first');
 
                 console.log('typeahead:select: ', arguments, $this);
 
@@ -1059,8 +1039,8 @@ class CreateContractUIManager {
                     itemId: suggestion.id
                 }, function(result) {
 
-                    var priceLevels = result.data;
-                    var $priceLevelDropdown = $tr.find('.price-level select');
+                    let priceLevels = result.data;
+                    let $priceLevelDropdown = $tr.find('.price-level select');
                     $priceLevelDropdown.empty();
 
                     _.each(priceLevels, priceLevel => {
@@ -1071,19 +1051,19 @@ class CreateContractUIManager {
                             .appendTo($priceLevelDropdown);
                     });
 
-                    var quantity = 1; // default to 1
-                    var listPriceId = 1; // default to 1
-                    var price = parseFloat(suggestion.baseprice).toFixed(2);
-                    $tr.data('price-levels', priceLevels);
-                    $tr.find('.description textarea').val(suggestion.salesdescription);
-                    $tr.find('.quantity input').val(quantity);
-                    $tr.find('.price input').val(price);
-                    $tr.find('.quantity input').focus();
-                    $tr.find('.price-level select').val(listPriceId).focus().trigger('change');
+                    let quantity = 1; // default to 1
+                    let listPriceId = 1; // default to 1
+                    let price = parseFloat(suggestion.baseprice).toFixed(2);
+                    $tr.data("price-levels", priceLevels);
+                    $tr.find(".description textarea").val(suggestion.salesdescription);
+                    $tr.find(".quantity input").val(quantity);
+                    $tr.find(".price input").val(price);
+                    $tr.find(".quantity input").focus();
+                    $tr.find(".price-level select").val(listPriceId).focus().trigger("change");
                 });
             });
 
-            $el.data('itempicker_created', true);
+            $el.data("itempicker_created", true);
 
             $el.focus();
         }
@@ -1219,7 +1199,7 @@ class CreateContractUIManager {
      */
     private applyValidation() {
 
-        var $form = $(".f3mm-contract-renewal").parents('form:first');
+        let $form = $(".f3mm-contract-renewal").parents('form:first');
         $form.removeAttr('onsubmit');
         $form.validate({
             rules: {

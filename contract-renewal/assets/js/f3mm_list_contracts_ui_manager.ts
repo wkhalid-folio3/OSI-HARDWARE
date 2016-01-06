@@ -345,6 +345,24 @@ class ListContractsUIManager {
      */
     public bindDropdown() {
 
+        // fill partners dropdown
+        this._dataManager.getVendors((result) => {
+            // make it async
+            setTimeout(() => {
+                var select = document.getElementById('vendor');
+                if (result.status_code === 200) {
+
+                    // add each item on UI
+                    $.each(result.data, function(i, item) {
+                        var name = item.isperson === 'T' ? (item.firstname + ' ' + item.lastname) : item.companyname;
+                        if (!!name) {
+                            select.options[select.options.length] = new Option(name, item.id);
+                        }
+                    });
+                }
+            }, 10);
+        });
+
         $(document.body).on("focusin", ".customer-dropdown", (ev) => {
             this.bindCustomerDropdown($(ev.target));
         });

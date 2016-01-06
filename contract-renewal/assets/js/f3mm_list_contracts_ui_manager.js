@@ -281,6 +281,22 @@ var ListContractsUIManager = (function () {
      */
     ListContractsUIManager.prototype.bindDropdown = function () {
         var _this = this;
+        // fill partners dropdown
+        this._dataManager.getVendors(function (result) {
+            // make it async
+            setTimeout(function () {
+                var select = document.getElementById('vendor');
+                if (result.status_code === 200) {
+                    // add each item on UI
+                    $.each(result.data, function (i, item) {
+                        var name = item.isperson === 'T' ? (item.firstname + ' ' + item.lastname) : item.companyname;
+                        if (!!name) {
+                            select.options[select.options.length] = new Option(name, item.id);
+                        }
+                    });
+                }
+            }, 10);
+        });
         $(document.body).on("focusin", ".customer-dropdown", function (ev) {
             _this.bindCustomerDropdown($(ev.target));
         });
