@@ -526,7 +526,8 @@ var ContractDAL = (function (_super) {
             throw new Error("contract cannot be null.");
         }
         var record = this.prepareDataToUpsert(contract);
-        var id = this.upsert(record);
+        var removeExistingLineItems = true;
+        var id = this.upsert(record, removeExistingLineItems);
         if (contract.is_renew === "on") {
             EmailHelper.sendRenewEmail(record);
         }

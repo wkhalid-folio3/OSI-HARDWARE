@@ -216,12 +216,13 @@ var CommonDAL = (function (_super) {
                     if (Config.IS_PROD === true) {
                         queryFilters.push(["custitem_long_name", "startswith", queryToSearch]);
                     }
-                    else {
-                        if (F3.Util.Utility.isBlankOrNull(query) === false) {
-                            queryFilters.push(["displayname", "startswith", queryToSearch]);
+                    if (F3.Util.Utility.isBlankOrNull(queryToSearch) === false) {
+                        if (queryFilters.length > 0) {
                             queryFilters.push("or");
-                            queryFilters.push(["itemid", "contains", queryToSearch]);
                         }
+                        queryFilters.push(["displayname", "startswith", queryToSearch]);
+                        queryFilters.push("or");
+                        queryFilters.push(["itemid", "contains", queryToSearch]);
                     }
                 }
                 var itemIds = options.itemIds;

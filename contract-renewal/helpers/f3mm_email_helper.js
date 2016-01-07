@@ -12,7 +12,7 @@ var EmailHelper = (function () {
             // TODO : need to fill email body with quote information
             // let quote = nlapiLoadRecord("estimate", quoteId);
             var fields = this._contractDAL.fields;
-            var emailEnabled = contract[fields.notificationOnRenewal.id] == "T";
+            var emailEnabled = contract[fields.notificationOnRenewal.id] === "T";
             if (emailEnabled === true) {
                 var customerId = contract[fields.customer.id].value;
                 var contractNumber = contract[fields.contractNumber.id];
@@ -34,7 +34,7 @@ var EmailHelper = (function () {
             // TODO : need to fill email body with quote information
             // let quote = nlapiLoadRecord("estimate", quoteId);
             var fields = this._contractDAL.fields;
-            var emailEnabled = contract[fields.notificationOnQuoteGenerate.id] == "T";
+            var emailEnabled = contract[fields.notificationOnQuoteGenerate.id] === "T";
             if (emailEnabled === true) {
                 var customerId = contract[fields.customer.id].value;
                 var contractNumber = contract[fields.contractNumber.id];

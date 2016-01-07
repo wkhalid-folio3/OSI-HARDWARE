@@ -60,8 +60,8 @@ var CreateContractUIManager = (function () {
         $("a[data-toggle='tab']").on("shown.bs.tab", function (e) {
             $("#history_grid").jsGrid("refresh");
         });
-        $('[data-toggle="popover"]').popover({
-            container: 'body',
+        $("[data-toggle='popover']").popover({
+            container: "body",
             html: true
         });
     }
@@ -94,10 +94,10 @@ var CreateContractUIManager = (function () {
                     amount: item.amount,
                     id: item.id,
                     item_id: item.itemid,
-                    price: item.price,
-                    quantity: item.quantity,
                     item_description: item.description,
-                    price_level: item.price_level
+                    price: item.price,
+                    price_level: item.price_level,
+                    quantity: item.quantity
                 });
             });
             if (serializedData.items.length <= 0) {
@@ -136,25 +136,19 @@ var CreateContractUIManager = (function () {
         var $grid = $("#history_grid");
         $grid.jsGrid({
             autoload: true,
-            editing: false,
-            filtering: false,
-            height: "auto",
-            inserting: false,
-            noDataContent: "No history.",
-            selecting: false,
-            sorting: true,
-            paging: false,
-            width: "100%",
             controller: {
                 loadData: function (filter) {
                     var historyItems = _this.prepareHistoryData();
                     return historyItems;
                 }
             },
+            editing: false,
             fields: [{
                     name: "date",
-                    sorter: function (date1, date2) {
-                        return new Date(date1) - new Date(date2);
+                    sorter: function (val1, val2) {
+                        var date1 = new Date(val1);
+                        var date2 = new Date(val2);
+                        return date1 - date2;
                     },
                     title: "Date",
                     type: "date",
@@ -187,7 +181,15 @@ var CreateContractUIManager = (function () {
                     title: "New Value",
                     type: "text",
                     width: 80
-                }]
+                }],
+            filtering: false,
+            height: "auto",
+            inserting: false,
+            noDataContent: "No history.",
+            paging: false,
+            selecting: false,
+            sorting: true,
+            width: "100%"
         });
     };
     /**
@@ -417,11 +419,11 @@ var CreateContractUIManager = (function () {
         this._dataManager.getVendors(function (result) {
             // make it async
             setTimeout(function () {
-                var select = document.getElementById('vendor');
+                var select = document.getElementById("vendor");
                 if (result.status_code === 200) {
                     // add each item on UI
                     $.each(result.data, function (i, item) {
-                        var name = item.isperson === 'T' ? (item.firstname + ' ' + item.lastname) : item.companyname;
+                        var name = item.isperson === "T" ? (item.firstname + " " + item.lastname) : item.companyname;
                         if (!!name) {
                             select.options[select.options.length] = new Option(name, item.id);
                         }
@@ -433,11 +435,11 @@ var CreateContractUIManager = (function () {
         this._dataManager.getEmployees(function (result) {
             // make it async
             setTimeout(function () {
-                var select = document.getElementById('sales_rep');
+                var select = document.getElementById("sales_rep");
                 if (result.status_code === 200) {
                     // add each item on UI
                     $.each(result.data, function (i, item) {
-                        var name = (item.firstname + ' ' + item.lastname).trim();
+                        var name = (item.firstname + " " + item.lastname).trim();
                         if (!!name) {
                             select.options[select.options.length] = new Option(name, item.id);
                         }
@@ -449,7 +451,7 @@ var CreateContractUIManager = (function () {
         this._dataManager.getDepartment(function (result) {
             // make it async
             setTimeout(function () {
-                var select = document.getElementById('department');
+                var select = document.getElementById("department");
                 if (result.status_code === 200) {
                     // add each item on UI
                     $.each(result.data, function (i, item) {
@@ -524,7 +526,7 @@ var CreateContractUIManager = (function () {
                             baseprice: contractItem.custrecord_f3mm_ci_item.baseprice,
                             description: contractItem.custrecord_f3mm_ci_item_description,
                             id: contractItem.id,
-                            item: contractItem.custrecord_f3mm_ci_item.text,
+                            item: contractItem.custrecord_f3mm_ci_item.itemid + " : " + contractItem.custrecord_f3mm_ci_item.displayname,
                             itemid: contractItem.custrecord_f3mm_ci_item.value,
                             price: contractItem.custrecord_f3mm_ci_price,
                             priceLevels: contractItem.custrecord_f3mm_ci_item.priceLevels,
@@ -605,15 +607,15 @@ var CreateContractUIManager = (function () {
      * @returns {void}
      */
     CreateContractUIManager.prototype.onGridItemUpdating = function (args) {
-        console.log('onItemUpdating: ', JSON.stringify(args.item));
+        console.log("onItemUpdating: ", JSON.stringify(args.item));
         var data = args.item;
         data.price = parseFloat(data.price).toFixed(2);
-        data.amount = parseFloat(args.row.next().find('.amount').html()).toFixed(2);
+        data.amount = parseFloat(args.row.next().find(".amount").html()).toFixed(2);
         var $updateRow = args.row.next();
-        var suggestion = $updateRow.data('data-selected-suggestion');
-        console.log('onItemUpdating: ', JSON.stringify(suggestion));
+        var suggestion = $updateRow.data("data-selected-suggestion");
+        console.log("onItemUpdating: ", JSON.stringify(suggestion));
         if (!!suggestion) {
-            data.item = suggestion.displayname;
+            data.item = suggestion.displaylabel;
             data.itemid = suggestion.id;
             data.description = suggestion.salesdescription;
             data.baseprice = suggestion.baseprice;
@@ -646,13 +648,13 @@ var CreateContractUIManager = (function () {
      * @returns {void}
      */
     CreateContractUIManager.prototype.onGridItemInserting = function (args) {
-        console.log('onItemInserting:', args);
-        var $row = $('.jsgrid-insert-row');
-        var suggestion = $row.data('data-selected-suggestion');
-        var priceLevels = $row.data('price-levels');
+        console.log("onItemInserting:", args);
+        var $row = $(".jsgrid-insert-row");
+        var suggestion = $row.data("data-selected-suggestion");
+        var priceLevels = $row.data("price-levels");
         args.item.priceLevels = priceLevels;
         if (!!suggestion) {
-            args.item.item = suggestion.displayname;
+            args.item.item = suggestion.displaylabel;
             args.item.itemid = suggestion.id;
             args.item.baseprice = suggestion.baseprice;
             args.item.description = suggestion.salesdescription;
@@ -797,7 +799,7 @@ var CreateContractUIManager = (function () {
      */
     CreateContractUIManager.prototype.itemsPickerSource = function (query, sync, async) {
         var _this = this;
-        console.log(this);
+        console.log("itemsPickerSource", arguments);
         setTimeout(function () {
             _this._dataManager.getItems({
                 query: query
@@ -819,6 +821,7 @@ var CreateContractUIManager = (function () {
         var _this = this;
         if (!$el.data("itempicker_created")) {
             console.log("bind item picker control.", $el);
+            var self_1 = this;
             var options = {
                 highlight: true,
                 hint: false,
@@ -826,56 +829,61 @@ var CreateContractUIManager = (function () {
             };
             var dataSet = {
                 display: function (obj) {
-                    obj.displayname = obj.custitem_long_name || obj.displayname || obj.itemid;
-                    return obj.displayname;
+                    // obj.displaylabel = obj.custitem_long_name || obj.displayname || obj.itemid;
+                    var labelFields = [];
+                    if (!!obj.itemid) {
+                        labelFields.push(obj.itemid);
+                    }
+                    if (!!obj.displayname) {
+                        labelFields.push(obj.displayname);
+                    }
+                    obj.displaylabel = labelFields.join(" : ");
+                    return obj.displaylabel;
                 },
-                name: "Items",
                 limit: 500,
+                name: "Items",
                 source: function (q, s, a) {
-                    _this.itemsPickerSource(q, s, a);
+                    console.log("dataSet.source", this);
+                    self_1.itemsPickerSource(q, s, a);
                 },
                 templates: {
                     empty: "<div class=\"empty-message\">\n                        unable to find any items that match the current query\n                        </div>"
                 }
             };
             $el.typeahead(options, dataSet);
-            $el.bind('typeahead:change', function () {
-                console.log('typeahead:change: ', arguments);
+            $el.bind("typeahead:change", function () {
+                console.log("typeahead:change: ", arguments);
                 var $this = $(this);
-                var $tr = $this.parents('tr:first');
-                var selectedId = $this.attr('data-selected-id');
-                var selectedText = $this.attr('data-selected-text');
+                var $tr = $this.parents("tr:first");
+                // let selectedId = $this.attr("data-selected-id");
+                var selectedText = $this.attr("data-selected-text");
                 var val = $this.val();
-                var isMatched = selectedText == val;
-                console.log('selectedText: ', selectedText);
-                console.log('val: ', val);
-                console.log('selectedText == val: ', selectedText == val);
+                var isMatched = selectedText === val;
                 if (!val) {
-                    $this.attr('data-selected-id', '');
-                    $this.attr('data-selected-text', '');
-                    $tr.data('data-selected-suggestion', null);
+                    $this.attr("data-selected-id", "");
+                    $this.attr("data-selected-text", "");
+                    $tr.data("data-selected-suggestion", null);
                 }
                 else {
                     // if it does not match,
                     // then remove the last selected value.
-                    if (isMatched == false) {
-                        $this.typeahead('val', selectedText);
-                        alert('Selected item does not exist.');
+                    if (isMatched === false) {
+                        $this.typeahead("val", selectedText);
+                        alert("Selected item does not exist.");
                     }
                 }
-            }).bind('typeahead:select', function (ev, suggestion) {
+            }).bind("typeahead:select", function (ev, suggestion) {
                 var $this = $(ev.target);
-                var $tr = $this.parents('tr:first');
-                console.log('typeahead:select: ', arguments, $this);
-                $this.attr('data-selected-id', suggestion.id);
-                $this.attr('data-selected-text', suggestion.displayname);
-                $tr.data('data-selected-suggestion', suggestion);
+                var $tr = $this.parents("tr:first");
+                $this.attr("data-selected-id", suggestion.id);
+                $this.attr("data-selected-text", suggestion.displaylabel);
+                $tr.data("data-selected-suggestion", suggestion);
                 _this._dataManager.getPriceLevels({
-                    recordType: suggestion.recordType,
-                    itemId: suggestion.id
+                    itemId: suggestion.id,
+                    recordType: suggestion.recordType
                 }, function (result) {
                     var priceLevels = result.data;
-                    var $priceLevelDropdown = $tr.find('.price-level select');
+                    var $priceLevelDropdown = $tr.find(".price-level select");
                     $priceLevelDropdown.empty();
                     _.each(priceLevels, function (priceLevel) {
                         console.log(priceLevel);
@@ -922,42 +930,42 @@ var CreateContractUIManager = (function () {
         return result;
     };
     CreateContractUIManager.prototype.openNewContactWindow = function () {
-        var url = '/app/common/entity/contact.nl?target=main:contact&label=Primary+Contact';
+        var url = "/app/common/entity/contact.nl?target=main:contact&label=Primary+Contact";
         // setSelectValue(document.forms['main_form'].elements['entity'], -1);
         // document.forms['main_form'].elements['entity_display'].value = '';
         // document.forms['main_form'].elements['entity_display'].isvalid = true;
         // NS.form.setValid(true);
         // Syncentity(true);
-        nlOpenWindow(url, '_blank', '');
+        nlOpenWindow(url, "_blank", "");
         return false;
     };
     CreateContractUIManager.prototype.openExistingContactWindow = function () {
         var selectValue = this.getSelectedContact();
         if (!!selectValue) {
-            nlOpenWindow('/app/common/entity/contact.nl?id=' + selectValue + '', '_blank', '');
+            nlOpenWindow("/app/common/entity/contact.nl?id=" + selectValue + "", "_blank", "");
         }
         else {
-            alert('Please choose an entry first.');
+            alert("Please choose an entry first.");
         }
         return false;
     };
     CreateContractUIManager.prototype.openNewCustomerWindow = function () {
-        var url = '/app/common/entity/custjob.nl?target=main:entity&label=Customer&stage=prospect';
+        var url = "/app/common/entity/custjob.nl?target=main:entity&label=Customer&stage=prospect";
         // setSelectValue(document.forms['main_form'].elements['entity'], -1);
         // document.forms['main_form'].elements['entity_display'].value = '';
         // document.forms['main_form'].elements['entity_display'].isvalid = true;
         // NS.form.setValid(true);
         // Syncentity(true);
-        nlOpenWindow(url, '_blank', '');
+        nlOpenWindow(url, "_blank", "");
         return false;
     };
     CreateContractUIManager.prototype.openExistingCustomerWindow = function () {
         var selectValue = this.getSelectedCustomer();
         if (!!selectValue) {
-            nlOpenWindow('/app/common/entity/custjob.nl?id=' + selectValue + '', '_blank', '');
+            nlOpenWindow("/app/common/entity/custjob.nl?id=" + selectValue + "", "_blank", "");
         }
         else {
-            alert('Please choose an entry first.');
+            alert("Please choose an entry first.");
         }
         return false;
     };
@@ -968,20 +976,18 @@ var CreateContractUIManager = (function () {
         var $endDateElement = $(".end-date-text").parent();
         var startDate = $startDateElement.datepicker("getDate");
         var endDate = null;
-        console.log('durationDropdownChanged(); // $dropdown: ', $dropdown);
-        console.log('durationDropdownChanged(); // selected: ', selected);
         if (!!startDate) {
-            if (selected == "1") {
+            if (selected === "1") {
                 endDate = startDate;
                 endDate.setMonth(startDate.getMonth() + 1); // add one month
                 endDate.setDate(endDate.getDate() - 1); // substract one day
             }
-            else if (selected == "2") {
+            else if (selected === "2") {
                 endDate = startDate;
                 endDate.setMonth(startDate.getMonth() + 3);
                 endDate.setDate(endDate.getDate() - 1); // substract one day
             }
-            else if (selected == "3") {
+            else if (selected === "3") {
                 endDate = startDate;
                 endDate.setMonth(startDate.getMonth() + 12);
                 endDate.setDate(endDate.getDate() - 1); // substract one day
@@ -1010,9 +1016,19 @@ var CreateContractUIManager = (function () {
      */
     CreateContractUIManager.prototype.applyValidation = function () {
         var _this = this;
-        var $form = $(".f3mm-contract-renewal").parents('form:first');
-        $form.removeAttr('onsubmit');
+        var $form = $(".f3mm-contract-renewal").parents("form:first");
+        $form.removeAttr("onsubmit");
         $form.validate({
+            errorPlacement: function ($error, $element) {
+                var $parent = $element.parent();
+                var isGroup = $parent.is(".input-group");
+                if (isGroup === true) {
+                    $parent.after($error);
+                }
+                else {
+                    $element.after($error);
+                }
+            },
             rules: {
                 contract_number: {
                     required: true
@@ -1020,39 +1036,26 @@ var CreateContractUIManager = (function () {
                 customer: {
                     requiredTypeahead: true
                 },
-                primary_contact: {
-                    requiredTypeahead: true
-                },
                 department: {
-                    required: true
-                },
-                //duration: {
-                //    required: true
-                //},
-                vendor: {
-                    required: true
-                },
-                sales_rep: {
-                    required: true
-                },
-                status: {
                     required: true
                 },
                 end_date: {
                     required: true
                 },
+                primary_contact: {
+                    requiredTypeahead: true
+                },
+                sales_rep: {
+                    required: true
+                },
                 start_date: {
                     required: true
-                }
-            },
-            errorPlacement: function ($error, $element) {
-                var $parent = $element.parent();
-                var isGroup = $parent.is('.input-group');
-                if (isGroup === true) {
-                    $parent.after($error);
-                }
-                else {
-                    $element.after($error);
+                },
+                status: {
+                    required: true
+                },
+                vendor: {
+                    required: true
                 }
             },
             submitHandler: function (form) {
@@ -1065,17 +1068,17 @@ var CreateContractUIManager = (function () {
      * Show Create / View / Edit Screen based on _viewType property
      */
     CreateContractUIManager.prototype.setViewMode = function () {
-        console.log('this.setViewMode(); // this._viewType: ', this._viewType);
-        if (this._viewType == 'view') {
-            $('.form-horizontal :input, .input-group.date').attr('disabled', 'disabled');
-            $('.form-actions').hide();
-            $('.view-contract-action-buttons').show();
-            $('.view-horizontal').show();
+        console.log("this.setViewMode(); // this._viewType: ", this._viewType);
+        if (this._viewType === "view") {
+            $(".form-horizontal :input, .input-group.date").attr("disabled", "disabled");
+            $(".form-actions").hide();
+            $(".view-contract-action-buttons").show();
+            $(".view-horizontal").show();
         }
         else {
-            $('.form-actions').show();
-            $('.view-contract-action-buttons').hide();
-            $('.form-horizontal').show();
+            $(".form-actions").show();
+            $(".view-contract-action-buttons").hide();
+            $(".form-horizontal").show();
         }
     };
     /**
@@ -1159,62 +1162,62 @@ var CreateContractUIManager = (function () {
      * @returns {void}
      */
     CreateContractUIManager.prototype.bindEditScreen = function (contract) {
-        var $form = $('.form-horizontal');
-        $('.contract-number-text', $form).val(contract.custrecord_f3mm_contract_number);
-        $('.po-number-text', $form).val(contract.custrecord_f3mm_po_number);
-        $('.system-id-text', $form).val(contract.custrecord_f3mm_system_id);
+        var $form = $(".form-horizontal");
+        $(".contract-number-text", $form).val(contract.custrecord_f3mm_contract_number);
+        $(".po-number-text", $form).val(contract.custrecord_f3mm_po_number);
+        $(".system-id-text", $form).val(contract.custrecord_f3mm_system_id);
         if (!!contract.id) {
-            $('.form-group-is-renew').show();
+            $(".form-group-is-renew").show();
         }
         else {
-            $('.form-group-is-renew').hide();
+            $(".form-group-is-renew").hide();
         }
         if (!!contract.custrecord_f3mm_sales_rep) {
-            $('.sales-rep-dropdown', $form).val(contract.custrecord_f3mm_sales_rep.value);
+            $(".sales-rep-dropdown", $form).val(contract.custrecord_f3mm_sales_rep.value);
         }
         if (!!contract.custrecord_f3mm_contract_vendor) {
-            $('.vendor-dropdown', $form).val(contract.custrecord_f3mm_contract_vendor.value);
+            $(".vendor-dropdown", $form).val(contract.custrecord_f3mm_contract_vendor.value);
         }
         if (!!contract.custrecord_f3mm_status) {
-            $('.status-dropdown', $form).val(contract.custrecord_f3mm_status.value);
+            $(".status-dropdown", $form).val(contract.custrecord_f3mm_status.value);
         }
-        $('.total-quantity-seats-text', $form).val(contract.custrecord_f3mm_total_qty_seats);
+        $(".total-quantity-seats-text", $form).val(contract.custrecord_f3mm_total_qty_seats);
         if (!!contract.custrecord_f3mm_department) {
-            $('.department-dropdown', $form).val(contract.custrecord_f3mm_department.value);
+            $(".department-dropdown", $form).val(contract.custrecord_f3mm_department.value);
         }
-        $('.memo-text', $form).val(contract.custrecord_f3mm_memo);
+        $(".memo-text", $form).val(contract.custrecord_f3mm_memo);
         if (!!contract.custrecord_f3mm_customer) {
-            $('.customer-dropdown', $form)
-                .attr('data-selected-id', contract.custrecord_f3mm_customer.value)
-                .attr('data-selected-text', contract.custrecord_f3mm_customer.text)
+            $(".customer-dropdown", $form)
+                .attr("data-selected-id", contract.custrecord_f3mm_customer.value)
+                .attr("data-selected-text", contract.custrecord_f3mm_customer.text)
                 .val(contract.custrecord_f3mm_customer.text);
         }
         if (!!contract.custrecord_f3mm_primary_contact) {
-            $('.primary-contact-dropdown', $form)
-                .attr('data-selected-id', contract.custrecord_f3mm_primary_contact.value)
-                .attr('data-selected-text', contract.custrecord_f3mm_primary_contact.text)
+            $(".primary-contact-dropdown", $form)
+                .attr("data-selected-id", contract.custrecord_f3mm_primary_contact.value)
+                .attr("data-selected-text", contract.custrecord_f3mm_primary_contact.text)
                 .val(contract.custrecord_f3mm_primary_contact.text);
             if (!!contract.custrecord_f3mm_primary_contact_email) {
-                $('.primary-contact-email-text', $form).val(contract.custrecord_f3mm_primary_contact_email);
+                $(".primary-contact-email-text", $form).val(contract.custrecord_f3mm_primary_contact_email);
             }
         }
-        if (this._viewType == 'view') {
+        if (this._viewType === "view") {
             if (!!contract.custrecord_f3mm_start_date) {
-                $('.start-date-text', $form).val(contract.custrecord_f3mm_start_date);
+                $(".start-date-text", $form).val(contract.custrecord_f3mm_start_date);
             }
             if (!!contract.custrecord_f3mm_end_date) {
-                $('.end-date-text', $form).val(contract.custrecord_f3mm_end_date);
+                $(".end-date-text", $form).val(contract.custrecord_f3mm_end_date);
             }
         }
         else {
             if (!!contract.custrecord_f3mm_contract_duration) {
-                $('.duration-dropdown', $form).val(contract.custrecord_f3mm_contract_duration.value);
+                $(".duration-dropdown", $form).val(contract.custrecord_f3mm_contract_duration.value);
             }
             if (!!contract.custrecord_f3mm_start_date) {
-                $('.start-date-text', $form).parent().datepicker('setDate', contract.custrecord_f3mm_start_date);
+                $(".start-date-text", $form).parent().datepicker("setDate", contract.custrecord_f3mm_start_date);
             }
             if (!!contract.custrecord_f3mm_end_date) {
-                $('.end-date-text', $form).parent().datepicker('setDate', contract.custrecord_f3mm_end_date);
+                $(".end-date-text", $form).parent().datepicker("setDate", contract.custrecord_f3mm_end_date);
             }
         }
     };
@@ -1223,11 +1226,11 @@ var CreateContractUIManager = (function () {
      * @returns {void}
      */
     CreateContractUIManager.prototype.bindDatePicker = function () {
-        if (this._viewType !== 'view') {
-            $('.input-group.date').not('[disabled]').datepicker({
-                format: "m/d/yyyy",
+        if (this._viewType !== "view") {
+            $(".input-group.date").not("[disabled]").datepicker({
+                autoclose: true,
                 clearBtn: true,
-                autoclose: true
+                format: "m/d/yyyy"
             });
         }
     };

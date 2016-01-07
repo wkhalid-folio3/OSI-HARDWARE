@@ -125,6 +125,10 @@ tr.modified-item {
     box-shadow: 0 5px 10px rgba(0,0,0,.2);
 }
 
+td.item .tt-menu {
+    width: 540px;
+}
+
 .tt-suggestion {
     padding: 3px 20px;
     /*font-size: 18px;*/
@@ -147,6 +151,10 @@ tr.modified-item {
 .tt-menu .empty-message {
     padding: 5px 10px;
     text-align: center;
+}
+
+td.item .tt-menu .empty-message {
+    text-align: left;
 }
 
 .tt-suggestion p {

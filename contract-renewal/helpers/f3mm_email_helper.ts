@@ -8,16 +8,16 @@
 
 class EmailHelper {
 
-    private static _contractDAL:ContractDAL = new ContractDAL();
+    private static _contractDAL: ContractDAL = new ContractDAL();
 
-    public static sendRenewEmail(contract:any) {
+    public static sendRenewEmail(contract: any) {
 
 
         try {
             // TODO : need to fill email body with quote information
             // let quote = nlapiLoadRecord("estimate", quoteId);
             let fields = this._contractDAL.fields;
-            let emailEnabled = contract[fields.notificationOnRenewal.id] == "T";
+            let emailEnabled = contract[fields.notificationOnRenewal.id] === "T";
 
             if (emailEnabled === true) {
                 let customerId = contract[fields.customer.id].value;
@@ -38,13 +38,13 @@ class EmailHelper {
         }
     }
 
-    public static sendQuoteGenerationEmail(contract:any, quoteId:string) {
+    public static sendQuoteGenerationEmail(contract: any, quoteId: string) {
 
         try {
             // TODO : need to fill email body with quote information
             // let quote = nlapiLoadRecord("estimate", quoteId);
             let fields = this._contractDAL.fields;
-            let emailEnabled = contract[fields.notificationOnQuoteGenerate.id] == "T";
+            let emailEnabled = contract[fields.notificationOnQuoteGenerate.id] === "T";
 
             if (emailEnabled === true) {
                 let customerId = contract[fields.customer.id].value;
@@ -65,7 +65,7 @@ class EmailHelper {
         }
     }
 
-    public static sendExpiredEmail(contract:any) {
+    public static sendExpiredEmail(contract: any) {
 
         try {
             let fields = this._contractDAL.fields;
@@ -86,7 +86,7 @@ class EmailHelper {
         }
     }
 
-    public static sendReminderEmail(contract:any, daysRemaining:number) {
+    public static sendReminderEmail(contract: any, daysRemaining: number) {
 
         try {
             let fields = this._contractDAL.fields;
