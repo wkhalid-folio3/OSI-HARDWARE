@@ -246,6 +246,21 @@ var CommonDAL = (function (_super) {
         return result;
     };
     /**
+     * Get Disccount Items from database
+     * @param {object?} options
+     * @returns {object[]} array of discount items
+     */
+    CommonDAL.prototype.getDiscountItems = function (options) {
+        var filters = [];
+        var cols = [];
+        cols.push(new nlobjSearchColumn("itemid"));
+        // cols.push(new nlobjSearchColumn("rate"));
+        filters.push(new nlobjSearchFilter("isinactive", null, "is", "F"));
+        // filters.push(new nlobjSearchFilter("custentity_f3mm_show_vendor_on_contract", null, "is", "T"));
+        var result = this.getAll(filters, cols, "discountitem");
+        return result;
+    };
+    /**
      * Get Vendors from database
      * @param {object?} options
      * @returns {object[]} array of vendors

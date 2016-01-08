@@ -135,6 +135,9 @@ class CreateContractAPISuitelet {
                 case "get_contacts":
                     executedActionResult = commonDAL.getContacts(params);
                     break;
+                case "get_discountitems":
+                    executedActionResult = commonDAL.getDiscountItems(params);
+                    break;
                 case "get_vendors":
                     executedActionResult = commonDAL.getVendors(params);
                     break;

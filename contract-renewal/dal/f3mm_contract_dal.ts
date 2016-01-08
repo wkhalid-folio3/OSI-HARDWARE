@@ -44,6 +44,10 @@ class ContractDAL extends BaseDAL {
             id: "custrecord_f3mm_department",
             type: "list"
         },
+        discountItemId: {
+            id: "custrecord_f3mm_discount_item_id",
+            type: "number"
+        },
         duration: {
             id: "custrecord_f3mm_contract_duration",
             type: "list"
@@ -660,6 +664,7 @@ class ContractDAL extends BaseDAL {
         record[this.fields.notificationOnExpiration.id] = contract.notification_expiration === "on" ? "T" : "F";
         record[this.fields.notificationOnQuoteGenerate.id] = contract.notification_quote_generation === "on" ? "T" : "F";
         record[this.fields.notificationOnRenewal.id] = contract.notification_renewal === "on" ? "T" : "F";
+        record[this.fields.discountItemId.id] = contract.discount;
 
         if (!!contract.items) {
 

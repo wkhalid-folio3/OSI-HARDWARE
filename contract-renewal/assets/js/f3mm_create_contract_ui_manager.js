@@ -391,22 +391,22 @@ var CreateContractUIManager = (function () {
                     // if it does not match,
                     // then remove the last selected value.
                     if (isMatched == false) {
-                        $this.typeahead('val', selectedText);
-                        alert('Selected customer does not exist.');
+                        $this.typeahead("val", selectedText);
+                        alert("Selected customer does not exist.");
                     }
                 }
-            }).bind('typeahead:select', function (ev, suggestion) {
-                console.log('typeahead:select: ', arguments);
-                var name = suggestion.isperson === 'T' ? (suggestion.firstname + ' ' + suggestion.lastname) : suggestion.companyname;
+            }).bind("typeahead:select", function (ev, suggestion) {
+                console.log("typeahead:select: ", arguments);
+                var name = suggestion.isperson === "T" ? (suggestion.firstname + " " + suggestion.lastname) : suggestion.companyname;
                 var text = suggestion.entityid;
                 if (!!suggestion.altname) {
-                    text = text + ' ' + suggestion.altname;
+                    text = text + " " + suggestion.altname;
                 }
                 var $this = $(this);
-                $this.attr('data-selected-id', suggestion.id);
-                $this.attr('data-selected-text', text);
+                $this.attr("data-selected-id", suggestion.id);
+                $this.attr("data-selected-text", text);
             });
-            $customerDropdown.data('itempicker_created', true);
+            $customerDropdown.data("itempicker_created", true);
             $customerDropdown.focus();
         }
     };
@@ -427,6 +427,20 @@ var CreateContractUIManager = (function () {
                         if (!!name) {
                             select.options[select.options.length] = new Option(name, item.id);
                         }
+                    });
+                }
+                _this.loaded();
+            }, 10);
+        });
+        // fill partners dropdown
+        this._dataManager.getDiscountItems(function (result) {
+            // make it async
+            setTimeout(function () {
+                var select = document.getElementById("discount");
+                if (result.status_code === 200) {
+                    // add each item on UI
+                    $.each(result.data, function (i, item) {
+                        select.options[select.options.length] = new Option(item.itemid, item.id);
                     });
                 }
                 _this.loaded();
