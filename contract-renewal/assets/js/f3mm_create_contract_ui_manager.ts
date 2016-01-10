@@ -520,8 +520,14 @@ class CreateContractUIManager {
                 let select = document.getElementById("discount");
                 if (result.status_code === 200) {
 
+                    let discountItemId = this._contractInfo.custrecord_f3mm_discount_item_id;
+
                     // add each item on UI
-                    $.each(result.data, function(i, item) {
+                    $.each(result.data, (i, item) => {
+                        if ( item.id === discountItemId) {
+                            this._contractInfo.custrecord_f3mm_discount_item_text = item.itemid;
+                        }
+
                         select.options[select.options.length] = new Option(item.itemid, item.id);
                     });
                 }
@@ -1323,6 +1329,12 @@ class CreateContractUIManager {
         this._loadedCount++;
         console.log("this.loaded();", this._loadedCount);
 
+        // donot go ahead before 2
+        if (this._loadedCount < 3) {
+            return;
+        }
+
+
         let contract = this._contractInfo;
 
         if (!contract) {
@@ -1402,6 +1414,7 @@ class CreateContractUIManager {
         }
 
         $(".total-quantity-seats-text", $form).val(contract.custrecord_f3mm_total_qty_seats);
+        $(".discount-dropdown", $form).val(contract.custrecord_f3mm_discount_item_id);
 
         if (!!contract.custrecord_f3mm_department) {
             $(".department-dropdown", $form).val(contract.custrecord_f3mm_department.value);

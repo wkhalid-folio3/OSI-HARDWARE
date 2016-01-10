@@ -344,6 +344,7 @@ var ContractDAL = (function (_super) {
             quote.setFieldValue("custbody_estimate_end_user", contract[this.fields.primaryContact.id].value);
             quote.setFieldValue("custbody_end_user_email", contract[this.fields.primaryContactEmail.id]);
             quote.setFieldValue("memo", contract[this.fields.memo.id]);
+            quote.setFieldValue("discountitem", contract[this.fields.discountItemId.id]);
             var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
             if (!!contractItems) {
                 contractItems.forEach(function (contractItem) {
