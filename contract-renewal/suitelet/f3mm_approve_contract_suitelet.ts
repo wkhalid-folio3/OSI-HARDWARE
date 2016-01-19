@@ -39,7 +39,7 @@ class ApproveContractSuitelet {
                     ContractStatus.PENDING_CUSTOMER_APPROVAL,
                     ContractStatus.APPROVED
                 ]
-            }
+            };
         } else {
             options = {
                 sales_rep: userId,
@@ -48,7 +48,7 @@ class ApproveContractSuitelet {
                     ContractStatus.PENDING_CUSTOMER_APPROVAL,
                     ContractStatus.APPROVED
                 ]
-            }
+            };
         }
 
         let pendingContracts = contractDAL.search(options).records;

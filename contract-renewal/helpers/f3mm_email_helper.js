@@ -16,6 +16,11 @@ var EmailHelper = (function () {
             if (emailEnabled === true) {
                 var customerId = contract[fields.customer.id].value;
                 var contractNumber = contract[fields.contractNumber.id];
+                var vendorId = contract[fields.contractVendor.id].value;
+                var emailTemplate = this._commonDAL.getEmailTemplate(vendorId);
+                if (!emailTemplate) {
+                    emailTemplate = this._commonDAL.getDefaultEmailTemplate();
+                }
                 if (!!customerId) {
                     var subject = "Contract # " + contractNumber + " has been renewed";
                     var body = "blah blah blah";
@@ -86,6 +91,7 @@ var EmailHelper = (function () {
         }
     };
     EmailHelper._contractDAL = new ContractDAL();
+    EmailHelper._commonDAL = new CommonDAL();
     return EmailHelper;
 })();
 //# sourceMappingURL=f3mm_email_helper.js.map

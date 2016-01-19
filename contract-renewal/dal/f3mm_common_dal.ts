@@ -90,14 +90,49 @@ class CommonDAL extends BaseDAL {
         let filters = [];
         let cols = [];
 
-        cols.push(new nlobjSearchColumn('firstname'));
-        cols.push(new nlobjSearchColumn('lastname'));
-        cols.push(new nlobjSearchColumn('email'));
+        cols.push(new nlobjSearchColumn("firstname"));
+        cols.push(new nlobjSearchColumn("lastname"));
+        cols.push(new nlobjSearchColumn("email"));
 
-        filters.push(new nlobjSearchFilter('salesrep', null, 'is', 'T'));
-        filters.push(new nlobjSearchFilter('isinactive', null, 'is', 'F'));
+        filters.push(new nlobjSearchFilter("salesrep", null, "is", "T"));
+        filters.push(new nlobjSearchFilter("isinactive", null, "is", "F"));
 
-        let result = this.getAll(filters, cols, 'employee');
+        let result = this.getAll(filters, cols, "employee");
+
+        return result;
+    }
+
+
+    /**
+     * Gets / Searches employees with specified query from database
+     * @param {object?} options
+     * @returns {object[]} array of employees searched from database
+     */
+    public getDefaultEmailTemplate() {
+        return this.getEmailTemplate(null);
+    }
+
+    /**
+     * Gets / Searches employees with specified query from database
+     * @param {object?} options
+     * @returns {object[]} array of employees searched from database
+     */
+    public getEmailTemplate(vendorId?) {
+
+        let filters = [];
+        let cols = [];
+
+        cols.push(new nlobjSearchColumn("custrecord_f3mm_vendor"));
+        cols.push(new nlobjSearchColumn("custrecord_f3mm_template"));
+
+        if ( !!vendorId) {
+            filters.push(new nlobjSearchFilter("custrecord_f3mm_vendor", null, "anyof", vendorId));
+        } else {
+            filters.push(new nlobjSearchFilter("custrecord_f3mm_vendor", null, "isempty"));
+        }
+        filters.push(new nlobjSearchFilter("isinactive", null, "is", "F"));
+
+        let result = this.getAll(filters, cols, "customrecord_f3mm_vendor_template_maping");
 
         return result;
     }
@@ -112,9 +147,9 @@ class CommonDAL extends BaseDAL {
 
         // Check the features enabled in the account. See Pricing Sublist Feature Dependencies for
         // details on why this is important.
-        let multiCurrency = nlapiGetContext().getFeature('MULTICURRENCY');
-        let multiPrice = nlapiGetContext().getFeature('MULTPRICE');
-        let quantityPricing = nlapiGetContext().getFeature('QUANTITYPRICING');
+        let multiCurrency = nlapiGetContext().getFeature("MULTICURRENCY");
+        let multiPrice = nlapiGetContext().getFeature("MULTPRICE");
+        let quantityPricing = nlapiGetContext().getFeature("QUANTITYPRICING");
         let priceID = "";
 
         // Set the ID for the sublist and the price field. Note that if all pricing-related features

@@ -9,6 +9,7 @@
 class EmailHelper {
 
     private static _contractDAL: ContractDAL = new ContractDAL();
+    private static _commonDAL: CommonDAL = new CommonDAL();
 
     public static sendRenewEmail(contract: any) {
 
@@ -22,6 +23,13 @@ class EmailHelper {
             if (emailEnabled === true) {
                 let customerId = contract[fields.customer.id].value;
                 let contractNumber = contract[fields.contractNumber.id];
+                let vendorId = contract[fields.contractVendor.id].value;
+                let emailTemplate = this._commonDAL.getEmailTemplate(vendorId);
+
+                if (!emailTemplate) {
+                    emailTemplate = this._commonDAL.getDefaultEmailTemplate();
+                }
+
                 if (!!customerId) {
 
                     let subject = `Contract # ${contractNumber} has been renewed`;
