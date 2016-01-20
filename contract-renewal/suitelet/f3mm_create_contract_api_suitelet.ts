@@ -106,7 +106,7 @@ class CreateContractAPISuitelet {
             status_code: 200
         };
 
-        nlapiLogExecution("DEBUG", "title", null);
+        //nlapiLogExecution("DEBUG", "title", null);
 
         try {
 
@@ -121,7 +121,7 @@ class CreateContractAPISuitelet {
                     // setting transaction in email merge
                     emailMerger.setCustomRecord("customrecord_f3mm_contract", "21");
                     let mergeResult = emailMerger.merge();
-                    let emailSubject = "test subject";
+                    let emailSubject = mergeResult.getSubject();
                     let emailBody = mergeResult.getBody();
                     let sender = "-5";
                     nlapiSendEmail(sender, customerId, emailSubject, emailBody, null, null, null, null);

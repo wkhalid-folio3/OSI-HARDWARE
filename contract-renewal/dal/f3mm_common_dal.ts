@@ -1,5 +1,7 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /// <reference path="./f3mm_base_dal.ts" />
+/// <reference path="../helpers/f3mm_contract_status_enum.ts" />
+
 /**
  * Created by zshaikh on 11/19/2015.
  * -
@@ -108,8 +110,8 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of employees searched from database
      */
-    public getDefaultEmailTemplate() {
-        return this.getEmailTemplate(null);
+    public getDefaultEmailTemplate(type: ContractNotificationType) {
+        return this.getEmailTemplate(type, null);
     }
 
     /**
@@ -117,13 +119,15 @@ class CommonDAL extends BaseDAL {
      * @param {object?} options
      * @returns {object[]} array of employees searched from database
      */
-    public getEmailTemplate(vendorId?) {
+    public getEmailTemplate(type: ContractNotificationType, vendorId?) {
 
         let filters = [];
         let cols = [];
 
         cols.push(new nlobjSearchColumn("custrecord_f3mm_vendor"));
         cols.push(new nlobjSearchColumn("custrecord_f3mm_template"));
+
+        filters.push(new nlobjSearchFilter("custrecord_notification_type", null, "anyof", type));
 
         if ( !!vendorId) {
             filters.push(new nlobjSearchFilter("custrecord_f3mm_vendor", null, "anyof", vendorId));

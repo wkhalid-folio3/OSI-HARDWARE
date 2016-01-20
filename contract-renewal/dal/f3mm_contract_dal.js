@@ -534,7 +534,8 @@ var ContractDAL = (function (_super) {
         var removeExistingLineItems = true;
         var id = this.upsert(record, removeExistingLineItems);
         if (contract.is_renew === "on") {
-            EmailHelper.sendRenewEmail(record);
+            var updatedRecord = this.getWithDetails(id);
+            EmailHelper.sendRenewEmail(updatedRecord);
         }
         var result = {
             id: id

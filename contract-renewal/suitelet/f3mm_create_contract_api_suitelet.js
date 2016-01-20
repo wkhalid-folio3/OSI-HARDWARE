@@ -71,7 +71,7 @@ var CreateContractAPISuitelet = (function () {
             status: "OK",
             status_code: 200
         };
-        nlapiLogExecution("DEBUG", "title", null);
+        //nlapiLogExecution("DEBUG", "title", null);
         try {
             var executedActionResult = null;
             var actionExecuted = true;
@@ -83,7 +83,7 @@ var CreateContractAPISuitelet = (function () {
                     // setting transaction in email merge
                     emailMerger.setCustomRecord("customrecord_f3mm_contract", "21");
                     var mergeResult = emailMerger.merge();
-                    var emailSubject = "test subject";
+                    var emailSubject = mergeResult.getSubject();
                     var emailBody = mergeResult.getBody();
                     var sender = "-5";
                     nlapiSendEmail(sender, customerId, emailSubject, emailBody, null, null, null, null);

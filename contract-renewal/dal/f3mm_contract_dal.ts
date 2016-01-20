@@ -623,7 +623,8 @@ class ContractDAL extends BaseDAL {
         let id = this.upsert(record, removeExistingLineItems);
 
         if (contract.is_renew === "on") {
-            EmailHelper.sendRenewEmail(record);
+            let updatedRecord = this.getWithDetails(id);
+            EmailHelper.sendRenewEmail(updatedRecord);
         }
 
         let result = {

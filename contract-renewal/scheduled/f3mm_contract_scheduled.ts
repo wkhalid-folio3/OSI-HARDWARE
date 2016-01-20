@@ -79,9 +79,8 @@ class ContractScheduled {
                     let contractId = this._contractDAL.upsert(record);
                     F3.Util.Utility.logDebug("contract expired: ", contractId);
 
-                    if (contract.custrecord_f3mm_notif_on_expiration === "T") {
-                        EmailHelper.sendExpiredEmail(contract);
-                    }
+                    EmailHelper.sendExpiredEmail(contract);
+
                 }
             }
         }

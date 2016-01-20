@@ -1,10 +1,11 @@
+/// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
+/// <reference path="./f3mm_base_dal.ts" />
+/// <reference path="../helpers/f3mm_contract_status_enum.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-/// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
-/// <reference path="./f3mm_base_dal.ts" />
 /**
  * Created by zshaikh on 11/19/2015.
  * -
@@ -100,19 +101,20 @@ var CommonDAL = (function (_super) {
      * @param {object?} options
      * @returns {object[]} array of employees searched from database
      */
-    CommonDAL.prototype.getDefaultEmailTemplate = function () {
-        return this.getEmailTemplate(null);
+    CommonDAL.prototype.getDefaultEmailTemplate = function (type) {
+        return this.getEmailTemplate(type, null);
     };
     /**
      * Gets / Searches employees with specified query from database
      * @param {object?} options
      * @returns {object[]} array of employees searched from database
      */
-    CommonDAL.prototype.getEmailTemplate = function (vendorId) {
+    CommonDAL.prototype.getEmailTemplate = function (type, vendorId) {
         var filters = [];
         var cols = [];
         cols.push(new nlobjSearchColumn("custrecord_f3mm_vendor"));
         cols.push(new nlobjSearchColumn("custrecord_f3mm_template"));
+        filters.push(new nlobjSearchFilter("custrecord_notification_type", null, "anyof", type));
         if (!!vendorId) {
             filters.push(new nlobjSearchFilter("custrecord_f3mm_vendor", null, "anyof", vendorId));
         }
