@@ -8,102 +8,107 @@
 
 class EmailHelper {
 
-    private static _contractDAL:ContractDAL = new ContractDAL();
+    private static _contractDAL: ContractDAL = new ContractDAL();
+    private static _commonDAL: CommonDAL = new CommonDAL();
 
-    public static sendRenewEmail(contract:any) {
-
-
-        try {
-            // TODO : need to fill email body with quote information
-            // let quote = nlapiLoadRecord("estimate", quoteId);
-            let fields = this._contractDAL.fields;
-            let emailEnabled = contract[fields.notificationOnRenewal.id] == "T";
-
-            if (emailEnabled === true) {
-                let customerId = contract[fields.customer.id].value;
-                let contractNumber = contract[fields.contractNumber.id];
-                if (!!customerId) {
-
-                    let subject = `Contract # ${contractNumber} has been renewed`;
-                    let body = `blah blah blah`;
-
-                    F3.Util.Utility.logDebug("Email sending...", subject);
-                    nlapiSendEmail(Config.FROM_EMAIL_ID, customerId, subject, body);
-                    F3.Util.Utility.logDebug("Email sent", `Email sent to customer id: ${customerId}`);
-                }
-            }
-
-        } catch (e) {
-            F3.Util.Utility.logException("Error in getting email", e.toString());
-        }
-    }
-
-    public static sendQuoteGenerationEmail(contract:any, quoteId:string) {
+    public static sendRenewEmail(contract: any) {
+        F3.Util.Utility.logDebug("EmailHelper.sendRenewEmail(); // START", null);
+        F3.Util.Utility.logDebug("EmailHelper.sendRenewEmail(); // contract:", JSON.stringify(contract));
 
         try {
             // TODO : need to fill email body with quote information
             // let quote = nlapiLoadRecord("estimate", quoteId);
             let fields = this._contractDAL.fields;
-            let emailEnabled = contract[fields.notificationOnQuoteGenerate.id] == "T";
+            let emailEnabled = contract[fields.notificationOnRenewal.id] === "T";
 
             if (emailEnabled === true) {
-                let customerId = contract[fields.customer.id].value;
-                let contractNumber = contract[fields.contractNumber.id];
-                if (!!customerId) {
-
-                    let subject = `Quote # ${quoteId} has been generated from Contract # ${contractNumber}.`;
-                    let body = `blah blah blah`;
-
-                    F3.Util.Utility.logDebug("Email sending...", subject);
-                    nlapiSendEmail(Config.FROM_EMAIL_ID, customerId, subject, body);
-                    F3.Util.Utility.logDebug("Email sent", `Email sent to customer id: ${customerId}`);
-                }
+                this.sendEmail(contract, ContractNotificationType.CONTRACT_RENEWAL);
             }
 
         } catch (e) {
-            F3.Util.Utility.logException("Error in getting email", e.toString());
+            F3.Util.Utility.logException("EmailHelper.sendRenewEmail();", e.toString());
         }
+
+        F3.Util.Utility.logDebug("EmailHelper.sendRenewEmail(); // END", null);
     }
 
-    public static sendExpiredEmail(contract:any) {
+    public static sendQuoteGenerationEmail(contract: any, quoteId: string) {
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // START", null);
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // contract:", JSON.stringify(contract));
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // quoteId:", quoteId);
 
         try {
             let fields = this._contractDAL.fields;
-            let customerId = contract[fields.customer.id].value;
-            let contractNumber = contract[fields.contractNumber.id];
-            if (!!customerId) {
+            let emailEnabled = contract[fields.notificationOnQuoteGenerate.id] === "T";
 
-                let subject = `Contract # ${contractNumber} has been expired.`;
-                let body = `blah blah blah`;
-
-                F3.Util.Utility.logDebug("Email sending...", subject);
-                nlapiSendEmail(Config.FROM_EMAIL_ID, customerId, subject, body);
-                F3.Util.Utility.logDebug("Email sent", `Email sent to customer id: ${customerId}`);
+            if (emailEnabled === true) {
+                this.sendEmail(contract, ContractNotificationType.QUOTE_GENERATION, quoteId);
             }
 
         } catch (e) {
-            F3.Util.Utility.logException("Error in getting email", e.toString());
+            F3.Util.Utility.logException("EmailHelper.sendQuoteGenerationEmail();", e.toString());
         }
+
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // END", null);
     }
 
-    public static sendReminderEmail(contract:any, daysRemaining:number) {
+    public static sendExpiredEmail(contract: any) {
+        F3.Util.Utility.logDebug("EmailHelper.sendExpiredEmail(); // START", null);
+        F3.Util.Utility.logDebug("EmailHelper.sendExpiredEmail(); // contract:", JSON.stringify(contract));
 
         try {
             let fields = this._contractDAL.fields;
-            let customerId = contract[fields.customer.id].value;
-            let contractNumber = contract[fields.contractNumber.id];
-            if (!!customerId) {
+            let emailEnabled = contract[fields.notificationOnExpiration.id] === "T";
+            if (emailEnabled === true) {
+                this.sendEmail(contract, ContractNotificationType.CONTRACT_EXPIRATION);
+            }
+        } catch (e) {
+            F3.Util.Utility.logException("EmailHelper.sendExpiredEmail();", e.toString());
+        }
 
-                let subject = `Contract # ${contractNumber} is expiring after ${daysRemaining} days`;
-                let body = `blah blah blah`;
+        F3.Util.Utility.logDebug("EmailHelper.sendExpiredEmail(); // END", null);
+    }
 
-                F3.Util.Utility.logDebug("Email sending...", subject);
-                nlapiSendEmail(Config.FROM_EMAIL_ID, customerId, subject, body);
-                F3.Util.Utility.logDebug("Email sent", `Email sent to customer id: ${customerId}`);
+    public static sendReminderEmail(contract: any, daysRemaining: number) {
+        F3.Util.Utility.logDebug("EmailHelper.sendReminderEmail(); // START", null);
+        F3.Util.Utility.logDebug("EmailHelper.sendReminderEmail(); // contract:", JSON.stringify(contract));
+
+        try {
+            this.sendEmail(contract, ContractNotificationType.CONTRACT_REMINDER);
+        } catch (e) {
+
+            F3.Util.Utility.logException("EmailHelper.sendReminderEmail();", e.toString());
+        }
+
+        F3.Util.Utility.logDebug("EmailHelper.sendReminderEmail(); // END", null);
+    }
+
+    private static sendEmail(contract: any, type: ContractNotificationType, quoteId?) {
+        let fields = this._contractDAL.fields;
+        let customerId = contract[fields.customer.id].value;
+        let vendorId = contract[fields.contractVendor.id].value;
+
+        if (!!customerId) {
+            let templateMapping = this._commonDAL.getEmailTemplate(type, vendorId)[0];
+
+            if (!templateMapping) {
+                templateMapping = this._commonDAL.getDefaultEmailTemplate(type)[0];
             }
 
-        } catch (e) {
-            F3.Util.Utility.logException("Error in getting email", e.toString());
+            F3.Util.Utility.logDebug("Email sending...", JSON.stringify(templateMapping));
+            let emailMerger = nlapiCreateEmailMerger(templateMapping.custrecord_f3mm_template.value);
+
+            // setting custom record in email merge
+            emailMerger.setCustomRecord("customrecord_f3mm_contract", contract.id);
+            if (!!quoteId) {
+                emailMerger.setTransaction(quoteId);
+            }
+
+            let mergeResult = emailMerger.merge();
+            let emailSubject = mergeResult.getSubject();
+            let emailBody = mergeResult.getBody();
+            nlapiSendEmail(Config.FROM_EMAIL_ID, customerId, emailSubject, emailBody);
+            F3.Util.Utility.logDebug("Email sent", `Email sent to customer id: ${customerId}`);
         }
     }
 }

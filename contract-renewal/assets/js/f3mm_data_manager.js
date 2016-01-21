@@ -36,6 +36,22 @@ var DataManager = (function () {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
+    DataManager.prototype.getDiscountItemsFromServer = function (callback) {
+        var data = {
+            "action": "get_discountitems"
+        };
+        return jQuery.get(this._serverUrl, data, function (result) {
+            console.log("getVendorsFromServer(); // jquery complete: ", arguments);
+            if (!!callback) {
+                callback(result);
+            }
+        });
+    };
+    /**
+     * Get Vendors from server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
     DataManager.prototype.getVendorsFromServer = function (callback) {
         var data = {
             "action": "get_vendors"
@@ -173,6 +189,26 @@ var DataManager = (function () {
         catch (e) {
             console.error('ERROR', 'Error during main DataManager.getItems()', e.toString());
             callback && callback(null);
+        }
+    };
+    /**
+     * Get Vendors from cache or server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
+    DataManager.prototype.getDiscountItems = function (callback) {
+        var cacheKey = this._cachePrefix + "discountitems";
+        var data = $.jStorage.get(cacheKey);
+        if (!!data) {
+            callback && callback(data);
+        }
+        else {
+            return this.getDiscountItemsFromServer(function (data) {
+                $.jStorage.set(cacheKey, data, {
+                    TTL: this._cacheTime
+                });
+                callback && callback(data);
+            });
         }
     };
     /**

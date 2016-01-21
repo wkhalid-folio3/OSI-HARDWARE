@@ -106,7 +106,7 @@ class CreateContractAPISuitelet {
             status_code: 200
         };
 
-        nlapiLogExecution("DEBUG", "title", null);
+        //nlapiLogExecution("DEBUG", "title", null);
 
         try {
 
@@ -114,6 +114,18 @@ class CreateContractAPISuitelet {
             let actionExecuted = true;
 
             switch (action) {
+                case "send_email":
+                    // we are using scriptable template to send email
+                    let emailMerger = nlapiCreateEmailMerger(27);
+                    let customerId = "1213";
+                    // setting transaction in email merge
+                    emailMerger.setCustomRecord("customrecord_f3mm_contract", "21");
+                    let mergeResult = emailMerger.merge();
+                    let emailSubject = mergeResult.getSubject();
+                    let emailBody = mergeResult.getBody();
+                    let sender = "-5";
+                    nlapiSendEmail(sender, customerId, emailSubject, emailBody, null, null, null, null);
+                    break;
                 case "get_contracts":
                     executedActionResult = contractDAL.search(params);
                     break;
@@ -122,6 +134,9 @@ class CreateContractAPISuitelet {
                     break;
                 case "get_contacts":
                     executedActionResult = commonDAL.getContacts(params);
+                    break;
+                case "get_discountitems":
+                    executedActionResult = commonDAL.getDiscountItems(params);
                     break;
                 case "get_vendors":
                     executedActionResult = commonDAL.getVendors(params);

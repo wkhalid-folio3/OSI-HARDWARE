@@ -9,3 +9,11 @@ enum ContractStatus {
     EXPIRED = 4,
     VOID = 5,
 }
+
+
+enum ContractNotificationType {
+    QUOTE_GENERATION = 1,
+    CONTRACT_REMINDER,
+    CONTRACT_EXPIRATION,
+    CONTRACT_RENEWAL
+}

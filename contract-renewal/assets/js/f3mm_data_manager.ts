@@ -42,6 +42,27 @@ class DataManager {
      * @param {function} callback callback function to receive data in
      * @returns {void}
      */
+    private getDiscountItemsFromServer(callback) {
+
+        let data = {
+            "action": "get_discountitems"
+        };
+        return jQuery.get(this._serverUrl, data, (result) => {
+            console.log("getVendorsFromServer(); // jquery complete: ", arguments);
+
+            if (!!callback) {
+                callback(result);
+            }
+
+        });
+
+    }
+
+    /**
+     * Get Vendors from server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
     private getVendorsFromServer(callback) {
 
         let data = {
@@ -224,6 +245,31 @@ class DataManager {
 
             callback && callback(null);
         }
+    }
+
+    /**
+     * Get Vendors from cache or server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
+    public getDiscountItems(callback) {
+
+        let cacheKey = this._cachePrefix + "discountitems";
+        let data = $.jStorage.get(cacheKey);
+
+        if (!!data) {
+            callback && callback(data);
+        } else {
+            return this.getDiscountItemsFromServer(function(data) {
+
+                $.jStorage.set(cacheKey, data, {
+                    TTL: this._cacheTime
+                });
+
+                callback && callback(data);
+            });
+        }
+
     }
 
     /**

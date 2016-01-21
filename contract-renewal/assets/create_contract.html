@@ -254,6 +254,20 @@
                                     </div>
                                 </div>
 
+
+                                <div class="form-group">
+                                    <label for="status" class="control-label">Discount <span
+                                            class="mandatory">*</span></label>
+
+                                    <div class="">
+                                        <select class="form-control discount-dropdown"
+                                                id="discount"
+                                                name="discount">
+                                            <option value="" selected="selected"></option>
+                                        </select>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -387,84 +401,92 @@
 
 
 
-                                        <div class="form-group">
-                                            <label for="notification_days" class="control-label">Days Prior to expiration, email to be sent</label>
-                                            <div class="">
-                                                <input type="number" class="form-control notification-days-text"
-                                                       id="notification_days"
-                                                       name="notification_days"/>
-                                            </div>
-                                        </div>
+                                <div class="form-group">
+                                    <label for="notification_days" class="control-label">Days Prior to expiration, email to be sent</label>
+                                    <div class="">
+                                        <input type="number" class="form-control notification-days-text"
+                                               id="notification_days"
+                                               name="notification_days"
+                                                style="width: 120px;" />
+                                    </div>
+                                </div>
+
+                                <br>
+
+                                <b>SEND EMAIL BEFORE:</b>
+                                <div class="checkbox">
+                                    <div class="">
+                                        <label for="notification_5_days">
+                                            <input type="checkbox" class="notification-5-days"
+                                                   id="notification_5_days"
+                                                   name="notification_5_days" />
+                                            5 days of contract expiration
+                                        </label>
+                                    </div>
+                                </div>
 
 
-                                        <div class="checkbox">
-                                            <div class="">
-                                                <label for="notification_5_days">
-                                                    <input type="checkbox" class="notification-5-days"
-                                                           id="notification_5_days"
-                                                           name="notification_5_days" />
-                                                    Send email before 5 days of contract expiration
-                                                </label>
-                                            </div>
-                                        </div>
+                                <div class="checkbox">
+                                    <div class="">
+                                        <label for="notification_3_days">
+                                            <input type="checkbox" class="notification-3-days"
+                                                   id="notification_3_days"
+                                                   name="notification_3_days" />
+                                            3 days of contract expiration
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="checkbox">
+                                    <div class="">
+                                        <label for="notification_1_day">
+                                            <input type="checkbox" class="notification-1-day"
+                                                   id="notification_1_day"
+                                                   name="notification_1_day" />
+                                            1 day of contract expiration
+                                        </label>
+                                    </div>
+                                </div>
 
 
-                                        <div class="checkbox">
-                                            <div class="">
-                                                <label for="notification_3_days">
-                                                    <input type="checkbox" class="notification-3-days"
-                                                           id="notification_3_days"
-                                                           name="notification_3_days" />
-                                                    Send email before 3 days of contract expiration
-                                                </label>
-                                            </div>
-                                        </div>
 
-                                        <div class="checkbox">
-                                            <div class="">
-                                                <label for="notification_1_day">
-                                                    <input type="checkbox" class="notification-1-day"
-                                                           id="notification_1_day"
-                                                           name="notification_1_day" />
-                                                    Send email before 1 day of contract expiration
-                                                </label>
-                                            </div>
-                                        </div>
+                                <br>
+
+                                <b>SEND EMAIL ON:</b>
+
+                                <div class="checkbox">
+                                    <div class="">
+                                        <label for="notification_expiration">
+                                            <input type="checkbox" class="notification-expiration"
+                                                   id="notification_expiration"
+                                                   name="notification_expiration" />
+                                            contract expiration
+                                        </label>
+                                    </div>
+                                </div>
 
 
-                                        <div class="checkbox">
-                                            <div class="">
-                                                <label for="notification_expiration">
-                                                    <input type="checkbox" class="notification-expiration"
-                                                           id="notification_expiration"
-                                                           name="notification_expiration" />
-                                                    Send email on contract expiration
-                                                </label>
-                                            </div>
-                                        </div>
+                                <div class="checkbox">
+                                    <div class="">
+                                        <label for="notification_renewal">
+                                            <input type="checkbox" class="notification-renewal"
+                                                   id="notification_renewal"
+                                                   name="notification_renewal" />
+                                            Contract Renewal
+                                        </label>
+                                    </div>
+                                </div>
 
-
-                                        <div class="checkbox">
-                                            <div class="">
-                                                <label for="notification_renewal">
-                                                    <input type="checkbox" class="notification-renewal"
-                                                           id="notification_renewal"
-                                                           name="notification_renewal" />
-                                                    Send email on Contract Renewal
-                                                </label>
-                                            </div>
-                                        </div>
-
-                                        <div class="checkbox">
-                                            <div class="">
-                                                <label for="notification_quote_generation">
-                                                    <input type="checkbox" class="notification-quote-generation"
-                                                           id="notification_quote_generation"
-                                                           name="notification_quote_generation" />
-                                                    Send email on Quote Generation
-                                                </label>
-                                            </div>
-                                        </div>
+                                <div class="checkbox">
+                                    <div class="">
+                                        <label for="notification_quote_generation">
+                                            <input type="checkbox" class="notification-quote-generation"
+                                                   id="notification_quote_generation"
+                                                   name="notification_quote_generation" />
+                                            Quote Generation
+                                        </label>
+                                    </div>
+                                </div>
 
 
                             </div>
@@ -596,6 +618,14 @@
                             </div>
                         </div>
 
+                        <div class="form-group">
+                            <label class="control-label">Discount</label>
+
+                            <div class="">
+                                {{= typeof (custrecord_f3mm_discount_item_text) === 'undefined' ? '' : custrecord_f3mm_discount_item_text }}
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -656,7 +686,7 @@
 
     <!-- All Scripts should go below -->
     <script>
-        document.title = "{{ title }}".replace('<i class="fa fa-file-text-o"></i>', '');
+        document.title = "{{ title }}".replace("<i class='fa fa-file-text-o'></i>", "");
         window.$ = (window.NS && window.NS.jQuery) || window.jQuery;
         window.pageType = '{{ type }}';
         window.apiSuiteletUrl = '{{ apiSuiteletUrl }}';

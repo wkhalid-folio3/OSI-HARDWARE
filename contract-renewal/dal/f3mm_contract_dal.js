@@ -50,6 +50,10 @@ var ContractDAL = (function (_super) {
                 id: "custrecord_f3mm_department",
                 type: "list"
             },
+            discountItemId: {
+                id: "custrecord_f3mm_discount_item_id",
+                type: "number"
+            },
             duration: {
                 id: "custrecord_f3mm_contract_duration",
                 type: "list"
@@ -285,6 +289,9 @@ var ContractDAL = (function (_super) {
             if (!F3.Util.Utility.isBlankOrNull(params.sales_rep)) {
                 filters.push(new nlobjSearchFilter(this.fields.salesRep.id, null, "anyof", params.sales_rep));
             }
+            if (!F3.Util.Utility.isBlankOrNull(params.vendor)) {
+                filters.push(new nlobjSearchFilter(this.fields.contractVendor.id, null, "anyof", params.vendor));
+            }
             // exclude deleted & inactive records
             filters.push(new nlobjSearchFilter("isinactive", null, "is", params.isinactive === true ? "T" : "F"));
         }
@@ -337,6 +344,7 @@ var ContractDAL = (function (_super) {
             quote.setFieldValue("custbody_estimate_end_user", contract[this.fields.primaryContact.id].value);
             quote.setFieldValue("custbody_end_user_email", contract[this.fields.primaryContactEmail.id]);
             quote.setFieldValue("memo", contract[this.fields.memo.id]);
+            quote.setFieldValue("discountitem", contract[this.fields.discountItemId.id]);
             var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
             if (!!contractItems) {
                 contractItems.forEach(function (contractItem) {
@@ -523,9 +531,11 @@ var ContractDAL = (function (_super) {
             throw new Error("contract cannot be null.");
         }
         var record = this.prepareDataToUpsert(contract);
-        var id = this.upsert(record);
+        var removeExistingLineItems = true;
+        var id = this.upsert(record, removeExistingLineItems);
         if (contract.is_renew === "on") {
-            EmailHelper.sendRenewEmail(record);
+            var updatedRecord = this.getWithDetails(id);
+            EmailHelper.sendRenewEmail(updatedRecord);
         }
         var result = {
             id: id
@@ -563,6 +573,7 @@ var ContractDAL = (function (_super) {
         record[this.fields.notificationOnExpiration.id] = contract.notification_expiration === "on" ? "T" : "F";
         record[this.fields.notificationOnQuoteGenerate.id] = contract.notification_quote_generation === "on" ? "T" : "F";
         record[this.fields.notificationOnRenewal.id] = contract.notification_renewal === "on" ? "T" : "F";
+        record[this.fields.discountItemId.id] = contract.discount;
         if (!!contract.items) {
             var contractItemsSublist = {
                 internalId: "recmachcustrecord_f3mm_ci_contract",

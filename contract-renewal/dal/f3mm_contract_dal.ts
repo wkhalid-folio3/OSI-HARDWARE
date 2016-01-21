@@ -44,6 +44,10 @@ class ContractDAL extends BaseDAL {
             id: "custrecord_f3mm_department",
             type: "list"
         },
+        discountItemId: {
+            id: "custrecord_f3mm_discount_item_id",
+            type: "number"
+        },
         duration: {
             id: "custrecord_f3mm_contract_duration",
             type: "list"
@@ -309,6 +313,10 @@ class ContractDAL extends BaseDAL {
                 filters.push(new nlobjSearchFilter(this.fields.salesRep.id, null, "anyof", params.sales_rep));
             }
 
+            if (!F3.Util.Utility.isBlankOrNull(params.vendor)) {
+                filters.push(new nlobjSearchFilter(this.fields.contractVendor.id, null, "anyof", params.vendor));
+            }
+
             // exclude deleted & inactive records
             filters.push(new nlobjSearchFilter("isinactive", null, "is", params.isinactive === true ? "T" : "F"));
         }
@@ -377,6 +385,7 @@ class ContractDAL extends BaseDAL {
             quote.setFieldValue("custbody_estimate_end_user", contract[this.fields.primaryContact.id].value);
             quote.setFieldValue("custbody_end_user_email", contract[this.fields.primaryContactEmail.id]);
             quote.setFieldValue("memo", contract[this.fields.memo.id]);
+            quote.setFieldValue("discountitem", contract[this.fields.discountItemId.id]);
 
             let contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
             if (!!contractItems) {
@@ -610,10 +619,12 @@ class ContractDAL extends BaseDAL {
 
         let record = this.prepareDataToUpsert(contract);
 
-        let id = this.upsert(record);
+        let removeExistingLineItems = true;
+        let id = this.upsert(record, removeExistingLineItems);
 
-        if( contract.is_renew === "on") {
-            EmailHelper.sendRenewEmail(record);
+        if (contract.is_renew === "on") {
+            let updatedRecord = this.getWithDetails(id);
+            EmailHelper.sendRenewEmail(updatedRecord);
         }
 
         let result = {
@@ -655,6 +666,7 @@ class ContractDAL extends BaseDAL {
         record[this.fields.notificationOnExpiration.id] = contract.notification_expiration === "on" ? "T" : "F";
         record[this.fields.notificationOnQuoteGenerate.id] = contract.notification_quote_generation === "on" ? "T" : "F";
         record[this.fields.notificationOnRenewal.id] = contract.notification_renewal === "on" ? "T" : "F";
+        record[this.fields.discountItemId.id] = contract.discount;
 
         if (!!contract.items) {
 

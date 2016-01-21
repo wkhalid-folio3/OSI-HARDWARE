@@ -81,8 +81,8 @@ class CreateContractUIManager {
             $("#history_grid").jsGrid("refresh");
         });
 
-        $('[data-toggle="popover"]').popover({
-            container: 'body',
+        $("[data-toggle='popover']").popover({
+            container: "body",
             html: true
         });
     }
@@ -123,10 +123,10 @@ class CreateContractUIManager {
                     amount: item.amount,
                     id: item.id,
                     item_id: item.itemid,
-                    price: item.price,
-                    quantity: item.quantity,
                     item_description: item.description,
-                    price_level: item.price_level
+                    price: item.price,
+                    price_level: item.price_level,
+                    quantity: item.quantity
                 });
             });
 
@@ -145,9 +145,9 @@ class CreateContractUIManager {
                 console.log('submit success:', result);
 
                 if (!!result.data) {
-                    var uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
-                    var uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
-                    var uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
+                    let uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
+                    let uiSuiteletDeploymentId = 'customdeploy_f3mm_create_contract_ui_st';
+                    let uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
                     uiSuiteletUrl = uiSuiteletUrl + '&cid=' + result.data.id;
 
                     window.location.href = uiSuiteletUrl;
@@ -174,25 +174,19 @@ class CreateContractUIManager {
         let $grid = $("#history_grid");
         $grid.jsGrid({
             autoload: true,
-            editing: false,
-            filtering: false,
-            height: "auto",
-            inserting: false,
-            noDataContent: "No history.",
-            selecting: false,
-            sorting: true,
-            paging: false,
-            width: "100%",
             controller: {
                 loadData: (filter) => {
                     let historyItems = this.prepareHistoryData();
                     return historyItems;
                 }
             },
+            editing: false,
             fields: [{
                 name: "date",
-                sorter: function(date1, date2) {
-                    return new Date(date1) - new Date(date2);
+                sorter: function(val1, val2) {
+                    let date1 = new Date(val1);
+                    let date2 = new Date(val2);
+                    return date1 - date2;
                 },
                 title: "Date",
                 type: "date",
@@ -225,7 +219,15 @@ class CreateContractUIManager {
                 title: "New Value",
                 type: "text",
                 width: 80
-            }]
+            }],
+            filtering: false,
+            height: "auto",
+            inserting: false,
+            noDataContent: "No history.",
+            paging: false,
+            selecting: false,
+            sorting: true,
+            width: "100%"
         });
 
     }
@@ -296,25 +298,24 @@ class CreateContractUIManager {
      */
     public bindPrimaryContactDropdown($contactsDropdown) {
 
-        if (!$contactsDropdown.data('itempicker_created')) {
+        if (!$contactsDropdown.data("itempicker_created")) {
 
-            var typeaheadOptions = {
+            let typeaheadOptions = {
+                highlight: true,
                 hint: false,
-                minLength: 3,
-                highlight: true
+                minLength: 3
             };
-            var contactsDataset = {
-                name: 'primary-contacts',
-                limit: 500,
+            let contactsDataset = {
                 display: (obj) => {
-                    var name = obj.entityid;
+                    let name = obj.entityid;
                     if (!!obj.company && !!obj.company.text) {
-                        name = obj.company.text + ' : ' + obj.entityid;
+                        name = obj.company.text + " : " + obj.entityid;
                     }
                     return name;
                 },
+                limit: 500,
+                name: "primary-contacts",
                 source: (query, sync, async) => {
-
                     setTimeout(() => {
                         this._dataManager.getPrimaryContacts({
                             query: query
@@ -322,18 +323,15 @@ class CreateContractUIManager {
                             try {
                                 async(contacts.data);
                             } catch (e) {
-                                console.error('ERROR', 'Error during async binding.', e.toString());
+                                console.error("ERROR", "Error during async binding.", e.toString());
                             }
                         });
                     }, 10);
-
                 },
                 templates: {
-                    empty: [
-                        '<div class="empty-message">',
-                        'unable to find any contacts that match the current query',
-                        '</div>'
-                    ].join('\n')
+                    empty: `<div class="empty-message">
+                        unable to find any contacts that match the current query
+                        </div>`
                 }
             };
 
@@ -341,12 +339,12 @@ class CreateContractUIManager {
             $contactsDropdown.bind('typeahead:change', function(ev, val) {
                 console.log('typeahead:change: ', arguments);
 
-                var $this = $(this);
+                let $this = $(this);
 
-                var selectedId = $this.attr('data-selected-id');
-                var selectedText = $this.attr('data-selected-text');
-                var text = selectedText;
-                var isMatched = text == val;
+                let selectedId = $this.attr('data-selected-id');
+                let selectedText = $this.attr('data-selected-text');
+                let text = selectedText;
+                let isMatched = text === val;
 
                 console.log('text: ', text);
                 console.log('val: ', val);
@@ -369,12 +367,12 @@ class CreateContractUIManager {
             }).bind('typeahead:select', function(ev, obj) {
                 console.log('typeahead:select: ', arguments);
 
-                var name = obj.entityid;
+                let name = obj.entityid;
                 if (!!obj.company && !!obj.company.text) {
                     name = obj.company.text + ' : ' + obj.entityid;
                 }
 
-                var $this = $(this);
+                let $this = $(this);
                 $this.attr('data-selected-id', obj.id);
                 $this.attr('data-selected-text', name);
 
@@ -396,19 +394,19 @@ class CreateContractUIManager {
 
         if (!$customerDropdown.data('itempicker_created')) {
 
-            var typeaheadOptions = {
+            let typeaheadOptions = {
                 hint: false,
                 minLength: 3,
                 highlight: true
             };
-            var customerDataset = {
+            let customerDataset = {
                 name: 'customers',
                 limit: 500,
                 display: (obj) => {
-                    var isPerson = obj.isperson === 'T';
-                    var name = isPerson ? (obj.firstname + ' ' + obj.lastname) : obj.companyname;
+                    let isPerson = obj.isperson === 'T';
+                    let name = isPerson ? (obj.firstname + ' ' + obj.lastname) : obj.companyname;
 
-                    var text = obj.entityid;
+                    let text = obj.entityid;
                     if (!!obj.altname) {
                         text = text + ' ' + obj.altname;
                     }
@@ -442,12 +440,12 @@ class CreateContractUIManager {
             $customerDropdown.bind('typeahead:change', function(ev, val) {
                 console.log('typeahead:change: ', arguments);
 
-                var $this = $(this);
+                let $this = $(this);
 
-                var selectedId = $this.attr('data-selected-id');
-                var selectedText = $this.attr('data-selected-text');
-                var text = selectedText;
-                var isMatched = text == val;
+                let selectedId = $this.attr('data-selected-id');
+                let selectedText = $this.attr('data-selected-text');
+                let text = selectedText;
+                let isMatched = text == val;
 
                 console.log('text: ', text);
                 console.log('val: ', val);
@@ -460,28 +458,28 @@ class CreateContractUIManager {
                     // if it does not match,
                     // then remove the last selected value.
                     if (isMatched == false) {
-                        $this.typeahead('val', selectedText);
-                        alert('Selected customer does not exist.');
+                        $this.typeahead("val", selectedText);
+                        alert("Selected customer does not exist.");
                         //$this.attr('data-selected-id', '');
                     }
                 }
 
-            }).bind('typeahead:select', function(ev, suggestion) {
-                console.log('typeahead:select: ', arguments);
+            }).bind("typeahead:select", function(ev, suggestion) {
+                console.log("typeahead:select: ", arguments);
 
-                var name = suggestion.isperson === 'T' ? (suggestion.firstname + ' ' + suggestion.lastname) : suggestion.companyname;
-                var text = suggestion.entityid;
+                let name = suggestion.isperson === "T" ? (suggestion.firstname + " " + suggestion.lastname) : suggestion.companyname;
+                let text = suggestion.entityid;
                 if (!!suggestion.altname) {
-                    text = text + ' ' + suggestion.altname;
+                    text = text + " " + suggestion.altname;
                 }
 
-                var $this = $(this);
-                $this.attr('data-selected-id', suggestion.id);
-                $this.attr('data-selected-text', text);
+                let $this = $(this);
+                $this.attr("data-selected-id", suggestion.id);
+                $this.attr("data-selected-text", text);
             });
 
 
-            $customerDropdown.data('itempicker_created', true);
+            $customerDropdown.data("itempicker_created", true);
 
             $customerDropdown.focus();
 
@@ -498,18 +496,41 @@ class CreateContractUIManager {
 
             // make it async
             setTimeout(() => {
-                var select = document.getElementById('vendor');
+                let select = document.getElementById("vendor");
                 if (result.status_code === 200) {
 
                     // add each item on UI
                     $.each(result.data, function(i, item) {
-                        var name = item.isperson === 'T' ? (item.firstname + ' ' + item.lastname) : item.companyname;
+                        let name = item.isperson === "T" ? (item.firstname + " " + item.lastname) : item.companyname;
                         if (!!name) {
                             select.options[select.options.length] = new Option(name, item.id);
                         }
                     });
                 }
 
+                this.loaded();
+            }, 10);
+        });
+
+        // fill partners dropdown
+        this._dataManager.getDiscountItems((result) => {
+
+            // make it async
+            setTimeout(() => {
+                let select = document.getElementById("discount");
+                if (result.status_code === 200) {
+
+                    let discountItemId = this._contractInfo.custrecord_f3mm_discount_item_id;
+
+                    // add each item on UI
+                    $.each(result.data, (i, item) => {
+                        if ( item.id === discountItemId) {
+                            this._contractInfo.custrecord_f3mm_discount_item_text = item.itemid;
+                        }
+
+                        select.options[select.options.length] = new Option(item.itemid, item.id);
+                    });
+                }
 
                 this.loaded();
             }, 10);
@@ -519,18 +540,17 @@ class CreateContractUIManager {
 
             // make it async
             setTimeout(() => {
-                var select = document.getElementById('sales_rep');
+                let select = document.getElementById("sales_rep");
                 if (result.status_code === 200) {
 
                     // add each item on UI
                     $.each(result.data, function(i, item) {
-                        var name = (item.firstname + ' ' + item.lastname).trim();
+                        let name = (item.firstname + " " + item.lastname).trim();
                         if (!!name) {
                             select.options[select.options.length] = new Option(name, item.id);
                         }
                     });
                 }
-
                 this.loaded();
             }, 10);
         });
@@ -539,12 +559,12 @@ class CreateContractUIManager {
 
             // make it async
             setTimeout(() => {
-                var select = document.getElementById('department');
+                let select = document.getElementById("department");
                 if (result.status_code === 200) {
 
                     // add each item on UI
                     $.each(result.data, function(i, item) {
-                        var name = item.name.trim();
+                        let name = item.name.trim();
                         if (!!name) {
                             select.options[select.options.length] = new Option(name, item.id);
                         }
@@ -556,11 +576,11 @@ class CreateContractUIManager {
         });
 
 
-        $(document.body).on('focusin', '.customer-dropdown', (ev) => {
+        $(document.body).on("focusin", ".customer-dropdown", (ev) => {
             this.bindCustomerDropdown($(ev.target));
         });
 
-        $(document.body).on('focusin', '.primary-contact-dropdown', (ev) => {
+        $(document.body).on("focusin", ".primary-contact-dropdown", (ev) => {
             this.bindPrimaryContactDropdown($(ev.target));
         });
 
@@ -577,7 +597,7 @@ class CreateContractUIManager {
         let quantities = _.pluck(existingData, "quantity");
 
         // calculate quantity from all items
-        let totalQuantitySeats = _.reduce(quantities, (memo, num) => memo + parseInt(num), 0);
+        let totalQuantitySeats = _.reduce(quantities, (memo, num) => memo + parseInt(num,10), 0);
 
         // set quantity in total quantity seats textbox
         $(".total-quantity-seats-text").val(totalQuantitySeats);
@@ -632,7 +652,7 @@ class CreateContractUIManager {
                             baseprice: contractItem.custrecord_f3mm_ci_item.baseprice,
                             description: contractItem.custrecord_f3mm_ci_item_description,
                             id: contractItem.id,
-                            item: contractItem.custrecord_f3mm_ci_item.text,
+                            item: contractItem.custrecord_f3mm_ci_item.itemid + " : "  + contractItem.custrecord_f3mm_ci_item.displayname,
                             itemid: contractItem.custrecord_f3mm_ci_item.value,
                             price: contractItem.custrecord_f3mm_ci_price,
                             priceLevels: contractItem.custrecord_f3mm_ci_item.priceLevels, // used for dropdown
@@ -703,7 +723,7 @@ class CreateContractUIManager {
         }];
 
 
-        if (this._viewType !== 'view') {
+        if (this._viewType !== "view") {
             gridFields.push({
                 editButton: false,
                 modeSwitchButton: false,
@@ -721,19 +741,19 @@ class CreateContractUIManager {
      * @returns {void}
      */
     private onGridItemUpdating(args) {
-        console.log('onItemUpdating: ', JSON.stringify(args.item));
+        console.log("onItemUpdating: ", JSON.stringify(args.item));
 
-        var data = args.item;
+        let data = args.item;
         data.price = parseFloat(data.price).toFixed(2);
-        data.amount = parseFloat(args.row.next().find('.amount').html()).toFixed(2);
+        data.amount = parseFloat(args.row.next().find(".amount").html()).toFixed(2);
 
-        var $updateRow = args.row.next();
-        var suggestion = $updateRow.data('data-selected-suggestion');
+        let $updateRow = args.row.next();
+        let suggestion = $updateRow.data("data-selected-suggestion");
 
-        console.log('onItemUpdating: ', JSON.stringify(suggestion));
+        console.log("onItemUpdating: ", JSON.stringify(suggestion));
 
         if (!!suggestion) {
-            data.item = suggestion.displayname;
+            data.item = suggestion.displaylabel;
             data.itemid = suggestion.id;
             data.description = suggestion.salesdescription;
             data.baseprice = suggestion.baseprice;
@@ -746,33 +766,18 @@ class CreateContractUIManager {
             return;
         }
 
-        if (parseInt(data.quantity) <= 0) {
+        if (parseInt(data.quantity, 10) <= 0) {
             args.cancel = true;
             alert("Quantity cannot be less than or equal to 0");
             return;
         }
 
-        //var taxCode = $updateRow.data('selected-tax-code');
-        //if (!!taxCode) {
-        //    data.taxcodeid = taxCode.id;
-        //    data.taxcode = taxCode.itemid;
-        //    data.taxrate = taxCode.rate + '%';
-        //}
-        //
-        //if (!data.taxcode) {
-        //    args.preserve = true;
-        //    args.cancel = true;
-        //    alert("Please select tax code");
-        //    return;
-        //}
-
-        if (data.price_level == "0") {
+        if (data.price_level === "0") {
             args.preserve = true;
             args.cancel = true;
             alert("Please select price level");
             return;
-        }
-        else {
+        } else {
             // make it string
             data.price_level = data.price_level + "";
         }
@@ -784,16 +789,16 @@ class CreateContractUIManager {
      * @returns {void}
      */
     private onGridItemInserting(args) {
-        console.log('onItemInserting:', args);
+        console.log("onItemInserting:", args);
 
-        let $row = $('.jsgrid-insert-row');
-        let suggestion = $row.data('data-selected-suggestion');
-        let priceLevels = $row.data('price-levels');
+        let $row = $(".jsgrid-insert-row");
+        let suggestion = $row.data("data-selected-suggestion");
+        let priceLevels = $row.data("price-levels");
 
         args.item.priceLevels = priceLevels;
 
         if (!!suggestion) {
-            args.item.item = suggestion.displayname;
+            args.item.item = suggestion.displaylabel;
             args.item.itemid = suggestion.id;
             args.item.baseprice = suggestion.baseprice;
             args.item.description = suggestion.salesdescription;
@@ -806,14 +811,14 @@ class CreateContractUIManager {
             return;
         }
 
-        if (parseInt(args.item.quantity) <= 0) {
+        if (parseInt(args.item.quantity, 10) <= 0) {
             args.preserve = true;
             args.cancel = true;
             alert("Quantity cannot be less than or equal to 0");
             return;
         }
 
-        if (args.item.price_level == "0") {
+        if (args.item.price_level === "0") {
             args.preserve = true;
             args.cancel = true;
             alert("Please select price level");
@@ -828,7 +833,7 @@ class CreateContractUIManager {
         let found = false;
 
         existingData.forEach(item => {
-            if (item.itemid == args.item.itemid) {
+            if (item.itemid === args.item.itemid) {
                 found = true;
             }
         });
@@ -854,7 +859,7 @@ class CreateContractUIManager {
         let $price = $tr.find(".price input");
 
         let isEditing = $tr.hasClass("jsgrid-edit-row");
-        let quantity = parseInt($quantity.val());
+        let quantity = parseInt($quantity.val(), 10);
         let price = parseFloat($price.val());
         let totalPrice = (price * quantity).toFixed(2);
 
@@ -893,7 +898,7 @@ class CreateContractUIManager {
             $priceTextbox.attr("disabled", "disabled");
 
             let selectedPriceLevel = _.find(priceLevels, priceLevel => {
-                return priceLevel.pricelevel == selectedPriceLevelId;
+                return priceLevel.pricelevel === selectedPriceLevelId;
             });
 
             if (!!suggestion && selectedPriceLevel != null) {
@@ -937,7 +942,7 @@ class CreateContractUIManager {
 
             let priceLevels: IPriceLevel[] = jsGridItem.priceLevels;
             let selectedPriceLevel = _.find(priceLevels, priceLevel => {
-                return priceLevel.pricelevel == selectedPriceLevelId;
+                return priceLevel.pricelevel === selectedPriceLevelId;
             });
 
             if (!!suggestion && selectedPriceLevel != null) {
@@ -960,7 +965,7 @@ class CreateContractUIManager {
      */
     private itemsPickerSource(query, sync, async) {
 
-        console.log(this);
+        console.log("itemsPickerSource", arguments);
 
         setTimeout(() => {
 
@@ -986,81 +991,83 @@ class CreateContractUIManager {
      */
     private bindItemPicker($el) {
 
-        if (!$el.data('itempicker_created')) {
+        if (!$el.data("itempicker_created")) {
 
-            console.log('bind item picker control.', $el);
+            console.log("bind item picker control.", $el);
 
-            var options = {
+            let self = this;
+            let options = {
+                highlight: true,
                 hint: false,
-                minLength: 3,
-                highlight: true
+                minLength: 3
             };
 
-            var dataSet = {
-                name: 'Items',
-                limit: 500,
+            let dataSet = {
                 display: function(obj) {
-                    return obj.displayname;
+                    // obj.displaylabel = obj.custitem_long_name || obj.displayname || obj.itemid;
+                    let labelFields = [];
+                    if (!!obj.itemid) {
+                        labelFields.push(obj.itemid);
+                    }
+                    if (!!obj.displayname) {
+                        labelFields.push(obj.displayname);
+                    }
+                    obj.displaylabel = labelFields.join(" : ");
+                    return obj.displaylabel;
                 },
-                source: (q, s, a) => {
-                    this.itemsPickerSource(q, s, a);
+                limit: 500,
+                name: "Items",
+                source: function (q, s, a) {
+                    console.log("dataSet.source", this);
+                    self.itemsPickerSource(q, s, a);
                 },
                 templates: {
-                    empty: [
-                        '<div class="empty-message">',
-                        'unable to find any items that match the current query',
-                        '</div>'
-                    ].join('\n')
+                    empty: `<div class="empty-message">
+                        unable to find any items that match the current query
+                        </div>`
                 }
-
             };
 
             $el.typeahead(options, dataSet);
-            $el.bind('typeahead:change', function() {
-                console.log('typeahead:change: ', arguments);
+            $el.bind("typeahead:change", function() {
+                console.log("typeahead:change: ", arguments);
 
-                var $this = $(this);
-                var $tr = $this.parents('tr:first');
-                var selectedId = $this.attr('data-selected-id');
-                var selectedText = $this.attr('data-selected-text');
-                var val = $this.val();
-                var isMatched = selectedText == val;
-
-                console.log('selectedText: ', selectedText);
-                console.log('val: ', val);
-                console.log('selectedText == val: ', selectedText == val);
+                let $this = $(this);
+                let $tr = $this.parents("tr:first");
+                // let selectedId = $this.attr("data-selected-id");
+                let selectedText = $this.attr("data-selected-text");
+                let val = $this.val();
+                let isMatched = selectedText === val;
 
                 if (!val) {
-                    $this.attr('data-selected-id', '');
-                    $this.attr('data-selected-text', '');
-                    $tr.data('data-selected-suggestion', null);
+                    $this.attr("data-selected-id", "");
+                    $this.attr("data-selected-text", "");
+                    $tr.data("data-selected-suggestion", null);
                 } else {
                     // if it does not match,
                     // then remove the last selected value.
-                    if (isMatched == false) {
-                        $this.typeahead('val', selectedText);
-                        alert('Selected item does not exist.');
+                    if (isMatched === false) {
+                        $this.typeahead("val", selectedText);
+                        alert("Selected item does not exist.");
                     }
                 }
 
-            }).bind('typeahead:select', (ev, suggestion) => {
+            }).bind("typeahead:select", (ev, suggestion) => {
 
-                var $this = $(ev.target);
-                var $tr = $this.parents('tr:first');
+                let $this = $(ev.target);
+                let $tr = $this.parents("tr:first");
 
-                console.log('typeahead:select: ', arguments, $this);
-
-                $this.attr('data-selected-id', suggestion.id);
-                $this.attr('data-selected-text', suggestion.displayname);
-                $tr.data('data-selected-suggestion', suggestion);
+                $this.attr("data-selected-id", suggestion.id);
+                $this.attr("data-selected-text", suggestion.displaylabel);
+                $tr.data("data-selected-suggestion", suggestion);
 
                 this._dataManager.getPriceLevels({
-                    recordType: suggestion.recordType,
-                    itemId: suggestion.id
+                    itemId: suggestion.id,
+                    recordType: suggestion.recordType
                 }, function(result) {
 
-                    var priceLevels = result.data;
-                    var $priceLevelDropdown = $tr.find('.price-level select');
+                    let priceLevels = result.data;
+                    let $priceLevelDropdown = $tr.find(".price-level select");
                     $priceLevelDropdown.empty();
 
                     _.each(priceLevels, priceLevel => {
@@ -1071,19 +1078,19 @@ class CreateContractUIManager {
                             .appendTo($priceLevelDropdown);
                     });
 
-                    var quantity = 1; // default to 1
-                    var listPriceId = 1; // default to 1
-                    var price = parseFloat(suggestion.baseprice).toFixed(2);
-                    $tr.data('price-levels', priceLevels);
-                    $tr.find('.description textarea').val(suggestion.salesdescription);
-                    $tr.find('.quantity input').val(quantity);
-                    $tr.find('.price input').val(price);
-                    $tr.find('.quantity input').focus();
-                    $tr.find('.price-level select').val(listPriceId).focus().trigger('change');
+                    let quantity = 1; // default to 1
+                    let listPriceId = 1; // default to 1
+                    let price = parseFloat(suggestion.baseprice).toFixed(2);
+                    $tr.data("price-levels", priceLevels);
+                    $tr.find(".description textarea").val(suggestion.salesdescription);
+                    $tr.find(".quantity input").val(quantity);
+                    $tr.find(".price input").val(price);
+                    $tr.find(".quantity input").focus();
+                    $tr.find(".price-level select").val(listPriceId).focus().trigger("change");
                 });
             });
 
-            $el.data('itempicker_created', true);
+            $el.data("itempicker_created", true);
 
             $el.focus();
         }
@@ -1120,22 +1127,22 @@ class CreateContractUIManager {
 
 
     private openNewContactWindow() {
-        let url = '/app/common/entity/contact.nl?target=main:contact&label=Primary+Contact';
+        let url = "/app/common/entity/contact.nl?target=main:contact&label=Primary+Contact";
         // setSelectValue(document.forms['main_form'].elements['entity'], -1);
         // document.forms['main_form'].elements['entity_display'].value = '';
         // document.forms['main_form'].elements['entity_display'].isvalid = true;
         // NS.form.setValid(true);
         // Syncentity(true);
-        nlOpenWindow(url, '_blank', '');
+        nlOpenWindow(url, "_blank", "");
         return false;
     }
     private openExistingContactWindow() {
         let selectValue = this.getSelectedContact();
 
         if (!!selectValue) {
-            nlOpenWindow('/app/common/entity/contact.nl?id=' + selectValue + '', '_blank', '');
+            nlOpenWindow("/app/common/entity/contact.nl?id=" + selectValue + "", "_blank", "");
         } else {
-            alert('Please choose an entry first.');
+            alert("Please choose an entry first.");
         }
 
         return false;
@@ -1143,13 +1150,13 @@ class CreateContractUIManager {
 
     private openNewCustomerWindow() {
 
-        let url = '/app/common/entity/custjob.nl?target=main:entity&label=Customer&stage=prospect';
+        let url = "/app/common/entity/custjob.nl?target=main:entity&label=Customer&stage=prospect";
         // setSelectValue(document.forms['main_form'].elements['entity'], -1);
         // document.forms['main_form'].elements['entity_display'].value = '';
         // document.forms['main_form'].elements['entity_display'].isvalid = true;
         // NS.form.setValid(true);
         // Syncentity(true);
-        nlOpenWindow(url, '_blank', '');
+        nlOpenWindow(url, "_blank", "");
         return false;
     }
 
@@ -1157,9 +1164,9 @@ class CreateContractUIManager {
         let selectValue = this.getSelectedCustomer();
 
         if (!!selectValue) {
-            nlOpenWindow('/app/common/entity/custjob.nl?id=' + selectValue + '', '_blank', '');
+            nlOpenWindow("/app/common/entity/custjob.nl?id=" + selectValue + "", "_blank", "");
         } else {
-            alert('Please choose an entry first.');
+            alert("Please choose an entry first.");
         }
 
         return false;
@@ -1173,22 +1180,19 @@ class CreateContractUIManager {
         let startDate = $startDateElement.datepicker("getDate");
         let endDate = null;
 
-        console.log('durationDropdownChanged(); // $dropdown: ', $dropdown);
-        console.log('durationDropdownChanged(); // selected: ', selected);
-
         if (!!startDate) {
-            if (selected == "1") {
+            if (selected === "1") {
                 endDate = startDate;
                 endDate.setMonth(startDate.getMonth() + 1); // add one month
-                endDate.setDate(endDate.getDate()-1); // substract one day
-            } else if (selected == "2") {
+                endDate.setDate(endDate.getDate() - 1); // substract one day
+            } else if (selected === "2") {
                 endDate = startDate;
                 endDate.setMonth(startDate.getMonth() + 3);
-                endDate.setDate(endDate.getDate()-1); // substract one day
-            } else if (selected == "3") {
+                endDate.setDate(endDate.getDate() - 1); // substract one day
+            } else if (selected === "3") {
                 endDate = startDate;
                 endDate.setMonth(startDate.getMonth() + 12);
-                endDate.setDate(endDate.getDate()-1); // substract one day
+                endDate.setDate(endDate.getDate() - 1); // substract one day
             }
         }
 
@@ -1219,9 +1223,19 @@ class CreateContractUIManager {
      */
     private applyValidation() {
 
-        var $form = $(".f3mm-contract-renewal").parents('form:first');
-        $form.removeAttr('onsubmit');
+        let $form = $(".f3mm-contract-renewal").parents("form:first");
+        $form.removeAttr("onsubmit");
         $form.validate({
+            errorPlacement: ($error, $element) => {
+                let $parent = $element.parent();
+                let isGroup = $parent.is(".input-group");
+
+                if (isGroup === true) {
+                    $parent.after($error);
+                } else {
+                    $element.after($error);
+                }
+            },
             rules: {
                 contract_number: {
                     required: true
@@ -1229,39 +1243,26 @@ class CreateContractUIManager {
                 customer: {
                     requiredTypeahead: true
                 },
-                primary_contact: {
-                    requiredTypeahead: true
-                },
                 department: {
-                    required: true
-                },
-                //duration: {
-                //    required: true
-                //},
-                vendor: {
-                    required: true
-                },
-                sales_rep: {
-                    required: true
-                },
-                status: {
                     required: true
                 },
                 end_date: {
                     required: true
                 },
+                primary_contact: {
+                    requiredTypeahead: true
+                },
+                sales_rep: {
+                    required: true
+                },
                 start_date: {
                     required: true
-                }
-            },
-            errorPlacement: ($error, $element) => {
-                var $parent = $element.parent();
-                var isGroup = $parent.is('.input-group');
-
-                if (isGroup === true) {
-                    $parent.after($error);
-                } else {
-                    $element.after($error);
+                },
+                status: {
+                    required: true
+                },
+                vendor: {
+                    required: true
                 }
             },
             submitHandler: (form) => {
@@ -1275,17 +1276,17 @@ class CreateContractUIManager {
      * Show Create / View / Edit Screen based on _viewType property
      */
     private setViewMode() {
-        console.log('this.setViewMode(); // this._viewType: ', this._viewType);
+        console.log("this.setViewMode(); // this._viewType: ", this._viewType);
 
-        if (this._viewType == 'view') {
-            $('.form-horizontal :input, .input-group.date').attr('disabled', 'disabled');
-            $('.form-actions').hide();
-            $('.view-contract-action-buttons').show();
-            $('.view-horizontal').show();
+        if (this._viewType === "view") {
+            $(".form-horizontal :input, .input-group.date").attr("disabled", "disabled");
+            $(".form-actions").hide();
+            $(".view-contract-action-buttons").show();
+            $(".view-horizontal").show();
         } else {
-            $('.form-actions').show();
-            $('.view-contract-action-buttons').hide();
-            $('.form-horizontal').show();
+            $(".form-actions").show();
+            $(".view-contract-action-buttons").hide();
+            $(".form-horizontal").show();
         }
     }
 
@@ -1327,6 +1328,12 @@ class CreateContractUIManager {
     private loaded() {
         this._loadedCount++;
         console.log("this.loaded();", this._loadedCount);
+
+        // donot go ahead before 2
+        if (this._loadedCount < 3) {
+            return;
+        }
+
 
         let contract = this._contractInfo;
 
@@ -1382,76 +1389,77 @@ class CreateContractUIManager {
      */
     private bindEditScreen(contract) {
 
-        var $form = $('.form-horizontal');
+        let $form = $(".form-horizontal");
 
-        $('.contract-number-text', $form).val(contract.custrecord_f3mm_contract_number);
-        $('.po-number-text', $form).val(contract.custrecord_f3mm_po_number);
-        $('.system-id-text', $form).val(contract.custrecord_f3mm_system_id);
+        $(".contract-number-text", $form).val(contract.custrecord_f3mm_contract_number);
+        $(".po-number-text", $form).val(contract.custrecord_f3mm_po_number);
+        $(".system-id-text", $form).val(contract.custrecord_f3mm_system_id);
 
         if (!!contract.id) {
-            $('.form-group-is-renew').show();
+            $(".form-group-is-renew").show();
         } else {
-            $('.form-group-is-renew').hide();
+            $(".form-group-is-renew").hide();
         }
 
         if (!!contract.custrecord_f3mm_sales_rep) {
-            $('.sales-rep-dropdown', $form).val(contract.custrecord_f3mm_sales_rep.value);
+            $(".sales-rep-dropdown", $form).val(contract.custrecord_f3mm_sales_rep.value);
         }
 
         if (!!contract.custrecord_f3mm_contract_vendor) {
-            $('.vendor-dropdown', $form).val(contract.custrecord_f3mm_contract_vendor.value);
+            $(".vendor-dropdown", $form).val(contract.custrecord_f3mm_contract_vendor.value);
         }
 
         if (!!contract.custrecord_f3mm_status) {
-            $('.status-dropdown', $form).val(contract.custrecord_f3mm_status.value);
+            $(".status-dropdown", $form).val(contract.custrecord_f3mm_status.value);
         }
 
-        $('.total-quantity-seats-text', $form).val(contract.custrecord_f3mm_total_qty_seats);
+        $(".total-quantity-seats-text", $form).val(contract.custrecord_f3mm_total_qty_seats);
+        $(".discount-dropdown", $form).val(contract.custrecord_f3mm_discount_item_id);
 
         if (!!contract.custrecord_f3mm_department) {
-            $('.department-dropdown', $form).val(contract.custrecord_f3mm_department.value);
+            $(".department-dropdown", $form).val(contract.custrecord_f3mm_department.value);
         }
 
-        $('.memo-text', $form).val(contract.custrecord_f3mm_memo);
+        $(".memo-text", $form).val(contract.custrecord_f3mm_memo);
 
 
         if (!!contract.custrecord_f3mm_customer) {
-            $('.customer-dropdown', $form)
-                .attr('data-selected-id', contract.custrecord_f3mm_customer.value)
-                .attr('data-selected-text', contract.custrecord_f3mm_customer.text)
+            $(".customer-dropdown", $form)
+                .attr("data-selected-id", contract.custrecord_f3mm_customer.value)
+                .attr("data-selected-text", contract.custrecord_f3mm_customer.text)
                 .val(contract.custrecord_f3mm_customer.text);
         }
 
         if (!!contract.custrecord_f3mm_primary_contact) {
-            $('.primary-contact-dropdown', $form)
-                .attr('data-selected-id', contract.custrecord_f3mm_primary_contact.value)
-                .attr('data-selected-text', contract.custrecord_f3mm_primary_contact.text)
+            $(".primary-contact-dropdown", $form)
+                .attr("data-selected-id", contract.custrecord_f3mm_primary_contact.value)
+                .attr("data-selected-text", contract.custrecord_f3mm_primary_contact.text)
                 .val(contract.custrecord_f3mm_primary_contact.text);
 
             if (!!contract.custrecord_f3mm_primary_contact_email) {
-                $('.primary-contact-email-text', $form).val(contract.custrecord_f3mm_primary_contact_email);
+                $(".primary-contact-email-text", $form).val(contract.custrecord_f3mm_primary_contact_email);
             }
         }
 
-        if (this._viewType == 'view') {
+        if (this._viewType === "view") {
             if (!!contract.custrecord_f3mm_start_date) {
-                $('.start-date-text', $form).val(contract.custrecord_f3mm_start_date);
+                $(".start-date-text", $form).val(contract.custrecord_f3mm_start_date);
             }
             if (!!contract.custrecord_f3mm_end_date) {
-                $('.end-date-text', $form).val(contract.custrecord_f3mm_end_date);
+                $(".end-date-text", $form).val(contract.custrecord_f3mm_end_date);
             }
         } else {
 
             if (!!contract.custrecord_f3mm_contract_duration) {
-                $('.duration-dropdown', $form).val(contract.custrecord_f3mm_contract_duration.value);
+                $(".duration-dropdown", $form).val(contract.custrecord_f3mm_contract_duration.value);
             }
 
             if (!!contract.custrecord_f3mm_start_date) {
-                $('.start-date-text', $form).parent().datepicker('setDate', contract.custrecord_f3mm_start_date);
+                $(".start-date-text", $form).parent().datepicker("setDate", contract.custrecord_f3mm_start_date);
             }
 
             if (!!contract.custrecord_f3mm_end_date) {
-                $('.end-date-text', $form).parent().datepicker('setDate', contract.custrecord_f3mm_end_date);
+                $(".end-date-text", $form).parent().datepicker("setDate", contract.custrecord_f3mm_end_date);
             }
 
         }
@@ -1462,11 +1470,11 @@ class CreateContractUIManager {
      * @returns {void}
      */
     private bindDatePicker() {
-        if (this._viewType !== 'view') {
-            $('.input-group.date').not('[disabled]').datepicker({
-                format: "m/d/yyyy",
+        if (this._viewType !== "view") {
+            $(".input-group.date").not("[disabled]").datepicker({
+                autoclose: true,
                 clearBtn: true,
-                autoclose: true
+                format: "m/d/yyyy"
             });
         }
     }
