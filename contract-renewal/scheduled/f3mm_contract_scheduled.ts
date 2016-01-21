@@ -18,7 +18,7 @@ class ContractScheduled {
     }
 
     private dateDifference(date1, date2) {
-        let timeDiff = Math.abs(date2.getTime() - date1.getTime());
+        let timeDiff = date2.getTime() - date1.getTime();
         let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
         return diffDays;
     }
@@ -44,7 +44,7 @@ class ContractScheduled {
                 F3.Util.Utility.logDebug("contract: ", JSON.stringify(contract));
 
                 let contractEndDate = nlapiStringToDate(contract.custrecord_f3mm_end_date);
-                let daysRemaining = this.dateDifference(contractEndDate, today);
+                let daysRemaining = this.dateDifference(today, contractEndDate);
                 F3.Util.Utility.logDebug("contract days remaining: ", daysRemaining);
 
                 if (!!contract.custrecord_f3mm_notif_days_prior) {

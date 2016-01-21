@@ -1158,8 +1158,8 @@ var CreateContractUIManager = (function () {
         $(".notification-3-days").prop("checked", contract.custrecord_f3mm_notif_3days_prior === "T");
         $(".notification-1-day").prop("checked", contract.custrecord_f3mm_notif_1day_prior === "T");
         $(".notification-expiration").prop("checked", contract.custrecord_f3mm_notif_on_expiration === "T");
-        $(".notification-renewal").prop("checked", contract.custrecord_f3mm_notif_on_quote_generate === "T");
-        $(".notification-quote-generation").prop("checked", contract.custrecord_f3mm_notif_on_renewal === "T");
+        $(".notification-renewal").prop("checked", contract.custrecord_f3mm_notif_on_renewal === "T");
+        $(".notification-quote-generation").prop("checked", contract.custrecord_f3mm_notif_on_quote_generate === "T");
     };
     /**
      * Binds View Contract Screen with page

@@ -12,7 +12,7 @@ var ContractScheduled = (function () {
         this.scheduled(args);
     }
     ContractScheduled.prototype.dateDifference = function (date1, date2) {
-        var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+        var timeDiff = date2.getTime() - date1.getTime();
         var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
         return diffDays;
     };
@@ -34,7 +34,7 @@ var ContractScheduled = (function () {
                 var contract = contracts[i];
                 F3.Util.Utility.logDebug("contract: ", JSON.stringify(contract));
                 var contractEndDate = nlapiStringToDate(contract.custrecord_f3mm_end_date);
-                var daysRemaining = this.dateDifference(contractEndDate, today);
+                var daysRemaining = this.dateDifference(today, contractEndDate);
                 F3.Util.Utility.logDebug("contract days remaining: ", daysRemaining);
                 if (!!contract.custrecord_f3mm_notif_days_prior) {
                     if (daysRemaining === parseInt(contract.custrecord_f3mm_notif_days_prior, 10)) {
