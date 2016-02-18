@@ -15,8 +15,9 @@ var EmailHelper = (function () {
             // let quote = nlapiLoadRecord("estimate", quoteId);
             var fields = this._contractDAL.fields;
             var emailEnabled = contract[fields.notificationOnRenewal.id] === "T";
+            var customerId = contract[fields.customer.id].value;
             if (emailEnabled === true) {
-                this.sendEmail(contract, ContractNotificationType.CONTRACT_RENEWAL);
+                this.sendEmail(contract, ContractNotificationType.CONTRACT_RENEWAL, customerId);
             }
         }
         catch (e) {
@@ -31,8 +32,9 @@ var EmailHelper = (function () {
         try {
             var fields = this._contractDAL.fields;
             var emailEnabled = contract[fields.notificationOnQuoteGenerate.id] === "T";
+            var salesRepId = contract[fields.salesRep.id].value;
             if (emailEnabled === true) {
-                this.sendEmail(contract, ContractNotificationType.QUOTE_GENERATION, quoteId);
+                this.sendEmail(contract, ContractNotificationType.QUOTE_GENERATION, salesRepId, quoteId);
             }
         }
         catch (e) {
@@ -46,8 +48,9 @@ var EmailHelper = (function () {
         try {
             var fields = this._contractDAL.fields;
             var emailEnabled = contract[fields.notificationOnExpiration.id] === "T";
+            var customerId = contract[fields.customer.id].value;
             if (emailEnabled === true) {
-                this.sendEmail(contract, ContractNotificationType.CONTRACT_EXPIRATION);
+                this.sendEmail(contract, ContractNotificationType.CONTRACT_EXPIRATION, customerId);
             }
         }
         catch (e) {
@@ -55,22 +58,29 @@ var EmailHelper = (function () {
         }
         F3.Util.Utility.logDebug("EmailHelper.sendExpiredEmail(); // END", null);
     };
-    EmailHelper.sendReminderEmail = function (contract, daysRemaining) {
+    EmailHelper.sendReminderEmail = function (contract, daysRemaining, isCustom) {
         F3.Util.Utility.logDebug("EmailHelper.sendReminderEmail(); // START", null);
         F3.Util.Utility.logDebug("EmailHelper.sendReminderEmail(); // contract:", JSON.stringify(contract));
         try {
-            this.sendEmail(contract, ContractNotificationType.CONTRACT_REMINDER);
+            var fields = this._contractDAL.fields;
+            var recipient = null;
+            if (isCustom === true) {
+                recipient = contract[fields.salesRep.id].value;
+            }
+            else {
+                recipient = contract[fields.customer.id].value;
+            }
+            this.sendEmail(contract, ContractNotificationType.CONTRACT_REMINDER, recipient);
         }
         catch (e) {
             F3.Util.Utility.logException("EmailHelper.sendReminderEmail();", e.toString());
         }
         F3.Util.Utility.logDebug("EmailHelper.sendReminderEmail(); // END", null);
     };
-    EmailHelper.sendEmail = function (contract, type, quoteId) {
+    EmailHelper.sendEmail = function (contract, type, to, quoteId) {
         var fields = this._contractDAL.fields;
-        var customerId = contract[fields.customer.id].value;
         var vendorId = contract[fields.contractVendor.id].value;
-        if (!!customerId) {
+        if (!!to) {
             var templateMapping = this._commonDAL.getEmailTemplate(type, vendorId)[0];
             if (!templateMapping) {
                 templateMapping = this._commonDAL.getDefaultEmailTemplate(type)[0];
@@ -85,8 +95,8 @@ var EmailHelper = (function () {
             var mergeResult = emailMerger.merge();
             var emailSubject = mergeResult.getSubject();
             var emailBody = mergeResult.getBody();
-            nlapiSendEmail(Config.FROM_EMAIL_ID, customerId, emailSubject, emailBody);
-            F3.Util.Utility.logDebug("Email sent", "Email sent to customer id: " + customerId);
+            nlapiSendEmail(Config.FROM_EMAIL_ID, to, emailSubject, emailBody);
+            F3.Util.Utility.logDebug("Email sent", "Email sent to customer id: " + to);
         }
     };
     EmailHelper._contractDAL = new ContractDAL();

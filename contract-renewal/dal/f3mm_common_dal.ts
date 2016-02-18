@@ -1,6 +1,8 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
-/// <reference path="./f3mm_base_dal.ts" />
+/// <reference path="../helpers/f3mm_config.ts" />
 /// <reference path="../helpers/f3mm_contract_status_enum.ts" />
+/// <reference path="./f3mm_base_dal.ts" />
+
 
 /**
  * Created by zshaikh on 11/19/2015.
@@ -263,7 +265,7 @@ class CommonDAL extends BaseDAL {
             cols.push(new nlobjSearchColumn("salesdescription"));
             cols.push(new nlobjSearchColumn("itemid"));
 
-            if ( Config.IS_PROD === true) {
+            if (Config.IS_PROD === true) {
                 cols.push(new nlobjSearchColumn("custitem_long_name"));
             }
 

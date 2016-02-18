@@ -33,9 +33,9 @@ declare var apiSuiteletUrl: string;
  */
 class ListContractsUIManager {
 
-    private _dataManager: DataManager;
-    private _contractInfo: any;
-    private _viewType: string;
+    protected _dataManager: DataManager;
+    protected _contractInfo: any;
+    protected _viewType: string;
     private _priceLevels: any[];
 
     /**
@@ -373,7 +373,7 @@ class ListContractsUIManager {
     /**
      * Show Loading Indicator
      */
-    private showLoading() {
+    protected showLoading() {
         let $loading = $(".contract-loading-backdrop,.contract-loading");
         $loading.addClass("in").show();
     }
@@ -381,7 +381,7 @@ class ListContractsUIManager {
     /**
      * Hide Loading Indicator
      */
-    private hideLoading() {
+    protected hideLoading() {
         let $loading = $(".contract-loading-backdrop,.contract-loading");
         $loading.removeClass("in").hide();
     }
@@ -451,7 +451,7 @@ class ListContractsUIManager {
     }
 
 
-    private getFilters(filter) {
+    protected getFilters(filter) {
         let startIndex = (filter.pageIndex - 1) * filter.pageSize;
         let sortField = filter.sortField;
 
@@ -523,7 +523,7 @@ class ListContractsUIManager {
      * Prepares items data before binding with the grid
      * @returns {object[]} returns array of objects containing contract items data
      */
-    private prepareGridData(contractsInfo): any[] {
+    protected prepareGridData(contractsInfo): any[] {
         return contractsInfo;
     }
 
@@ -531,7 +531,7 @@ class ListContractsUIManager {
      * Prepares Grid fields before initializing the grid
      * @returns {object[]} returns array of fields
      */
-    private prepareGridFields(): any[] {
+    protected prepareGridFields(): any[] {
 
         let gridFields = [{
             css: "select-item",
@@ -578,7 +578,7 @@ class ListContractsUIManager {
         }, {
             editing: false,
             name: "custrecord_f3mm_customer.text",
-            title: "Company Name",
+            title: "Customer",
             type: "text",
             width: 120
         }, {

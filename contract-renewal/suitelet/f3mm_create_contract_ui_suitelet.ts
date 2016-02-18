@@ -23,6 +23,12 @@ class CreateContractUISuitelet extends BaseUISuitelet {
     public title: string = "Create Contract";
     public type: string = "create";
 
+    constructor(request: nlobjRequest, response: nlobjResponse) {
+        super(request, response);
+        this.title = "Create Contract";
+        this.main(request, response);
+    }
+
     /**
      * Entry point for Request. Operations:
      *  - Process request

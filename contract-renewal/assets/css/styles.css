@@ -51,7 +51,27 @@ tr.modified-item {
 .ui-th-column { font-weight: 700; }
 
 .datepicker-dropdown { margin-top: 90px; }
+.contracts-approval-page .datepicker-dropdown, .nl-pagetint .datepicker-dropdown { margin-top: 6px; }
 .page-standalone .datepicker-dropdown { margin-top: 22px; }
+
+/*
+----------------------------------------
+Approve Contract Page Classes :: START
+*/
+
+.contracts-approval-page .jsgrid-grid-header,
+.contracts-approval-page .jsgrid-grid-body {
+    overflow: auto;
+}
+
+div#div__body {
+    padding-top: 0 !important;;
+}
+
+/*
+Approve Contract Page Classes :: END
+----------------------------------------
+*/
 
 
 .table>tbody>tr.active>td, .table>tbody>tr.active>th, .table>tbody>tr>td.active, .table>tbody>tr>th.active, .table>tfoot>tr.active>td, .table>tfoot>tr.active>th, .table>tfoot>tr>td.active, .table>tfoot>tr>th.active, .table>thead>tr.active>td, .table>thead>tr.active>th, .table>thead>tr>td.active, .table>thead>tr>th.active {

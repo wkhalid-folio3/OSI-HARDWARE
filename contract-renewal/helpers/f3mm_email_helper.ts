@@ -20,9 +20,10 @@ class EmailHelper {
             // let quote = nlapiLoadRecord("estimate", quoteId);
             let fields = this._contractDAL.fields;
             let emailEnabled = contract[fields.notificationOnRenewal.id] === "T";
+            let customerId = contract[fields.customer.id].value;
 
             if (emailEnabled === true) {
-                this.sendEmail(contract, ContractNotificationType.CONTRACT_RENEWAL);
+                this.sendEmail(contract, ContractNotificationType.CONTRACT_RENEWAL, customerId);
             }
 
         } catch (e) {
@@ -40,9 +41,10 @@ class EmailHelper {
         try {
             let fields = this._contractDAL.fields;
             let emailEnabled = contract[fields.notificationOnQuoteGenerate.id] === "T";
+            let salesRepId = contract[fields.salesRep.id].value;
 
             if (emailEnabled === true) {
-                this.sendEmail(contract, ContractNotificationType.QUOTE_GENERATION, quoteId);
+                this.sendEmail(contract, ContractNotificationType.QUOTE_GENERATION, salesRepId, quoteId);
             }
 
         } catch (e) {
@@ -59,8 +61,9 @@ class EmailHelper {
         try {
             let fields = this._contractDAL.fields;
             let emailEnabled = contract[fields.notificationOnExpiration.id] === "T";
+            let customerId = contract[fields.customer.id].value;
             if (emailEnabled === true) {
-                this.sendEmail(contract, ContractNotificationType.CONTRACT_EXPIRATION);
+                this.sendEmail(contract, ContractNotificationType.CONTRACT_EXPIRATION, customerId);
             }
         } catch (e) {
             F3.Util.Utility.logException("EmailHelper.sendExpiredEmail();", e.toString());
@@ -69,12 +72,19 @@ class EmailHelper {
         F3.Util.Utility.logDebug("EmailHelper.sendExpiredEmail(); // END", null);
     }
 
-    public static sendReminderEmail(contract: any, daysRemaining: number) {
+    public static sendReminderEmail(contract: any, daysRemaining: number, isCustom?: boolean) {
         F3.Util.Utility.logDebug("EmailHelper.sendReminderEmail(); // START", null);
         F3.Util.Utility.logDebug("EmailHelper.sendReminderEmail(); // contract:", JSON.stringify(contract));
 
         try {
-            this.sendEmail(contract, ContractNotificationType.CONTRACT_REMINDER);
+            let fields = this._contractDAL.fields;
+            let recipient = null;
+            if (isCustom === true) {
+                recipient = contract[fields.salesRep.id].value;
+            } else {
+                recipient = contract[fields.customer.id].value;
+            }
+            this.sendEmail(contract, ContractNotificationType.CONTRACT_REMINDER, recipient);
         } catch (e) {
 
             F3.Util.Utility.logException("EmailHelper.sendReminderEmail();", e.toString());
@@ -83,12 +93,11 @@ class EmailHelper {
         F3.Util.Utility.logDebug("EmailHelper.sendReminderEmail(); // END", null);
     }
 
-    private static sendEmail(contract: any, type: ContractNotificationType, quoteId?) {
+    private static sendEmail(contract: any, type: ContractNotificationType, to: string, quoteId?: string) {
         let fields = this._contractDAL.fields;
-        let customerId = contract[fields.customer.id].value;
         let vendorId = contract[fields.contractVendor.id].value;
 
-        if (!!customerId) {
+        if (!!to) {
             let templateMapping = this._commonDAL.getEmailTemplate(type, vendorId)[0];
 
             if (!templateMapping) {
@@ -107,8 +116,8 @@ class EmailHelper {
             let mergeResult = emailMerger.merge();
             let emailSubject = mergeResult.getSubject();
             let emailBody = mergeResult.getBody();
-            nlapiSendEmail(Config.FROM_EMAIL_ID, customerId, emailSubject, emailBody);
-            F3.Util.Utility.logDebug("Email sent", `Email sent to customer id: ${customerId}`);
+            nlapiSendEmail(Config.FROM_EMAIL_ID, to, emailSubject, emailBody);
+            F3.Util.Utility.logDebug("Email sent", `Email sent to customer id: ${to}`);
         }
     }
 }

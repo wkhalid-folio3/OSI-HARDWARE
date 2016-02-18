@@ -23,10 +23,12 @@ var __extends = (this && this.__extends) || function (d, b) {
  */
 var CreateContractUISuitelet = (function (_super) {
     __extends(CreateContractUISuitelet, _super);
-    function CreateContractUISuitelet() {
-        _super.apply(this, arguments);
+    function CreateContractUISuitelet(request, response) {
+        _super.call(this, request, response);
         this.title = "Create Contract";
         this.type = "create";
+        this.title = "Create Contract";
+        this.main(request, response);
     }
     /**
      * Entry point for Request. Operations:

@@ -38,7 +38,7 @@ var ContractScheduled = (function () {
                 F3.Util.Utility.logDebug("contract days remaining: ", daysRemaining);
                 if (!!contract.custrecord_f3mm_notif_days_prior) {
                     if (daysRemaining === parseInt(contract.custrecord_f3mm_notif_days_prior, 10)) {
-                        EmailHelper.sendReminderEmail(contract, daysRemaining);
+                        EmailHelper.sendReminderEmail(contract, daysRemaining, true);
                     }
                 }
                 if (contract.custrecord_f3mm_notif_5days_prior === "T") {

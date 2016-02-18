@@ -1,5 +1,6 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
 /// <reference path="../../_typescript-refs/es6-promise.d.ts" />
+
 /**
  * Created by zshaikh on 11/19/2015.
  * -
@@ -108,13 +109,15 @@ class DataManager {
      */
     private getDepartmentFromServer(callback) {
 
-        var data = {
-            'action': 'get_departments'
+        let data = {
+            "action": "get_departments"
         };
         return jQuery.get(this._serverUrl, data, (result) => {
-            console.log('getDepartmentFromServer(); // jquery complete: ', arguments);
+            console.log("getDepartmentFromServer(); // jquery complete: ", arguments);
 
-            callback && callback(result);
+            if (!!callback) {
+                callback(result);
+            }
 
         });
 

@@ -86,11 +86,13 @@ var DataManager = (function () {
      */
     DataManager.prototype.getDepartmentFromServer = function (callback) {
         var data = {
-            'action': 'get_departments'
+            "action": "get_departments"
         };
         return jQuery.get(this._serverUrl, data, function (result) {
-            console.log('getDepartmentFromServer(); // jquery complete: ', arguments);
-            callback && callback(result);
+            console.log("getDepartmentFromServer(); // jquery complete: ", arguments);
+            if (!!callback) {
+                callback(result);
+            }
         });
     };
     /**

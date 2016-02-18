@@ -25,7 +25,7 @@ class BaseUISuitelet {
 
         this._assetsFolderId = Config.ASSETS_FOLDER_ID;
 
-        this.main(request, response);
+        // this.main(request, response);
     }
 
     /**

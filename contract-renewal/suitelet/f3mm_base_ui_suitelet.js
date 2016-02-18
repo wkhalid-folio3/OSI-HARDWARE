@@ -16,7 +16,7 @@ var BaseUISuitelet = (function () {
         this._contractDAL = new ContractDAL();
         this._commonDAL = new CommonDAL();
         this._assetsFolderId = Config.ASSETS_FOLDER_ID;
-        this.main(request, response);
+        // this.main(request, response);
     }
     /**
      * Entry point for Request. Operations:

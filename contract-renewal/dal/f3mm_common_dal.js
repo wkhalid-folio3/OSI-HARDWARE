@@ -1,6 +1,7 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
-/// <reference path="./f3mm_base_dal.ts" />
+/// <reference path="../helpers/f3mm_config.ts" />
 /// <reference path="../helpers/f3mm_contract_status_enum.ts" />
+/// <reference path="./f3mm_base_dal.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }

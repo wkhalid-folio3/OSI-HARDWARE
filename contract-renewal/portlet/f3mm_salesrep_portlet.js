@@ -1,3 +1,4 @@
+/// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
 /**
  * Created by zshaikh on 30/12/2015.
  */
