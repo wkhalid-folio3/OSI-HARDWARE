@@ -40,8 +40,8 @@ var QuoteApproved = (function () {
                     var quoteId = newRecord.getFieldValue("internalid");
                     // make sure they are changed
                     if (newStatus !== oldStatus) {
-                        // make sure it is approved
-                        if (newStatus === "3") {
+                        // make sure it is pending customer approval
+                        if (newStatus === "2") {
                             var contractsDAL = new ContractDAL();
                             var contract = contractsDAL.getWithDetails(contractId);
                             EmailHelper.sendQuoteApprovalEmail(contract, quoteId);

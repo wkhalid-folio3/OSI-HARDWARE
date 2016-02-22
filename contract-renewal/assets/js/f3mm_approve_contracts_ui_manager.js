@@ -41,9 +41,43 @@ var ApproveContractsUIManager = (function (_super) {
      * responsible for initializing dropdown elements and items grid.
      */
     function ApproveContractsUIManager() {
+        var _this = this;
         if (window.userType !== "customer") {
-            $('.form-group-customer, .form-group-status').removeClass('hidden');
+            $(".form-group-customer, .form-group-status").removeClass("hidden");
         }
+        var $modal = $(".modal-notifications");
+        $modal.on("show.bs.modal", function (ev) {
+            var $button = $(ev.relatedTarget);
+            var contractId = $button.data("id");
+            var contracts = _this.data;
+            var contract = _(contracts).find(function (c) { return c.id == contractId; });
+            console.log("contract:", contract);
+            $modal.data("contract-id", contractId);
+            $modal.find(".notification-1-day").prop("checked", contract.custrecord_f3mm_notif_1day_prior === "T");
+            $modal.find(".notification-3-days").prop("checked", contract.custrecord_f3mm_notif_3days_prior === "T");
+            $modal.find(".notification-5-days").prop("checked", contract.custrecord_f3mm_notif_5days_prior === "T");
+            $modal.find(".notification-expiration").prop("checked", contract.custrecord_f3mm_notif_on_expiration === "T");
+            $modal.find(".notification-quote-approval").prop("checked", contract.custrecord_f3mm_notif_on_quote_approval === "T");
+            $modal.find(".notification-renewal").prop("checked", contract.custrecord_f3mm_notif_on_renewal === "T");
+        });
+        var self = this;
+        $modal.find(".btn-submit").on("click", function (ev) {
+            self.showLoading();
+            var serializedData = $modal.find(".form-horizontal :input").serializeObject();
+            var contractId = $modal.data("contract-id");
+            serializedData.id = contractId;
+            self._dataManager.updateNotifications(serializedData, function (result) {
+                console.log("submit success:", result);
+                if (!!result.data) {
+                    self.hideLoading();
+                    window.location.reload();
+                }
+                else {
+                    alert(result.message);
+                    _this.hideLoading();
+                }
+            });
+        });
         _super.call(this);
     }
     /**
@@ -56,6 +90,7 @@ var ApproveContractsUIManager = (function (_super) {
         var options = this.getFilters(filter);
         this._dataManager.searchContracts(options, function (result) {
             var data = _this.prepareGridData(result.data.records);
+            _this.data = data;
             var label = "1 record";
             if (result.data.total !== 1) {
                 label = result.data.total + " records";
@@ -119,10 +154,17 @@ var ApproveContractsUIManager = (function (_super) {
         $(".btn-void").on("click", this.voidSelected.bind(this));
         $(".export-to-csv-link").on("click", this.exportToCSV.bind(this));
         var self = this;
-        $(".jsgrid").on("click", ".btn-approve", function () {
+        $(".jsgrid").on("click", ".btn-approve", function (e) {
             self.showLoading();
             var contractId = $(this).data("id");
             var type = $(this).data("type");
+            if (type === "salesrep") {
+                if (!confirm("Approving this quote will send an email to customer. Are you sure you want to do it?")) {
+                    self.hideLoading();
+                    e.preventDefault();
+                    return false;
+                }
+            }
             var status = type === "customer" ? 3 : 2; // 2 = customer approval pending, 3 = approved
             var params = { cid: contractId, status: status };
             $.getJSON(window.apiSuiteletUrl + "&action=changeStatus", {
@@ -134,7 +176,7 @@ var ApproveContractsUIManager = (function (_super) {
         });
         $(".jsgrid").on("click", ".btn-generate-quote", function () {
             self.showLoading();
-            var contractId = $(this).data('id');
+            var contractId = $(this).data("id");
             var params = { contractId: contractId };
             $.getJSON(window.apiSuiteletUrl + "&action=generate_quote", {
                 params: JSON.stringify(params)
@@ -149,7 +191,7 @@ var ApproveContractsUIManager = (function (_super) {
      */
     ApproveContractsUIManager.prototype.bindDropdown = function () {
         //// fill partners dropdown
-        //this._dataManager.getVendors((result) => {
+        // this._dataManager.getVendors((result) => {
         //    // make it async
         //    setTimeout(() => {
         //        var select = document.getElementById('vendor');
@@ -164,7 +206,7 @@ var ApproveContractsUIManager = (function (_super) {
         //            });
         //        }
         //    }, 10);
-        //});
+        // });
         var _this = this;
         $(document.body).on("focusin", ".customer-dropdown", function (ev) {
             _this.bindCustomerDropdown($(ev.target));
@@ -286,19 +328,25 @@ var ApproveContractsUIManager = (function (_super) {
                     var itemName = firstItem.custrecord_f3mm_ci_item && firstItem.custrecord_f3mm_ci_item.text;
                     var html = "";
                     if (window.userType === "salesrep") {
-                        if (item.custrecord_f3mm_status.value === "1") {
-                            html += "<a href=\"javascript:;\"\n                                    data-type=\"salesrep\"\n                                    data-id=\"" + item.internalid + "\"\n                                    class=\"btn btn-sm btn-primary btn-approve\">\n                                    Approve\n                                </a>";
-                        }
-                        html += "<a href=\"javascript:;\"\n                            data-id=\"" + item.internalid + "\"\n                            class=\"btn btn-sm btn-primary btn-generate-quote\">\n                            Generate Quote\n                        </a>";
+                        html += "<a href=\"javascript:;\"\n                            data-id=\"" + item.internalid + "\"\n                            title=\"Generate Quote\"\n                            class=\"btn btn-sm btn-primary btn-generate-quote\">\n                            <i class=\"fa fa-plus-square-o\"></i>\n                        </a>";
+                    }
+                    else {
+                        html += "<a href=\"#\" data-toggle=\"modal\" data-target=\".modal-notifications\"\n                            data-id=\"" + item.internalid + "\"\n                            title=\"Notifications\"\n                            class=\"btn btn-sm btn-primary btn-change-notifications\">\n                            <i class=\"fa fa-bell\"></i>\n                        </a>";
                     }
                     var quotes = item.sublists.quotes;
                     if (!!quotes && quotes.length > 0) {
-                        var viewQuoteUrl = nlapiResolveURL("RECORD", "estimate", quotes[quotes.length - 1].id, false);
-                        html += "<a href=\"" + viewQuoteUrl + "\"\n                            target=\"_blank\"\n                            class=\"btn btn-sm btn-primary btn-view-quote\">\n                            View Quote\n                        </a>";
-                    }
-                    if (window.userType === "customer") {
-                        if (item.custrecord_f3mm_status.value === "2") {
-                            html += "<a href=\"javascript:;\"\n                                    data-type=\"customer\"\n                                    data-id=\"" + item.internalid + "\"\n                                    class=\"btn btn-sm btn-primary btn-approve\">\n                                    Approve\n                                </a>";
+                        var lastQuote = quotes[quotes.length - 1];
+                        var viewQuoteUrl = nlapiResolveURL("RECORD", "estimate", lastQuote.id, false);
+                        html += "<a href=\"" + viewQuoteUrl + "\"\n                            target=\"_blank\"\n                            title=\"View Quote\"\n                            class=\"btn btn-sm btn-primary btn-view-quote\">\n                            <i class=\"fa fa-file-text-o\"></i>\n                        </a>";
+                        if (window.userType === "customer") {
+                            if (item.custrecord_f3mm_status.value === "2") {
+                                html += "<a href=\"javascript:;\"\n                                    data-type=\"customer\"\n                                    data-id=\"" + item.internalid + "\"\n                                    title=\"Approve Quote\"\n                                    class=\"btn btn-sm btn-primary btn-approve\">\n                                    <i class=\"fa fa-check\"></i>\n                                </a>";
+                            }
+                        }
+                        else if (window.userType === "salesrep") {
+                            if (item.custrecord_f3mm_status.value === "1") {
+                                html += "<a href=\"javascript:;\"\n                                    data-type=\"salesrep\"\n                                    data-id=\"" + item.internalid + "\"\n                                    title=\"Approve Quote\"\n                                    class=\"btn btn-sm btn-primary btn-approve\">\n                                    <i class=\"fa fa-check\"></i>\n                                </a>";
+                            }
                         }
                     }
                     return html;

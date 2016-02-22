@@ -46,7 +46,7 @@ class CreateContractUISuitelet extends BaseUISuitelet {
             let uiSuiteletDeploymentId = "customdeploy_f3mm_create_contract_ui_st";
             let uiSuiteletUrl = nlapiResolveURL("SUITELET", uiSuiteletScriptId, uiSuiteletDeploymentId, false);
 
-            let editMode = request.getParameter("e");
+            let editMode = request.getParameter("e") || request.getParameter("edit");
             let contractId = request.getParameter("cid");
             let contract = null;
 
@@ -55,12 +55,12 @@ class CreateContractUISuitelet extends BaseUISuitelet {
                 F3.Util.Utility.logDebug("CreateContractUISuitelet.main() // contract: ", JSON.stringify(contract));
 
                 if (!contract) {
-                    throw new Error("that record does not exist.");
+                    throw new Error("That record does not exist.");
                 }
 
                 uiSuiteletUrl = uiSuiteletUrl + "&cid=" + contractId;
 
-                if (editMode === "t") {
+                if (editMode === "T" || editMode === "t") {
                     this.title = "Edit Contract";
                     this.type = "edit";
                 } else {

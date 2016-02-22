@@ -11,4 +11,5 @@ interface Window {
     approveContractsUIManager: ApproveContractsUIManager;
     listContractsUIManager: ListContractsUIManager;
     apiSuiteletUrl: string;
+    userType: string;
 }

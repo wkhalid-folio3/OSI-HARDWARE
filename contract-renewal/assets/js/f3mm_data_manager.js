@@ -21,7 +21,7 @@ var DataManager = (function () {
     function DataManager(type) {
         this._serverUrl = null;
         this._cacheTime = 0;
-        this._cachePrefix = "mm_cn_";
+        this._cachePrefix = "mm_cn_" + (window.userid || nlapiGetContext().company || new Date().getHours()) + "_";
         this._viewType = type;
         var oneSecond = 1000;
         var oneMinute = 60 * oneSecond;
@@ -380,14 +380,36 @@ var DataManager = (function () {
      */
     DataManager.prototype.submit = function (data, callback) {
         var options = {
-            'action': 'submit'
+            "action": "submit"
         };
         $.extend(options, {
-            'params': JSON.stringify(data)
+            "params": JSON.stringify(data)
         });
         return jQuery.post(this._serverUrl, options, function (result) {
-            console.log('submit(); // jquery complete: ', arguments);
-            callback && callback(result);
+            console.log("submit(); // jquery complete: ", arguments);
+            if (!!callback) {
+                callback(result);
+            }
+        });
+    };
+    /**
+     * Submit contract information to server
+     * @param {object} data contract json object to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
+    DataManager.prototype.updateNotifications = function (data, callback) {
+        var options = {
+            "action": "update_notifications"
+        };
+        $.extend(options, {
+            "params": JSON.stringify(data)
+        });
+        return jQuery.post(this._serverUrl, options, function (result) {
+            console.log("submit(); // jquery complete: ", arguments);
+            if (!!callback) {
+                callback(result);
+            }
         });
     };
     /**

@@ -88,6 +88,10 @@ class ContractDAL extends BaseDAL {
             id: "custrecord_f3mm_notif_on_expiration",
             type: "checkbox"
         },
+        notificationOnQuoteApproval: {
+            id: "custrecord_f3mm_notif_on_quote_approval",
+            type: "checkbox"
+        },
         notificationOnQuoteGenerate: {
             id: "custrecord_f3mm_notif_on_quote_generate",
             type: "checkbox"
@@ -376,18 +380,21 @@ class ContractDAL extends BaseDAL {
             let quote = nlapiCreateRecord("estimate");
 
             let tranDate = new Date();
-            let expectedClosingDate = new Date();
-            expectedClosingDate.setDate(expectedClosingDate.getDate() + 30); // add 7 days
-            let dueDate = new Date();
-            dueDate.setDate(dueDate.getDate() + 30); // add 7 days
+            // let expectedClosingDate = new Date();
+            // expectedClosingDate.setDate(expectedClosingDate.getDate() + 30); // add 7 days
 
-            // TODO : need to set due date base on customer requirement
-            // var dueDate = new Date();
-            // dueDate.setDate(dueDate.getDate() + 7); // add 7 days
+            // set due date to end date of contract
+            let dueDate = contract[this.fields.endDate.id];
+            if (!dueDate) {
+                dueDate = new Date();
+                dueDate = dueDate.setDate(dueDate.getDate() + 30);
+                dueDate = nlapiDateToString(dueDate); // add 30 days
+            }
+            let expectedClosingDate = dueDate;
 
-            quote.setFieldValue("expectedclosedate", nlapiDateToString(expectedClosingDate)); // mandatory field
             quote.setFieldValue("trandate", nlapiDateToString(tranDate)); // mandatory field
-            quote.setFieldValue("duedate", nlapiDateToString(dueDate)); // mandatory field
+            quote.setFieldValue("expectedclosedate", expectedClosingDate); // mandatory field
+            quote.setFieldValue("duedate", dueDate); // mandatory field
 
             // entityStatuses for references
             let proposalStatusId = "10";
@@ -399,6 +406,7 @@ class ContractDAL extends BaseDAL {
 
             quote.setFieldValue("custbody_estimate_end_user", contract[this.fields.primaryContact.id].value);
             quote.setFieldValue("custbody_end_user_email", contract[this.fields.primaryContactEmail.id]);
+            quote.setFieldValue("custbody_f3mm_quote_status", ContractStatus.PENDING_REP_APPROVAL + "");
             quote.setFieldValue("memo", contract[this.fields.memo.id]);
             quote.setFieldValue("discountitem", contract[this.fields.discountItemId.id]);
 
@@ -445,6 +453,7 @@ class ContractDAL extends BaseDAL {
         let record: any = {};
         record.id = contract.id;
         record[this.fields.deleted.id] = "T";
+        record.isinactive = "T";
 
         let id = this.upsert(record);
         let result = {
@@ -583,9 +592,20 @@ class ContractDAL extends BaseDAL {
         let result = {
             id: id
         };
+
+        // update quote as well
+        let commonDAL = new CommonDAL();
+        let quotes = commonDAL.getQuotes({contractId: id});
+        if (quotes && quotes.length) {
+            let lastQuote = quotes[quotes.length - 1];
+            let quoteRecord: any = {};
+            quoteRecord.id = lastQuote.id;
+            quoteRecord.custbody_f3mm_quote_status = options.status;
+            this.upsert(quoteRecord, null, "estimate");
+        }
+
         return result;
     }
-
 
 
     /**
@@ -650,63 +670,99 @@ class ContractDAL extends BaseDAL {
 
 
     /**
+     * Create/Update a Contract based on json data passed
+     * @param {object} contract json object containing data for contract
+     * @returns {number} id of created / updated contract
+     */
+    public updateNotifications(contract): {
+        id: any
+    } {
+
+        if (!contract) {
+            throw new Error("contract cannot be null.");
+        }
+
+        let record = this.prepareDataToUpsert(contract, true);
+
+        let removeExistingLineItems = false;
+        let id = this.upsert(record, removeExistingLineItems);
+
+        // if (contract.is_renew === "on") {
+        //    let updatedRecord = this.getWithDetails(id);
+        //    EmailHelper.sendRenewEmail(updatedRecord);
+        // }
+
+        let result = {
+            id: id
+        };
+        return result;
+    }
+
+    /**
      * Prepare record to insert in db
      * @param {object} contract json object containing data for contract
      * @returns {object} prepared record object to insert in db
      */
-    private prepareDataToUpsert(contract: any) {
+    private prepareDataToUpsert(contract: any, onlyUpdateNotifications = false) {
 
         let record: any = {};
         record.id = contract.id;
-        record[this.fields.customer.id] = contract.customer;
-        record[this.fields.primaryContact.id] = contract.primary_contact;
-        record[this.fields.primaryContactEmail.id] = contract.primary_contact_email;
-        record[this.fields.contractVendor.id] = contract.vendor;
-        record[this.fields.totalQuantitySeats.id] = contract.total_quantity_seats || 0;
-        record[this.fields.startDate.id] = contract.start_date;
-        record[this.fields.endDate.id] = contract.end_date;
-        record[this.fields.memo.id] = contract.memo;
-        record[this.fields.salesRep.id] = contract.sales_rep;
-        record[this.fields.department.id] = contract.department;
-        record[this.fields.contractNumber.id] = contract.contract_number;
-        record[this.fields.name.id] = contract.contract_number;
-        record[this.fields.status.id] = contract.status;
-        record[this.fields.poNumber.id] = contract.po_number;
-        record[this.fields.duration.id] = contract.duration;
-        record[this.fields.systemId.id] = contract.system_id;
-        record[this.fields.notificationDaysPrior.id] = contract.notification_days || "0";
+
+        if ( onlyUpdateNotifications !== true ) {
+            record[this.fields.customer.id] = contract.customer;
+            record[this.fields.primaryContact.id] = contract.primary_contact;
+            record[this.fields.primaryContactEmail.id] = contract.primary_contact_email;
+            record[this.fields.contractVendor.id] = contract.vendor;
+            record[this.fields.totalQuantitySeats.id] = contract.total_quantity_seats || 0;
+            record[this.fields.startDate.id] = contract.start_date;
+            record[this.fields.endDate.id] = contract.end_date;
+            record[this.fields.memo.id] = contract.memo;
+            record[this.fields.salesRep.id] = contract.sales_rep;
+            record[this.fields.department.id] = contract.department;
+            record[this.fields.contractNumber.id] = contract.contract_number;
+            record[this.fields.name.id] = contract.contract_number;
+            record[this.fields.status.id] = contract.status;
+            record[this.fields.poNumber.id] = contract.po_number;
+            record[this.fields.duration.id] = contract.duration;
+            record[this.fields.systemId.id] = contract.system_id;
+            record[this.fields.discountItemId.id] = contract.discount;
+            record[this.fields.notificationDaysPrior.id] = contract.notification_days || "0";
+            record[this.fields.notificationOnQuoteGenerate.id] = contract.notification_quote_generation === "on" ? "T" : "F";
+        }
+
         record[this.fields.notification5DaysPrior.id] = contract.notification_5_days === "on" ? "T" : "F";
         record[this.fields.notification3DaysPrior.id] = contract.notification_3_days === "on" ? "T" : "F";
         record[this.fields.notification1DayPrior.id] = contract.notification_1_day === "on" ? "T" : "F";
         record[this.fields.notificationOnExpiration.id] = contract.notification_expiration === "on" ? "T" : "F";
-        record[this.fields.notificationOnQuoteGenerate.id] = contract.notification_quote_generation === "on" ? "T" : "F";
         record[this.fields.notificationOnRenewal.id] = contract.notification_renewal === "on" ? "T" : "F";
-        record[this.fields.discountItemId.id] = contract.discount;
+        record[this.fields.notificationOnQuoteApproval.id] = contract.notification_quote_approval === "on" ? "T" : "F";
 
-        if (!!contract.items) {
+        if ( onlyUpdateNotifications !== true ) {
+            if (!!contract.items) {
 
-            let contractItemsSublist = {
-                internalId: "recmachcustrecord_f3mm_ci_contract",
-                keyField: "id",
-                lineitems: []
-            };
-
-            contract.items.forEach(item => {
-                let lineitem = {
-                    custrecord_f3mm_ci_amount: item.amount,
-                    custrecord_f3mm_ci_item: item.item_id,
-                    custrecord_f3mm_ci_item_description: item.item_description || "",
-                    custrecord_f3mm_ci_price: item.price === "-1" ? "" : item.price,
-                    custrecord_f3mm_ci_price_level: item.price_level,
-                    custrecord_f3mm_ci_quantity: item.quantity,
-                    id: item.id || null
+                let contractItemsSublist = {
+                    internalId: "recmachcustrecord_f3mm_ci_contract",
+                    keyField: "id",
+                    lineitems: []
                 };
 
-                contractItemsSublist.lineitems.push(lineitem);
-            });
+                contract.items.forEach(item => {
+                    let lineitem = {
+                        custrecord_f3mm_ci_amount: item.amount,
+                        custrecord_f3mm_ci_item: item.item_id,
+                        custrecord_f3mm_ci_item_description: item.item_description || "",
+                        custrecord_f3mm_ci_price: item.price === "-1" ? "" : item.price,
+                        custrecord_f3mm_ci_price_level: item.price_level,
+                        custrecord_f3mm_ci_quantity: item.quantity,
+                        id: item.id || null
+                    };
 
-            record.sublists = [];
-            record.sublists.push(contractItemsSublist);
+                    contractItemsSublist.lineitems.push(lineitem);
+                });
+
+                record.sublists = [];
+                record.sublists.push(contractItemsSublist);
+            }
         }
 
         return record;

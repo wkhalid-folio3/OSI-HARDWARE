@@ -23,7 +23,7 @@ class DataManager {
     private _serverUrl: string = null;
     private _viewType: string;
     private _cacheTime: number = 0;
-    private _cachePrefix: string = "mm_cn_";
+    private _cachePrefix: string = "mm_cn_" + (window.userid || nlapiGetContext().company || new Date().getHours()) + "_";
 
     constructor(type: string) {
         this._viewType = type;
@@ -489,23 +489,52 @@ class DataManager {
      */
     public submit(data, callback) {
 
-        var options = {
-            'action': 'submit'
+        let options = {
+            "action": "submit"
         };
 
         $.extend(options, {
-            'params': JSON.stringify(data)
+            "params": JSON.stringify(data)
         });
 
         return jQuery.post(this._serverUrl, options, function(result) {
-            console.log('submit(); // jquery complete: ', arguments);
+            console.log("submit(); // jquery complete: ", arguments);
 
-            callback && callback(result);
+            if (!!callback) {
+                callback(result);
+            }
 
         });
 
     }
 
+
+    /**
+     * Submit contract information to server
+     * @param {object} data contract json object to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
+    public updateNotifications(data, callback) {
+
+        let options = {
+            "action": "update_notifications"
+        };
+
+        $.extend(options, {
+            "params": JSON.stringify(data)
+        });
+
+        return jQuery.post(this._serverUrl, options, function(result) {
+            console.log("submit(); // jquery complete: ", arguments);
+
+            if (!!callback) {
+                callback(result);
+            }
+
+        });
+
+    }
 
     /**
      * Delete contract

@@ -88,7 +88,7 @@ class BaseDAL {
      * @param {boolean?} removeExistingLineItems default to false
      * @returns {number} id of the inserted or updated record
      */
-    public upsert(record, removeExistingLineItems? : boolean) {
+    public upsert(record, removeExistingLineItems? : boolean, type? : string) {
 
         // F3.Util.Utility.logDebug("BaseDAL.upsert(); // item = ", JSON.stringify(record));
 
@@ -98,11 +98,14 @@ class BaseDAL {
         try {
 
             if (!!record) {
+
+                type = type || this.internalId;
+
                 // either load or create record
                 if (F3.Util.Utility.isBlankOrNull(record.id)) {
-                    dbRecord = nlapiCreateRecord(this.internalId);
+                    dbRecord = nlapiCreateRecord(type);
                 } else {
-                    dbRecord = nlapiLoadRecord(this.internalId, record.id);
+                    dbRecord = nlapiLoadRecord(type, record.id);
                 }
 
                 // we donot want to add id in the body fields

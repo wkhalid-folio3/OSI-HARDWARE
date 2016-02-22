@@ -34,6 +34,8 @@ declare var apiSuiteletUrl: string;
  */
 class ApproveContractsUIManager extends ListContractsUIManager {
 
+    public data: any[];
+
     /**
      * constructor of ui manager class
      * responsible for initializing dropdown elements and items grid.
@@ -41,8 +43,45 @@ class ApproveContractsUIManager extends ListContractsUIManager {
     constructor() {
 
         if (window.userType !== "customer") {
-            $('.form-group-customer, .form-group-status').removeClass('hidden');
+            $(".form-group-customer, .form-group-status").removeClass("hidden");
         }
+
+
+        let $modal = $(".modal-notifications");
+        $modal.on("show.bs.modal", (ev) => {
+            let $button = $(ev.relatedTarget);
+            let contractId = $button.data("id");
+            let contracts = this.data;
+            let contract = _(contracts).find((c) => c.id == contractId);
+            console.log("contract:", contract);
+
+            $modal.data("contract-id", contractId);
+            $modal.find(".notification-1-day").prop("checked", contract.custrecord_f3mm_notif_1day_prior === "T");
+            $modal.find(".notification-3-days").prop("checked", contract.custrecord_f3mm_notif_3days_prior === "T");
+            $modal.find(".notification-5-days").prop("checked", contract.custrecord_f3mm_notif_5days_prior === "T");
+            $modal.find(".notification-expiration").prop("checked", contract.custrecord_f3mm_notif_on_expiration === "T");
+            $modal.find(".notification-quote-approval").prop("checked", contract.custrecord_f3mm_notif_on_quote_approval === "T");
+            $modal.find(".notification-renewal").prop("checked", contract.custrecord_f3mm_notif_on_renewal === "T");
+        });
+
+        let self = this;
+        $modal.find(".btn-submit").on("click", (ev) => {
+            self.showLoading();
+            let serializedData = $modal.find(".form-horizontal :input").serializeObject();
+            let contractId = $modal.data("contract-id");
+            serializedData.id = contractId;
+            self._dataManager.updateNotifications(serializedData, (result) => {
+                console.log("submit success:", result);
+
+                if (!!result.data) {
+                    self.hideLoading();
+                    window.location.reload();
+                } else {
+                    alert(result.message);
+                    this.hideLoading();
+                }
+            });
+        });
 
         super();
     }
@@ -59,6 +98,7 @@ class ApproveContractsUIManager extends ListContractsUIManager {
 
         this._dataManager.searchContracts(options, result => {
             let data = this.prepareGridData(result.data.records);
+            this.data = data;
 
             let label = "1 record";
             if (result.data.total !== 1) {
@@ -136,10 +176,19 @@ class ApproveContractsUIManager extends ListContractsUIManager {
 
 
         let self = this;
-        $(".jsgrid").on("click", ".btn-approve", function () {
+        $(".jsgrid").on("click", ".btn-approve", function (e) {
             self.showLoading();
             let contractId = $(this).data("id");
             let type = $(this).data("type");
+
+            if (type === "salesrep") {
+                if (!confirm("Approving this quote will send an email to customer. Are you sure you want to do it?")) {
+                    self.hideLoading();
+                    e.preventDefault();
+                    return false;
+                }
+            }
+
             let status = type === "customer" ? 3 : 2; // 2 = customer approval pending, 3 = approved
             let params = {cid: contractId, status: status};
             $.getJSON(`${window.apiSuiteletUrl}&action=changeStatus`, {
@@ -153,8 +202,8 @@ class ApproveContractsUIManager extends ListContractsUIManager {
 
         $(".jsgrid").on("click", ".btn-generate-quote", function () {
             self.showLoading();
-            var contractId = $(this).data('id');
-            var params = {contractId: contractId};
+            let contractId = $(this).data("id");
+            let params = {contractId: contractId};
             $.getJSON(`${window.apiSuiteletUrl}&action=generate_quote`, {
                 params: JSON.stringify(params)
             }, function (result) {
@@ -171,7 +220,7 @@ class ApproveContractsUIManager extends ListContractsUIManager {
     public bindDropdown() {
 
         //// fill partners dropdown
-        //this._dataManager.getVendors((result) => {
+        // this._dataManager.getVendors((result) => {
         //    // make it async
         //    setTimeout(() => {
         //        var select = document.getElementById('vendor');
@@ -186,7 +235,7 @@ class ApproveContractsUIManager extends ListContractsUIManager {
         //            });
         //        }
         //    }, 10);
-        //});
+        // });
 
         $(document.body).on("focusin", ".customer-dropdown", (ev) => {
             this.bindCustomerDropdown($(ev.target));
@@ -235,10 +284,10 @@ class ApproveContractsUIManager extends ListContractsUIManager {
 
         // override some filters
         // these are set from approve contracts suitelet
-        if(options.userType === "salesrep") {
+        if (options.userType === "salesrep") {
             options.sales_rep = window.userid;
-            //options.status = [1,2,3];
-        } else if(options.userType === "customer") {
+            // options.status = [1,2,3];
+        } else if (options.userType === "customer") {
             options.customer = window.userid;
             options.status = [2,3];
         }
@@ -347,40 +396,52 @@ class ApproveContractsUIManager extends ListContractsUIManager {
                 let html = "";
 
                 if (window.userType === "salesrep") {
-                    if (item.custrecord_f3mm_status.value === "1") {
-                        html += `<a href="javascript:;"
-                                    data-type="salesrep"
-                                    data-id="${item.internalid}"
-                                    class="btn btn-sm btn-primary btn-approve">
-                                    Approve
-                                </a>`;
-                    }
-
                     html += `<a href="javascript:;"
                             data-id="${item.internalid}"
+                            title="Generate Quote"
                             class="btn btn-sm btn-primary btn-generate-quote">
-                            Generate Quote
+                            <i class="fa fa-plus-square-o"></i>
+                        </a>`;
+                } else {
+                    html += `<a href="#" data-toggle="modal" data-target=".modal-notifications"
+                            data-id="${item.internalid}"
+                            title="Notifications"
+                            class="btn btn-sm btn-primary btn-change-notifications">
+                            <i class="fa fa-bell"></i>
                         </a>`;
                 }
 
                 let quotes = item.sublists.quotes;
                 if (!!quotes && quotes.length > 0) {
-                    let viewQuoteUrl = nlapiResolveURL("RECORD", "estimate", quotes[quotes.length - 1].id, false);
+                    let lastQuote = quotes[quotes.length - 1];
+                    let viewQuoteUrl = nlapiResolveURL("RECORD", "estimate", lastQuote.id, false);
                     html += `<a href="${viewQuoteUrl}"
                             target="_blank"
+                            title="View Quote"
                             class="btn btn-sm btn-primary btn-view-quote">
-                            View Quote
+                            <i class="fa fa-file-text-o"></i>
                         </a>`;
-                }
 
-                if (window.userType === "customer") {
-                    if (item.custrecord_f3mm_status.value === "2") {
-                        html += `<a href="javascript:;"
+                    if (window.userType === "customer") {
+                        if (item.custrecord_f3mm_status.value === "2") {
+                            html += `<a href="javascript:;"
                                     data-type="customer"
                                     data-id="${item.internalid}"
+                                    title="Approve Quote"
                                     class="btn btn-sm btn-primary btn-approve">
-                                    Approve
+                                    <i class="fa fa-check"></i>
                                 </a>`;
+                        }
+                    } else if (window.userType === "salesrep") {
+                        if (item.custrecord_f3mm_status.value === "1") {
+                            html += `<a href="javascript:;"
+                                    data-type="salesrep"
+                                    data-id="${item.internalid}"
+                                    title="Approve Quote"
+                                    class="btn btn-sm btn-primary btn-approve">
+                                    <i class="fa fa-check"></i>
+                                </a>`;
+                        }
                     }
                 }
 

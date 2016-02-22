@@ -4,7 +4,6 @@
 /// <reference path="../dal/f3mm_contract_dal.ts" />
 /// <reference path="../dal/f3mm_folders_dal.ts" />
 /// <reference path="../helpers/f3mm_email_helper.ts" />
-
 /// <reference path="../suitelet/f3mm_base_ui_suitelet.ts" />
 
 /**
@@ -50,8 +49,8 @@ let QuoteApproved = (() => {
                     // make sure they are changed
                     if (newStatus !== oldStatus) {
 
-                        // make sure it is approved
-                        if (newStatus === "3") {
+                        // make sure it is pending customer approval
+                        if (newStatus === "2") {
 
                             let contractsDAL = new ContractDAL();
                             let contract = contractsDAL.getWithDetails(contractId);

@@ -122,8 +122,8 @@ class CreateContractUIManager {
                 serializedData.items.push({
                     amount: item.amount,
                     id: item.id,
-                    item_id: item.itemid,
                     item_description: item.description,
+                    item_id: item.itemid,
                     price: item.price,
                     price_level: item.price_level,
                     quantity: item.quantity
@@ -132,17 +132,17 @@ class CreateContractUIManager {
 
 
             if (serializedData.items.length <= 0) {
-                alert('You must enter at least one line item for this transaction.');
+                alert("You must enter at least one line item for this transaction.");
                 return;
             }
 
-            console.log('serializedData: ', serializedData);
+            console.log("serializedData: ", serializedData);
 
             this.showLoading();
 
             this._dataManager.submit(serializedData, (result) => {
 
-                console.log('submit success:', result);
+                console.log("submit success:", result);
 
                 if (!!result.data) {
                     let uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
@@ -520,7 +520,7 @@ class CreateContractUIManager {
                 let select = document.getElementById("discount");
                 if (result.status_code === 200) {
 
-                    let discountItemId = this._contractInfo.custrecord_f3mm_discount_item_id;
+                    let discountItemId = this._contractInfo && this._contractInfo.custrecord_f3mm_discount_item_id || null;
 
                     // add each item on UI
                     $.each(result.data, (i, item) => {
@@ -1353,7 +1353,6 @@ class CreateContractUIManager {
             this.bindEditScreen(contract);
         }
 
-
         $("#notification_days").val(contract.custrecord_f3mm_notif_days_prior);
         $(".notification-5-days").prop("checked", contract.custrecord_f3mm_notif_5days_prior === "T");
         $(".notification-3-days").prop("checked", contract.custrecord_f3mm_notif_3days_prior === "T");
@@ -1361,6 +1360,7 @@ class CreateContractUIManager {
         $(".notification-expiration").prop("checked", contract.custrecord_f3mm_notif_on_expiration === "T");
         $(".notification-renewal").prop("checked", contract.custrecord_f3mm_notif_on_renewal === "T");
         $(".notification-quote-generation").prop("checked", contract.custrecord_f3mm_notif_on_quote_generate === "T");
+        $(".notification-quote-approval").prop("checked", contract.custrecord_f3mm_notif_on_quote_approval === "T");
     }
 
     /**
@@ -1374,12 +1374,6 @@ class CreateContractUIManager {
         let compiledTemplate = _.template(viewTemplate);
         let htmlMarkup = compiledTemplate(contract);
         $(".view-horizontal").html(htmlMarkup);
-
-        if (contract.custrecord_f3mm_status && contract.custrecord_f3mm_status.value === "1") {
-            $(".btn-generate-quote").attr("disabled", "disabled");
-        } else {
-            $(".btn-generate-quote").removeAttr("disabled");
-        }
     }
 
     /**

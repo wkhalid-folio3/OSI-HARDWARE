@@ -34,24 +34,24 @@ class EmailHelper {
     }
 
     public static sendQuoteApprovalEmail(contract: any, quoteId: string) {
-        F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // START", null);
-        F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // contract:", JSON.stringify(contract));
-        F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // quoteId:", quoteId);
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // START", null);
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // contract:", JSON.stringify(contract));
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // quoteId:", quoteId);
 
         try {
             let fields = this._contractDAL.fields;
-            let emailEnabled = contract[fields.notificationOnQuoteGenerate.id] === "T";
+            let emailEnabled = contract[fields.notificationOnQuoteApproval.id] === "T";
             let customerId = contract[fields.customer.id].value;
 
             if (emailEnabled === true) {
-                this.sendEmail(contract, ContractNotificationType.QUOTE_GENERATION, customerId, quoteId);
+                this.sendEmail(contract, ContractNotificationType.QUOTE_APPROVAL, customerId, quoteId);
             }
 
         } catch (e) {
-            F3.Util.Utility.logException("EmailHelper.sendQuoteGenerationEmail();", e.toString());
+            F3.Util.Utility.logException("EmailHelper.sendQuoteApprovalEmail();", e.toString());
         }
 
-        F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // END", null);
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // END", null);
     }
 
     public static sendQuoteGenerationEmail(contract: any, quoteId: string) {

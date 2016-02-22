@@ -26,21 +26,21 @@ var EmailHelper = (function () {
         F3.Util.Utility.logDebug("EmailHelper.sendRenewEmail(); // END", null);
     };
     EmailHelper.sendQuoteApprovalEmail = function (contract, quoteId) {
-        F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // START", null);
-        F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // contract:", JSON.stringify(contract));
-        F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // quoteId:", quoteId);
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // START", null);
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // contract:", JSON.stringify(contract));
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // quoteId:", quoteId);
         try {
             var fields = this._contractDAL.fields;
-            var emailEnabled = contract[fields.notificationOnQuoteGenerate.id] === "T";
+            var emailEnabled = contract[fields.notificationOnQuoteApproval.id] === "T";
             var customerId = contract[fields.customer.id].value;
             if (emailEnabled === true) {
-                this.sendEmail(contract, ContractNotificationType.QUOTE_GENERATION, customerId, quoteId);
+                this.sendEmail(contract, ContractNotificationType.QUOTE_APPROVAL, customerId, quoteId);
             }
         }
         catch (e) {
-            F3.Util.Utility.logException("EmailHelper.sendQuoteGenerationEmail();", e.toString());
+            F3.Util.Utility.logException("EmailHelper.sendQuoteApprovalEmail();", e.toString());
         }
-        F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // END", null);
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // END", null);
     };
     EmailHelper.sendQuoteGenerationEmail = function (contract, quoteId) {
         F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // START", null);
