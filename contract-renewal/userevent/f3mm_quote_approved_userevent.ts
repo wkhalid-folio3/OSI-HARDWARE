@@ -39,8 +39,7 @@ let QuoteApproved = (() => {
 
             nlapiLogExecution("DEBUG", "QuoteApproved.afterSubmit", "STARTED");
 
-            let eventType = type.toString();
-            if (eventType === "create" || eventType === "edit" || eventType === "xedit") {
+            if (type === "create" || type === "edit" || type === "xedit") {
 
                 try {
                     let newStatus = newRecord.getFieldValue("custbody_f3mm_quote_status");
@@ -109,7 +108,7 @@ let QuoteApproved = (() => {
  * @returns {Void}
  */
 function QuoteApprovedBeforeLoad(type, form, request) {
-    return QuoteApproved.beforeLoad(type, form, request);
+    return QuoteApproved.beforeLoad(type.toString(), form, request);
 }
 
 /**
@@ -125,7 +124,7 @@ function QuoteApprovedBeforeLoad(type, form, request) {
  * @returns {Void}
  */
 function QuoteApprovedBeforeSubmit(type) {
-    return QuoteApproved.beforeSubmit(type);
+    return QuoteApproved.beforeSubmit(type.toString());
 }
 
 /**
@@ -140,5 +139,5 @@ function QuoteApprovedBeforeSubmit(type) {
  * @returns {Void}
  */
 function QuoteApprovedAfterSubmit(type) {
-    return QuoteApproved.afterSubmit(type);
+    return QuoteApproved.afterSubmit(type.toString());
 }

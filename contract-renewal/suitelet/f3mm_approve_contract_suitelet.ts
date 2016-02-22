@@ -35,6 +35,11 @@ class ApproveContractSuitelet extends ListContractsUISuitelet {
                 title: this.title
             });
 
+            let userid = nlapiGetContext().getUser();
+            let userType = request.getParameter("customer") === "T" ? "customer" : "salesrep";
+            processedHtml = processedHtml.replace(/{{ userType }}/gi, userType);
+            processedHtml = processedHtml.replace(/{{ userid }}/gi, userid);
+
             F3.Util.Utility.logDebug("ApproveContractSuitelet.main(); // this: ", JSON.stringify(this));
             F3.Util.Utility.logDebug("ApproveContractSuitelet.main(); // typeof this: ", typeof(this));
             F3.Util.Utility.logDebug("ApproveContractSuitelet.main(); // this.parseHtmlTemplate: ", this.parseHtmlTemplate);

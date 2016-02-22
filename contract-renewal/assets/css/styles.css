@@ -52,12 +52,17 @@ tr.modified-item {
 
 .datepicker-dropdown { margin-top: 90px; }
 .contracts-approval-page .datepicker-dropdown, .nl-pagetint .datepicker-dropdown { margin-top: 6px; }
-.page-standalone .datepicker-dropdown { margin-top: 22px; }
+.page-standalone .datepicker-dropdown { margin-top: 22px;  }
 
 /*
 ----------------------------------------
-Approve Contract Page Classes :: START
+Approve Contract Page Classes :: START afafadfa dfhladhlfhakjfhka
 */
+
+.action-buttons .btn + .btn {
+    margin-top: 4px;
+}
+
 
 .contracts-approval-page .jsgrid-grid-header,
 .contracts-approval-page .jsgrid-grid-body {

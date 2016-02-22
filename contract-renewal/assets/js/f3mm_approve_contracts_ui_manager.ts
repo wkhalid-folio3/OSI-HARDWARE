@@ -39,6 +39,11 @@ class ApproveContractsUIManager extends ListContractsUIManager {
      * responsible for initializing dropdown elements and items grid.
      */
     constructor() {
+
+        if (window.userType !== "customer") {
+            $('.form-group-customer, .form-group-status').removeClass('hidden');
+        }
+
         super();
     }
 
@@ -131,13 +136,28 @@ class ApproveContractsUIManager extends ListContractsUIManager {
 
 
         let self = this;
-        $(".jsgrid").on("click", ".btn-approve", function() {
+        $(".jsgrid").on("click", ".btn-approve", function () {
             self.showLoading();
             let contractId = $(this).data("id");
             let type = $(this).data("type");
             let status = type === "customer" ? 3 : 2; // 2 = customer approval pending, 3 = approved
-            let params = {cid: contractId, status : status};
-            $.getJSON(`${window.apiSuiteletUrl}&action=changeStatus`, { params: JSON.stringify(params) }, function(result) {
+            let params = {cid: contractId, status: status};
+            $.getJSON(`${window.apiSuiteletUrl}&action=changeStatus`, {
+                params: JSON.stringify(params)
+            }, function (result) {
+                self.hideLoading();
+                window.location.reload();
+            });
+        });
+
+
+        $(".jsgrid").on("click", ".btn-generate-quote", function () {
+            self.showLoading();
+            var contractId = $(this).data('id');
+            var params = {contractId: contractId};
+            $.getJSON(`${window.apiSuiteletUrl}&action=generate_quote`, {
+                params: JSON.stringify(params)
+            }, function (result) {
                 self.hideLoading();
                 window.location.reload();
             });
@@ -186,7 +206,7 @@ class ApproveContractsUIManager extends ListContractsUIManager {
             return;
         }
 
-        let options: any = {
+        let options:any = {
             pageSize: filter.pageSize,
             sortFields: {},
             startIndex: startIndex
@@ -200,12 +220,27 @@ class ApproveContractsUIManager extends ListContractsUIManager {
             options.sortFields[sortField] = filter.sortOrder;
         }
 
+
+
+
         if (!!validated.customerId) {
             options.customer = validated.customerId;
         }
 
         if (options.isinactive === "on") {
             options.isinactive = true;
+        }
+
+        options.userType = window.userType;
+
+        // override some filters
+        // these are set from approve contracts suitelet
+        if(options.userType === "salesrep") {
+            options.sales_rep = window.userid;
+            //options.status = [1,2,3];
+        } else if(options.userType === "customer") {
+            options.customer = window.userid;
+            options.status = [2,3];
         }
 
         return options;
@@ -302,6 +337,7 @@ class ApproveContractsUIManager extends ListContractsUIManager {
             type: "text",
             width: 100
         }, {
+            css: "action-buttons",
             editing: false,
             itemTemplate: (_, item) => {
                 let contractItems = item && item.sublists && item.sublists.recmachcustrecord_f3mm_ci_contract;
@@ -310,13 +346,42 @@ class ApproveContractsUIManager extends ListContractsUIManager {
                 let itemName = firstItem.custrecord_f3mm_ci_item && firstItem.custrecord_f3mm_ci_item.text;
                 let html = "";
 
-                if ( item.custrecord_f3mm_status.value === "1") {
-                    html += `<a href="javascript:;"
+                if (window.userType === "salesrep") {
+                    if (item.custrecord_f3mm_status.value === "1") {
+                        html += `<a href="javascript:;"
                                     data-type="salesrep"
                                     data-id="${item.internalid}"
                                     class="btn btn-sm btn-primary btn-approve">
                                     Approve
                                 </a>`;
+                    }
+
+                    html += `<a href="javascript:;"
+                            data-id="${item.internalid}"
+                            class="btn btn-sm btn-primary btn-generate-quote">
+                            Generate Quote
+                        </a>`;
+                }
+
+                let quotes = item.sublists.quotes;
+                if (!!quotes && quotes.length > 0) {
+                    let viewQuoteUrl = nlapiResolveURL("RECORD", "estimate", quotes[quotes.length - 1].id, false);
+                    html += `<a href="${viewQuoteUrl}"
+                            target="_blank"
+                            class="btn btn-sm btn-primary btn-view-quote">
+                            View Quote
+                        </a>`;
+                }
+
+                if (window.userType === "customer") {
+                    if (item.custrecord_f3mm_status.value === "2") {
+                        html += `<a href="javascript:;"
+                                    data-type="customer"
+                                    data-id="${item.internalid}"
+                                    class="btn btn-sm btn-primary btn-approve">
+                                    Approve
+                                </a>`;
+                    }
                 }
 
                 return html;

@@ -41,6 +41,9 @@ var ApproveContractsUIManager = (function (_super) {
      * responsible for initializing dropdown elements and items grid.
      */
     function ApproveContractsUIManager() {
+        if (window.userType !== "customer") {
+            $('.form-group-customer, .form-group-status').removeClass('hidden');
+        }
         _super.call(this);
     }
     /**
@@ -122,7 +125,20 @@ var ApproveContractsUIManager = (function (_super) {
             var type = $(this).data("type");
             var status = type === "customer" ? 3 : 2; // 2 = customer approval pending, 3 = approved
             var params = { cid: contractId, status: status };
-            $.getJSON(window.apiSuiteletUrl + "&action=changeStatus", { params: JSON.stringify(params) }, function (result) {
+            $.getJSON(window.apiSuiteletUrl + "&action=changeStatus", {
+                params: JSON.stringify(params)
+            }, function (result) {
+                self.hideLoading();
+                window.location.reload();
+            });
+        });
+        $(".jsgrid").on("click", ".btn-generate-quote", function () {
+            self.showLoading();
+            var contractId = $(this).data('id');
+            var params = { contractId: contractId };
+            $.getJSON(window.apiSuiteletUrl + "&action=generate_quote", {
+                params: JSON.stringify(params)
+            }, function (result) {
                 self.hideLoading();
                 window.location.reload();
             });
@@ -179,6 +195,16 @@ var ApproveContractsUIManager = (function (_super) {
         }
         if (options.isinactive === "on") {
             options.isinactive = true;
+        }
+        options.userType = window.userType;
+        // override some filters
+        // these are set from approve contracts suitelet
+        if (options.userType === "salesrep") {
+            options.sales_rep = window.userid;
+        }
+        else if (options.userType === "customer") {
+            options.customer = window.userid;
+            options.status = [2, 3];
         }
         return options;
     };
@@ -251,6 +277,7 @@ var ApproveContractsUIManager = (function (_super) {
                 type: "text",
                 width: 100
             }, {
+                css: "action-buttons",
                 editing: false,
                 itemTemplate: function (_, item) {
                     var contractItems = item && item.sublists && item.sublists.recmachcustrecord_f3mm_ci_contract;
@@ -258,8 +285,21 @@ var ApproveContractsUIManager = (function (_super) {
                     var description = firstItem && firstItem.custrecord_f3mm_ci_item_description;
                     var itemName = firstItem.custrecord_f3mm_ci_item && firstItem.custrecord_f3mm_ci_item.text;
                     var html = "";
-                    if (item.custrecord_f3mm_status.value === "1") {
-                        html += "<a href=\"javascript:;\"\n                                    data-type=\"salesrep\"\n                                    data-id=\"" + item.internalid + "\"\n                                    class=\"btn btn-sm btn-primary btn-approve\">\n                                    Approve\n                                </a>";
+                    if (window.userType === "salesrep") {
+                        if (item.custrecord_f3mm_status.value === "1") {
+                            html += "<a href=\"javascript:;\"\n                                    data-type=\"salesrep\"\n                                    data-id=\"" + item.internalid + "\"\n                                    class=\"btn btn-sm btn-primary btn-approve\">\n                                    Approve\n                                </a>";
+                        }
+                        html += "<a href=\"javascript:;\"\n                            data-id=\"" + item.internalid + "\"\n                            class=\"btn btn-sm btn-primary btn-generate-quote\">\n                            Generate Quote\n                        </a>";
+                    }
+                    var quotes = item.sublists.quotes;
+                    if (!!quotes && quotes.length > 0) {
+                        var viewQuoteUrl = nlapiResolveURL("RECORD", "estimate", quotes[quotes.length - 1].id, false);
+                        html += "<a href=\"" + viewQuoteUrl + "\"\n                            target=\"_blank\"\n                            class=\"btn btn-sm btn-primary btn-view-quote\">\n                            View Quote\n                        </a>";
+                    }
+                    if (window.userType === "customer") {
+                        if (item.custrecord_f3mm_status.value === "2") {
+                            html += "<a href=\"javascript:;\"\n                                    data-type=\"customer\"\n                                    data-id=\"" + item.internalid + "\"\n                                    class=\"btn btn-sm btn-primary btn-approve\">\n                                    Approve\n                                </a>";
+                        }
                     }
                     return html;
                 },

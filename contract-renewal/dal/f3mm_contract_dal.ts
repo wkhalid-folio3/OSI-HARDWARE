@@ -186,11 +186,13 @@ class ContractDAL extends BaseDAL {
             }
 
             let contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
+            F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // contractItems ", JSON.stringify(contractItems));
             let items = [];
             let contractItemIds = contractItems.map(ci => ci.id);
             let itemIds = contractItems
                 .filter(ci => !!ci.custrecord_f3mm_ci_item)
                 .map(ci => parseInt(ci.custrecord_f3mm_ci_item.value, 10));
+            F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // itemIds ", JSON.stringify(itemIds));
 
             if (itemIds && itemIds.length) {
                 items = commonDAL.getItems({
@@ -210,9 +212,10 @@ class ContractDAL extends BaseDAL {
                 contractId: id
             });
 
-            // attach history
-            let contractHistory = this.getHistory(id);
+            F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // contract.sublists.quotes", JSON.stringify(contract.sublists.quotes));
 
+            // attach history
+            let contractHistory = this.getHistory(id) || [];
             let historyFieldsToExclude = ["Inactive", "Deleted?", "Owner"];
             let contractItemsHistory = this.getHistory(contractItemIds, "customrecord_f3mm_contract_item");
             if (!!contractItemsHistory) {
@@ -227,6 +230,8 @@ class ContractDAL extends BaseDAL {
                 contract.history = contractHistory;
             }
 
+            F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // contractItemsHistory", JSON.stringify(contractItemsHistory));
+
             contractItems.forEach(contractItem => {
                 if (!!contractItem.custrecord_f3mm_ci_item) {
                     let itemId = contractItem.custrecord_f3mm_ci_item.value;
@@ -239,6 +244,8 @@ class ContractDAL extends BaseDAL {
                     }
                 }
             });
+
+            F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // contract", JSON.stringify(contract));
         } catch (ex) {
             F3.Util.Utility.logException("ContractDAL.getWithDetails(id); // id = " + id, ex);
             throw ex;
@@ -288,6 +295,7 @@ class ContractDAL extends BaseDAL {
         let filters = [];
 
         if (!!params) {
+
             if (!F3.Util.Utility.isBlankOrNull(params.contract_number)) {
                 filters.push(new nlobjSearchFilter(this.fields.contractNumber.id, null, "contains", params.contract_number));
             }
@@ -323,18 +331,25 @@ class ContractDAL extends BaseDAL {
 
         filters.push(new nlobjSearchFilter(this.fields.deleted.id, null, "is", "F"));
 
+        // get contract records with specified filters
         result.records = super.getAll(filters, null, null, params);
 
+        // fetch contract items
         if (result.records && result.records.length) {
+            let commonDAL = new CommonDAL();
             let contractIds = result.records.map(record => record.id);
             let contractItems = this.searchContractItems({contractIds: contractIds});
             result.records.forEach(record => {
                 record.sublists = record.sublists || {};
                 let filtered = contractItems.filter(ci => ci.custrecord_f3mm_ci_contract.value === record.id);
                 record.sublists.recmachcustrecord_f3mm_ci_contract = filtered;
+
+                // attach quotes
+                record.sublists.quotes = commonDAL.getQuotes({
+                    contractId: record.id
+                });
             });
         }
-
 
         // count records
         let columns = [new nlobjSearchColumn("internalid", null, "count").setLabel("total")];

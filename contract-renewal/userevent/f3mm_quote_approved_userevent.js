@@ -32,8 +32,7 @@ var QuoteApproved = (function () {
             var newRecord = nlapiGetNewRecord();
             var oldRecord = nlapiGetOldRecord();
             nlapiLogExecution("DEBUG", "QuoteApproved.afterSubmit", "STARTED");
-            var eventType = type.toString();
-            if (eventType === "create" || eventType === "edit" || eventType === "xedit") {
+            if (type === "create" || type === "edit" || type === "xedit") {
                 try {
                     var newStatus = newRecord.getFieldValue("custbody_f3mm_quote_status");
                     var oldStatus = oldRecord.getFieldValue("custbody_f3mm_quote_status");
@@ -94,7 +93,7 @@ var QuoteApproved = (function () {
  * @returns {Void}
  */
 function QuoteApprovedBeforeLoad(type, form, request) {
-    return QuoteApproved.beforeLoad(type, form, request);
+    return QuoteApproved.beforeLoad(type.toString(), form, request);
 }
 /**
  * The recordType (internal id) corresponds to the "Applied To" record in your script deployment.
@@ -109,7 +108,7 @@ function QuoteApprovedBeforeLoad(type, form, request) {
  * @returns {Void}
  */
 function QuoteApprovedBeforeSubmit(type) {
-    return QuoteApproved.beforeSubmit(type);
+    return QuoteApproved.beforeSubmit(type.toString());
 }
 /**
  * The recordType (internal id) corresponds to the "Applied To" record in your script deployment.
@@ -123,6 +122,6 @@ function QuoteApprovedBeforeSubmit(type) {
  * @returns {Void}
  */
 function QuoteApprovedAfterSubmit(type) {
-    return QuoteApproved.afterSubmit(type);
+    return QuoteApproved.afterSubmit(type.toString());
 }
 //# sourceMappingURL=f3mm_quote_approved_userevent.js.map

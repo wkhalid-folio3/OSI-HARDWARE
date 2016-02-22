@@ -180,11 +180,13 @@ var ContractDAL = (function (_super) {
                 return null;
             }
             var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
+            F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // contractItems ", JSON.stringify(contractItems));
             var items = [];
             var contractItemIds = contractItems.map(function (ci) { return ci.id; });
             var itemIds = contractItems
                 .filter(function (ci) { return !!ci.custrecord_f3mm_ci_item; })
                 .map(function (ci) { return parseInt(ci.custrecord_f3mm_ci_item.value, 10); });
+            F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // itemIds ", JSON.stringify(itemIds));
             if (itemIds && itemIds.length) {
                 items = commonDAL.getItems({
                     itemIds: itemIds
@@ -200,8 +202,9 @@ var ContractDAL = (function (_super) {
             contract.sublists.quotes = commonDAL.getQuotes({
                 contractId: id
             });
+            F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // contract.sublists.quotes", JSON.stringify(contract.sublists.quotes));
             // attach history
-            var contractHistory = this.getHistory(id);
+            var contractHistory = this.getHistory(id) || [];
             var historyFieldsToExclude = ["Inactive", "Deleted?", "Owner"];
             var contractItemsHistory = this.getHistory(contractItemIds, "customrecord_f3mm_contract_item");
             if (!!contractItemsHistory) {
@@ -215,6 +218,7 @@ var ContractDAL = (function (_super) {
                 });
                 contract.history = contractHistory;
             }
+            F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // contractItemsHistory", JSON.stringify(contractItemsHistory));
             contractItems.forEach(function (contractItem) {
                 if (!!contractItem.custrecord_f3mm_ci_item) {
                     var itemId = contractItem.custrecord_f3mm_ci_item.value;
@@ -227,6 +231,7 @@ var ContractDAL = (function (_super) {
                     }
                 }
             });
+            F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // contract", JSON.stringify(contract));
         }
         catch (ex) {
             F3.Util.Utility.logException("ContractDAL.getWithDetails(id); // id = " + id, ex);
@@ -296,14 +301,21 @@ var ContractDAL = (function (_super) {
             filters.push(new nlobjSearchFilter("isinactive", null, "is", params.isinactive === true ? "T" : "F"));
         }
         filters.push(new nlobjSearchFilter(this.fields.deleted.id, null, "is", "F"));
+        // get contract records with specified filters
         result.records = _super.prototype.getAll.call(this, filters, null, null, params);
+        // fetch contract items
         if (result.records && result.records.length) {
+            var commonDAL = new CommonDAL();
             var contractIds = result.records.map(function (record) { return record.id; });
             var contractItems = this.searchContractItems({ contractIds: contractIds });
             result.records.forEach(function (record) {
                 record.sublists = record.sublists || {};
                 var filtered = contractItems.filter(function (ci) { return ci.custrecord_f3mm_ci_contract.value === record.id; });
                 record.sublists.recmachcustrecord_f3mm_ci_contract = filtered;
+                // attach quotes
+                record.sublists.quotes = commonDAL.getQuotes({
+                    contractId: record.id
+                });
             });
         }
         // count records
