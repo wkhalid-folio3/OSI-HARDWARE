@@ -37,7 +37,7 @@ var QuoteApproved = (function () {
                     var newStatus = newRecord.getFieldValue("custbody_f3mm_quote_status");
                     var oldStatus = oldRecord.getFieldValue("custbody_f3mm_quote_status");
                     var contractId = newRecord.getFieldValue("custbody_f3mm_quote_contract");
-                    var quoteId = newRecord.getFieldValue("internalid");
+                    var quoteId = newRecord.getId();
                     // make sure they are changed
                     if (newStatus !== oldStatus) {
                         // make sure it is pending customer approval

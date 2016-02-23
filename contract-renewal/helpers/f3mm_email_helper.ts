@@ -119,6 +119,7 @@ class EmailHelper {
         let vendorId = contract[fields.contractVendor.id].value;
 
         if (!!to) {
+            let quotePdf = null;
             let templateMapping = this._commonDAL.getEmailTemplate(type, vendorId)[0];
 
             if (!templateMapping) {
@@ -132,12 +133,13 @@ class EmailHelper {
             emailMerger.setCustomRecord("customrecord_f3mm_contract", contract.id);
             if (!!quoteId) {
                 emailMerger.setTransaction(quoteId);
+                quotePdf = nlapiPrintRecord("TRANSACTION", quoteId, "PDF");
             }
 
             let mergeResult = emailMerger.merge();
             let emailSubject = mergeResult.getSubject();
             let emailBody = mergeResult.getBody();
-            nlapiSendEmail(Config.FROM_EMAIL_ID, to, emailSubject, emailBody);
+            nlapiSendEmail(Config.FROM_EMAIL_ID, to, emailSubject, emailBody, null, null, null, quotePdf);
             F3.Util.Utility.logDebug("Email sent", `Email sent to customer id: ${to}`);
         }
     }

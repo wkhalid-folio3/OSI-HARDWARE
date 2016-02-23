@@ -44,7 +44,7 @@ let QuoteApproved = (() => {
                     let newStatus = newRecord.getFieldValue("custbody_f3mm_quote_status");
                     let oldStatus = oldRecord.getFieldValue("custbody_f3mm_quote_status");
                     let contractId = newRecord.getFieldValue("custbody_f3mm_quote_contract");
-                    let quoteId = newRecord.getFieldValue("internalid");
+                    let quoteId = newRecord.getId();
 
                     // make sure they are changed
                     if (newStatus !== oldStatus) {

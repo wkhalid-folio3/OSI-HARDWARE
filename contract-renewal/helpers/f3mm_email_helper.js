@@ -98,6 +98,7 @@ var EmailHelper = (function () {
         var fields = this._contractDAL.fields;
         var vendorId = contract[fields.contractVendor.id].value;
         if (!!to) {
+            var quotePdf = null;
             var templateMapping = this._commonDAL.getEmailTemplate(type, vendorId)[0];
             if (!templateMapping) {
                 templateMapping = this._commonDAL.getDefaultEmailTemplate(type)[0];
@@ -108,11 +109,12 @@ var EmailHelper = (function () {
             emailMerger.setCustomRecord("customrecord_f3mm_contract", contract.id);
             if (!!quoteId) {
                 emailMerger.setTransaction(quoteId);
+                quotePdf = nlapiPrintRecord("TRANSACTION", quoteId, "PDF");
             }
             var mergeResult = emailMerger.merge();
             var emailSubject = mergeResult.getSubject();
             var emailBody = mergeResult.getBody();
-            nlapiSendEmail(Config.FROM_EMAIL_ID, to, emailSubject, emailBody);
+            nlapiSendEmail(Config.FROM_EMAIL_ID, to, emailSubject, emailBody, null, null, null, quotePdf);
             F3.Util.Utility.logDebug("Email sent", "Email sent to customer id: " + to);
         }
     };

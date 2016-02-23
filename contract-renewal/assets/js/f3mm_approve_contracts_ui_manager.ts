@@ -177,18 +177,17 @@ class ApproveContractsUIManager extends ListContractsUIManager {
 
         let self = this;
         $(".jsgrid").on("click", ".btn-approve", function (e) {
-            self.showLoading();
             let contractId = $(this).data("id");
             let type = $(this).data("type");
 
             if (type === "salesrep") {
                 if (!confirm("Approving this quote will send an email to customer. Are you sure you want to do it?")) {
-                    self.hideLoading();
                     e.preventDefault();
                     return false;
                 }
             }
 
+            self.showLoading();
             let status = type === "customer" ? 3 : 2; // 2 = customer approval pending, 3 = approved
             let params = {cid: contractId, status: status};
             $.getJSON(`${window.apiSuiteletUrl}&action=changeStatus`, {

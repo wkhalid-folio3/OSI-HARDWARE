@@ -155,16 +155,15 @@ var ApproveContractsUIManager = (function (_super) {
         $(".export-to-csv-link").on("click", this.exportToCSV.bind(this));
         var self = this;
         $(".jsgrid").on("click", ".btn-approve", function (e) {
-            self.showLoading();
             var contractId = $(this).data("id");
             var type = $(this).data("type");
             if (type === "salesrep") {
                 if (!confirm("Approving this quote will send an email to customer. Are you sure you want to do it?")) {
-                    self.hideLoading();
                     e.preventDefault();
                     return false;
                 }
             }
+            self.showLoading();
             var status = type === "customer" ? 3 : 2; // 2 = customer approval pending, 3 = approved
             var params = { cid: contractId, status: status };
             $.getJSON(window.apiSuiteletUrl + "&action=changeStatus", {

@@ -245,13 +245,13 @@ var CommonDAL = (function (_super) {
                         queryToSearch = query.trim();
                     }
                     if (Config.IS_PROD === true) {
-                        queryFilters.push(["custitem_long_name", "startswith", queryToSearch]);
+                        queryFilters.push(["custitem_long_name", "contains", queryToSearch]);
                     }
                     if (F3.Util.Utility.isBlankOrNull(queryToSearch) === false) {
                         if (queryFilters.length > 0) {
                             queryFilters.push("or");
                         }
-                        queryFilters.push(["displayname", "startswith", queryToSearch]);
+                        queryFilters.push(["displayname", "contains", queryToSearch]);
                         queryFilters.push("or");
                         queryFilters.push(["itemid", "contains", queryToSearch]);
                     }
