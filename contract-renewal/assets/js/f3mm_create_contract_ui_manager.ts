@@ -123,6 +123,7 @@ class CreateContractUIManager {
                     amount: item.amount,
                     id: item.id,
                     item_description: item.description,
+                    longname: item.longname,
                     item_id: item.itemid,
                     price: item.price,
                     price_level: item.price_level,
@@ -654,6 +655,7 @@ class CreateContractUIManager {
                             id: contractItem.id,
                             item: contractItem.custrecord_f3mm_ci_item.itemid + " : "  + contractItem.custrecord_f3mm_ci_item.displayname,
                             itemid: contractItem.custrecord_f3mm_ci_item.value,
+                            longname: contractItem.custrecord_f3mm_ci_item_long_name,
                             price: contractItem.custrecord_f3mm_ci_price,
                             priceLevels: contractItem.custrecord_f3mm_ci_item.priceLevels, // used for dropdown
                             price_level: (priceLevel && priceLevel.value) || "0",
@@ -756,6 +758,7 @@ class CreateContractUIManager {
             data.item = suggestion.displaylabel;
             data.itemid = suggestion.id;
             data.description = suggestion.salesdescription;
+            data.longname = suggestion.custitem_long_name;
             data.baseprice = suggestion.baseprice;
         }
 
@@ -802,6 +805,7 @@ class CreateContractUIManager {
             args.item.itemid = suggestion.id;
             args.item.baseprice = suggestion.baseprice;
             args.item.description = suggestion.salesdescription;
+            args.item.longname = suggestion.custitem_long_name;
         }
 
         if (args.item.item === "") {

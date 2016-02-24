@@ -94,6 +94,7 @@ var CreateContractUIManager = (function () {
                     amount: item.amount,
                     id: item.id,
                     item_description: item.description,
+                    longname: item.longname,
                     item_id: item.itemid,
                     price: item.price,
                     price_level: item.price_level,
@@ -546,6 +547,7 @@ var CreateContractUIManager = (function () {
                             id: contractItem.id,
                             item: contractItem.custrecord_f3mm_ci_item.itemid + " : " + contractItem.custrecord_f3mm_ci_item.displayname,
                             itemid: contractItem.custrecord_f3mm_ci_item.value,
+                            longname: contractItem.custrecord_f3mm_ci_item_long_name,
                             price: contractItem.custrecord_f3mm_ci_price,
                             priceLevels: contractItem.custrecord_f3mm_ci_item.priceLevels,
                             price_level: (priceLevel && priceLevel.value) || "0",
@@ -636,6 +638,7 @@ var CreateContractUIManager = (function () {
             data.item = suggestion.displaylabel;
             data.itemid = suggestion.id;
             data.description = suggestion.salesdescription;
+            data.longname = suggestion.custitem_long_name;
             data.baseprice = suggestion.baseprice;
         }
         if (data.item === "") {
@@ -676,6 +679,7 @@ var CreateContractUIManager = (function () {
             args.item.itemid = suggestion.id;
             args.item.baseprice = suggestion.baseprice;
             args.item.description = suggestion.salesdescription;
+            args.item.longname = suggestion.custitem_long_name;
         }
         if (args.item.item === "") {
             args.preserve = true;

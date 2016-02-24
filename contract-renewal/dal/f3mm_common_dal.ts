@@ -265,9 +265,7 @@ class CommonDAL extends BaseDAL {
             cols.push(new nlobjSearchColumn("salesdescription"));
             cols.push(new nlobjSearchColumn("itemid"));
 
-            if (Config.IS_PROD === true) {
-                cols.push(new nlobjSearchColumn("custitem_long_name"));
-            }
+            cols.push(new nlobjSearchColumn("custitem_long_name"));
 
             let queryFilters = [];
             if (!!options) {
@@ -281,15 +279,14 @@ class CommonDAL extends BaseDAL {
                         queryToSearch = query.trim();
                     }
 
-                    if (Config.IS_PROD === true) {
-                        queryFilters.push(["custitem_long_name", "contains", queryToSearch]);
-                    }
-
                     if (F3.Util.Utility.isBlankOrNull(queryToSearch) === false) {
+                        let wildcardKeyword = "%" + queryToSearch.replace(/ /gi, "%") + "%";
+                        queryFilters.push(["custitem_long_name", "contains", wildcardKeyword]);
+
                         if (queryFilters.length > 0) {
                             queryFilters.push("or");
                         }
-                        queryFilters.push(["displayname", "contains", queryToSearch]);
+                        queryFilters.push(["displayname", "contains", wildcardKeyword]);
                         queryFilters.push("or");
                         queryFilters.push(["itemid", "contains", queryToSearch]);
                     }

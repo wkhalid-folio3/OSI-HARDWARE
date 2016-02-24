@@ -281,6 +281,7 @@ class ContractDAL extends BaseDAL {
         cols.push(new nlobjSearchColumn("custrecord_f3mm_ci_item_description"));
         cols.push(new nlobjSearchColumn("custrecord_f3mm_ci_price_level"));
         cols.push(new nlobjSearchColumn("custrecord_f3mm_ci_contract"));
+        cols.push(new nlobjSearchColumn("custrecord_f3mm_ci_item_long_name"));
 
         let records = super.getAll(filters, cols, contractItemInternalId);
         return records;
@@ -751,6 +752,7 @@ class ContractDAL extends BaseDAL {
                         custrecord_f3mm_ci_amount: item.amount,
                         custrecord_f3mm_ci_item: item.item_id,
                         custrecord_f3mm_ci_item_description: item.item_description || "",
+                        custrecord_f3mm_ci_item_long_name: item.longname || "",
                         custrecord_f3mm_ci_price: item.price === "-1" ? "" : item.price,
                         custrecord_f3mm_ci_price_level: item.price_level,
                         custrecord_f3mm_ci_quantity: item.quantity,
