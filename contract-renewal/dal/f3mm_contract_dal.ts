@@ -653,9 +653,8 @@ class ContractDAL extends BaseDAL {
             throw new Error("contract cannot be null.");
         }
 
-        let record = this.prepareDataToUpsert(contract);
-
         let removeExistingLineItems = true;
+        let record = this.prepareDataToUpsert(contract, false, removeExistingLineItems);
         let id = this.upsert(record, removeExistingLineItems);
 
         if (contract.is_renew === "on") {
@@ -704,7 +703,7 @@ class ContractDAL extends BaseDAL {
      * @param {object} contract json object containing data for contract
      * @returns {object} prepared record object to insert in db
      */
-    private prepareDataToUpsert(contract: any, onlyUpdateNotifications = false) {
+    private prepareDataToUpsert(contract: any, onlyUpdateNotifications = false, removeExistingLineItems = false) {
 
         let record: any = {};
         record.id = contract.id;
@@ -756,7 +755,7 @@ class ContractDAL extends BaseDAL {
                         custrecord_f3mm_ci_price: item.price === "-1" ? "" : item.price,
                         custrecord_f3mm_ci_price_level: item.price_level,
                         custrecord_f3mm_ci_quantity: item.quantity,
-                        id: item.id || null
+                        id: removeExistingLineItems === true ? null : (item.id || null)
                     };
 
                     contractItemsSublist.lineitems.push(lineitem);

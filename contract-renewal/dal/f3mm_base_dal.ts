@@ -169,7 +169,7 @@ class BaseDAL {
 
         itemData.forEach(sublist => {
 
-            // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // sublist = ", JSON.stringify(sublist));
+             F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // sublist = ", JSON.stringify(sublist));
 
             if (removeExistingLineItems === true) {
                 let existingItemsCount = dbRecord.getLineItemCount(sublist.internalId);
@@ -180,16 +180,17 @@ class BaseDAL {
 
             sublist.lineitems.forEach((lineitem, index) => {
 
-                // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // lineitem = ", JSON.stringify(lineitem));
+                 F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // lineitem = ", JSON.stringify(lineitem));
 
-                let linenum = dbRecord.findLineItemValue(sublist.internalId, sublist.keyField, lineitem[sublist.keyField]);
-                if (linenum > -1) {
+                let lineitemId = lineitem[sublist.keyField];
+                let linenum = dbRecord.findLineItemValue(sublist.internalId, sublist.keyField, lineitemId);
+                if (!!lineitemId && linenum > -1) {
                     dbRecord.selectLineItem(sublist.internalId, linenum);
                 } else {
                     dbRecord.selectNewLineItem(sublist.internalId);
                 }
 
-                // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // linenum = ", linenum);
+                 F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // linenum = ", linenum);
 
                 for (let lineitemIndex in lineitem) {
                     if (lineitem.hasOwnProperty(lineitemIndex)) {
