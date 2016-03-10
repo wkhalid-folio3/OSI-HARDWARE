@@ -1,4 +1,5 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
+/// <reference path="../_typescript-refs/f3.common.d.ts" />
 /// <reference path="../helpers/f3mm_config.ts" />
 /// <reference path="../helpers/f3mm_contract_status_enum.ts" />
 /// <reference path="./f3mm_base_dal.ts" />

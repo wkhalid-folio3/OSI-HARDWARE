@@ -1,20 +1,22 @@
 
-declare module F3.Util {
-    interface Utility {
-        logException(title: string, detail: any);
+declare module F3 {
+    export module Util {
+        export interface Utility {
+            logException(title: string, detail: any);
 
-        logDebug(title: string, detail: any);
+            logDebug(title: string, detail: any);
 
-        log(type, title: string, detail: any);
+            log(type, title: string, detail: any);
 
-        isBlankOrNull(query: any): boolean;
-    }
+            isBlankOrNull(query: any): boolean;
+        }
 
-    interface IStopWatch {
-        stop();
-    }
+        export interface IStopWatch {
+            stop();
+        }
 
-    interface StopWatch {
-        start(title: string): IStopWatch;
+        export interface StopWatch {
+            start(title: string): IStopWatch;
+        }
     }
 }

@@ -1,6 +1,8 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
+/// <reference path="../_typescript-refs/f3.common.d.ts" />
 /// <reference path="./f3mm_base_dal.ts" />
 /// <reference path="./f3mm_common_dal.ts" />
+/// <reference path="../helpers/f3mm_email_helper.ts" />
 /**
  * Created by zshaikh on 11/18/2015.
  * -

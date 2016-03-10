@@ -52,8 +52,8 @@ let QuoteApproved = (() => {
                         // make sure it is pending customer approval
                         if (newStatus === "2") {
 
-                            let contractsDAL = new ContractDAL();
-                            let contract = contractsDAL.getWithDetails(contractId);
+                            const contractsDAL = new ContractDAL();
+                            const contract = contractsDAL.getWithDetails(contractId);
                             EmailHelper.sendQuoteApprovalEmail(contract, quoteId);
                         }
                     }
