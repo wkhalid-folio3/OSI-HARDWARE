@@ -16,5 +16,6 @@ var ContractNotificationType;
     ContractNotificationType[ContractNotificationType["CONTRACT_EXPIRATION"] = 3] = "CONTRACT_EXPIRATION";
     ContractNotificationType[ContractNotificationType["CONTRACT_RENEWAL"] = 4] = "CONTRACT_RENEWAL";
     ContractNotificationType[ContractNotificationType["QUOTE_APPROVAL"] = 5] = "QUOTE_APPROVAL";
+    ContractNotificationType[ContractNotificationType["QUOTE_APPROVAL_BY_CUSTOMER"] = 6] = "QUOTE_APPROVAL_BY_CUSTOMER";
 })(ContractNotificationType || (ContractNotificationType = {}));
 //# sourceMappingURL=f3mm_contract_status_enum.js.map

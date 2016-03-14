@@ -46,6 +46,12 @@ var QuoteApproved = (function () {
                             var contract = contractsDAL.getWithDetails(contractId);
                             EmailHelper.sendQuoteApprovalEmail(contract, quoteId);
                         }
+                        else if (newStatus === "3") {
+                            // send email to salesrep that customer has approved the contract/quote
+                            var contractsDAL = new ContractDAL();
+                            var contract = contractsDAL.getWithDetails(contractId);
+                            EmailHelper.sendQuoteApprovalByCustomerEmail(contract, quoteId);
+                        }
                     }
                 }
                 catch (ex) {

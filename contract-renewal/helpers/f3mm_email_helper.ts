@@ -54,6 +54,27 @@ class EmailHelper {
         F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // END", null);
     }
 
+    public static sendQuoteApprovalByCustomerEmail(contract: any, quoteId: string) {
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalByCustomerEmail(); // START", null);
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalByCustomerEmail(); // contract:", JSON.stringify(contract));
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalByCustomerEmail(); // quoteId:", quoteId);
+
+        try {
+            let fields = this._contractDAL.fields;
+            let emailEnabled = contract[fields.notificationOnQuoteApproval.id] === "T";
+            let salesRepId = contract[fields.salesRep.id].value;
+
+            if (emailEnabled === true) {
+                this.sendEmail(contract, ContractNotificationType.QUOTE_APPROVAL_BY_CUSTOMER, salesRepId, quoteId);
+            }
+
+        } catch (e) {
+            F3.Util.Utility.logException("EmailHelper.sendQuoteApprovalByCustomerEmail();", e.toString());
+        }
+
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalByCustomerEmail(); // END", null);
+    }
+
     public static sendQuoteGenerationEmail(contract: any, quoteId: string) {
         F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // START", null);
         F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // contract:", JSON.stringify(contract));

@@ -42,6 +42,23 @@ var EmailHelper = (function () {
         }
         F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // END", null);
     };
+    EmailHelper.sendQuoteApprovalByCustomerEmail = function (contract, quoteId) {
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalByCustomerEmail(); // START", null);
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalByCustomerEmail(); // contract:", JSON.stringify(contract));
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalByCustomerEmail(); // quoteId:", quoteId);
+        try {
+            var fields = this._contractDAL.fields;
+            var emailEnabled = contract[fields.notificationOnQuoteApproval.id] === "T";
+            var salesRepId = contract[fields.salesRep.id].value;
+            if (emailEnabled === true) {
+                this.sendEmail(contract, ContractNotificationType.QUOTE_APPROVAL_BY_CUSTOMER, salesRepId, quoteId);
+            }
+        }
+        catch (e) {
+            F3.Util.Utility.logException("EmailHelper.sendQuoteApprovalByCustomerEmail();", e.toString());
+        }
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalByCustomerEmail(); // END", null);
+    };
     EmailHelper.sendQuoteGenerationEmail = function (contract, quoteId) {
         F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // START", null);
         F3.Util.Utility.logDebug("EmailHelper.sendQuoteGenerationEmail(); // contract:", JSON.stringify(contract));
