@@ -38,16 +38,23 @@ var ContractScheduled = (function () {
                 F3.Util.Utility.logDebug("contract days remaining: ", daysRemaining);
                 if (!!contract.custrecord_f3mm_notif_days_prior) {
                     if (daysRemaining === parseInt(contract.custrecord_f3mm_notif_days_prior, 10)) {
-                        EmailHelper.sendReminderEmail(contract, daysRemaining, true);
+                        // generate quote without sending quote generation notification
+                        var sendQuoteGenerateNotification = false;
+                        var quote = this._contractDAL.generateQuote({
+                            contractId: contract.id
+                        }, sendQuoteGenerateNotification);
+                        // send email now with quote attachment
+                        EmailHelper.sendReminderEmail(contract, daysRemaining, true, quote.id);
+                    }
+                }
+                if (contract.custrecord_f3mm_notif_3days_prior === "T") {
+                    // client asked to change 3 days to 10 days
+                    if (daysRemaining === 10) {
+                        EmailHelper.sendReminderEmail(contract, daysRemaining);
                     }
                 }
                 if (contract.custrecord_f3mm_notif_5days_prior === "T") {
                     if (daysRemaining === 5) {
-                        EmailHelper.sendReminderEmail(contract, daysRemaining);
-                    }
-                }
-                if (contract.custrecord_f3mm_notif_3days_prior === "T") {
-                    if (daysRemaining === 3) {
                         EmailHelper.sendReminderEmail(contract, daysRemaining);
                     }
                 }
@@ -56,6 +63,8 @@ var ContractScheduled = (function () {
                         EmailHelper.sendReminderEmail(contract, daysRemaining);
                     }
                 }
+                // expire contract
+                // and send expiry email
                 if (daysRemaining <= 0) {
                     var fields = this._contractDAL.fields;
                     var record = {};

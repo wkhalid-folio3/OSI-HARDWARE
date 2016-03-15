@@ -42,6 +42,8 @@ class ApproveContractsUIManager extends ListContractsUIManager {
      */
     constructor() {
 
+        $(document.body).addClass("contracts-approval-page");
+
         if (window.userType !== "customer") {
             $(".form-group-customer, .form-group-status").removeClass("hidden");
         }
@@ -311,7 +313,11 @@ class ApproveContractsUIManager extends ListContractsUIManager {
         let gridFields = [{
             css: "contract-number",
             itemTemplate: (_, item) => {
-                return `<a href="${window.createSuiteletUrl}&cid=${item.id}" target="_blank">${_}</a>`;
+                if (window.userType === "customer") {
+                    return _;
+                } else {
+                    return `<a href="${window.createSuiteletUrl}&cid=${item.id}" target="_blank">${_}</a>`;
+                }
             },
             name: "custrecord_f3mm_contract_number",
             title: "Contract #",

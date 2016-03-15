@@ -371,7 +371,7 @@ class ContractDAL extends BaseDAL {
      * @param {string} contractId id of the contract to generate contract from
      * @returns {number} id of quote generated from contract
      */
-    public generateQuote(params) {
+    public generateQuote(params, sendNotification = true) {
 
         let result: {
             id: any
@@ -427,7 +427,9 @@ class ContractDAL extends BaseDAL {
 
             let quoteId = nlapiSubmitRecord(quote);
 
-            EmailHelper.sendQuoteGenerationEmail(contract, quoteId);
+            if (sendNotification === true) {
+                EmailHelper.sendQuoteGenerationEmail(contract, quoteId);
+            }
 
             result = {
                 id: quoteId
@@ -729,7 +731,7 @@ class ContractDAL extends BaseDAL {
             record[this.fields.systemId.id] = contract.system_id;
             record[this.fields.discountItemId.id] = contract.discount;
             record[this.fields.notificationDaysPrior.id] = contract.notification_days || "0";
-            record[this.fields.notificationOnQuoteGenerate.id] = contract.notification_quote_generation === "on" ? "T" : "F";
+            record[this.fields.notificationOnQuoteGenerate.id] = "T"; // contract.notification_quote_generation === "on" ? "T" : "F";
         }
 
         record[this.fields.notification5DaysPrior.id] = contract.notification_5_days === "on" ? "T" : "F";

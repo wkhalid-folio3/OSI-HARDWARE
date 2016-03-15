@@ -401,7 +401,7 @@
 
 
                                 <div class="form-group">
-                                    <label for="notification_days" class="control-label">Days Prior to expiration, email to be sent</label>
+                                    <label for="notification_days" class="control-label">Days Prior to expiration, email to be sent to Sales Rep</label>
                                     <div class="">
                                         <input type="number" class="form-control notification-days-text"
                                                id="notification_days"
@@ -412,7 +412,18 @@
 
                                 <br>
 
-                                <b>SEND EMAIL BEFORE:</b>
+                                <b>SEND EMAIL TO END USER BEFORE:</b>
+                                <div class="checkbox">
+                                    <div class="">
+                                        <label for="notification_3_days">
+                                            <input type="checkbox" class="notification-3-days"
+                                                   id="notification_3_days"
+                                                   name="notification_3_days" />
+                                            10 days of contract expiration
+                                        </label>
+                                    </div>
+                                </div>
+
                                 <div class="checkbox">
                                     <div class="">
                                         <label for="notification_5_days">
@@ -420,18 +431,6 @@
                                                    id="notification_5_days"
                                                    name="notification_5_days" />
                                             5 days of contract expiration
-                                        </label>
-                                    </div>
-                                </div>
-
-
-                                <div class="checkbox">
-                                    <div class="">
-                                        <label for="notification_3_days">
-                                            <input type="checkbox" class="notification-3-days"
-                                                   id="notification_3_days"
-                                                   name="notification_3_days" />
-                                            3 days of contract expiration
                                         </label>
                                     </div>
                                 </div>
@@ -448,10 +447,9 @@
                                 </div>
 
 
-
                                 <br>
 
-                                <b>SEND EMAIL ON:</b>
+                                <b>SEND EMAIL TO END USER ON:</b>
 
                                 <div class="checkbox">
                                     <div class="">
@@ -476,16 +474,16 @@
                                     </div>
                                 </div>
 
-                                <div class="checkbox">
-                                    <div class="">
-                                        <label for="notification_quote_generation">
-                                            <input type="checkbox" class="notification-quote-generation"
-                                                   id="notification_quote_generation"
-                                                   name="notification_quote_generation" />
-                                            Quote Generation
-                                        </label>
-                                    </div>
-                                </div>
+                                <!--<div class="checkbox">-->
+                                    <!--<div class="">-->
+                                        <!--<label for="notification_quote_generation">-->
+                                            <!--<input type="checkbox" class="notification-quote-generation"-->
+                                                   <!--id="notification_quote_generation"-->
+                                                   <!--name="notification_quote_generation" />-->
+                                            <!--Quote Generation-->
+                                        <!--</label>-->
+                                    <!--</div>-->
+                                <!--</div>-->
 
 
                                 <div class="checkbox">

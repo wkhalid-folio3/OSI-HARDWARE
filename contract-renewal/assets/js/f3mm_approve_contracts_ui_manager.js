@@ -42,6 +42,7 @@ var ApproveContractsUIManager = (function (_super) {
      */
     function ApproveContractsUIManager() {
         var _this = this;
+        $(document.body).addClass("contracts-approval-page");
         if (window.userType !== "customer") {
             $(".form-group-customer, .form-group-status").removeClass("hidden");
         }
@@ -264,7 +265,12 @@ var ApproveContractsUIManager = (function (_super) {
         var gridFields = [{
                 css: "contract-number",
                 itemTemplate: function (_, item) {
-                    return "<a href=\"" + window.createSuiteletUrl + "&cid=" + item.id + "\" target=\"_blank\">" + _ + "</a>";
+                    if (window.userType === "customer") {
+                        return _;
+                    }
+                    else {
+                        return "<a href=\"" + window.createSuiteletUrl + "&cid=" + item.id + "\" target=\"_blank\">" + _ + "</a>";
+                    }
                 },
                 name: "custrecord_f3mm_contract_number",
                 title: "Contract #",

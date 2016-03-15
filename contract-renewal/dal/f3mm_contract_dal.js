@@ -336,7 +336,8 @@ var ContractDAL = (function (_super) {
      * @param {string} contractId id of the contract to generate contract from
      * @returns {number} id of quote generated from contract
      */
-    ContractDAL.prototype.generateQuote = function (params) {
+    ContractDAL.prototype.generateQuote = function (params, sendNotification) {
+        if (sendNotification === void 0) { sendNotification = true; }
         var result = null;
         try {
             var contractId = params.contractId;
@@ -380,7 +381,9 @@ var ContractDAL = (function (_super) {
                 });
             }
             var quoteId = nlapiSubmitRecord(quote);
-            EmailHelper.sendQuoteGenerationEmail(contract, quoteId);
+            if (sendNotification === true) {
+                EmailHelper.sendQuoteGenerationEmail(contract, quoteId);
+            }
             result = {
                 id: quoteId
             };
@@ -626,7 +629,7 @@ var ContractDAL = (function (_super) {
             record[this.fields.systemId.id] = contract.system_id;
             record[this.fields.discountItemId.id] = contract.discount;
             record[this.fields.notificationDaysPrior.id] = contract.notification_days || "0";
-            record[this.fields.notificationOnQuoteGenerate.id] = contract.notification_quote_generation === "on" ? "T" : "F";
+            record[this.fields.notificationOnQuoteGenerate.id] = "T"; // contract.notification_quote_generation === "on" ? "T" : "F";
         }
         record[this.fields.notification5DaysPrior.id] = contract.notification_5_days === "on" ? "T" : "F";
         record[this.fields.notification3DaysPrior.id] = contract.notification_3_days === "on" ? "T" : "F";

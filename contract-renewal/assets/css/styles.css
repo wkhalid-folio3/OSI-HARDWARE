@@ -51,7 +51,7 @@ tr.modified-item {
 .ui-th-column { font-weight: 700; }
 
 .datepicker-dropdown { margin-top: 90px; }
-.contracts-approval-page .datepicker-dropdown, .nl-pagetint .datepicker-dropdown { margin-top: 6px; }
+.contracts-approval-page .datepicker-dropdown { margin-top: 6px; }
 .page-standalone .datepicker-dropdown { margin-top: 22px;  }
 
 /*
