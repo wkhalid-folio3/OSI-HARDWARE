@@ -511,7 +511,8 @@ var ContractDAL = (function (_super) {
      * @param {object} contract json object containing data for contract
      * @returns {number} id of created / updated contract
      */
-    ContractDAL.prototype.changeStatus = function (options) {
+    ContractDAL.prototype.changeStatus = function (options, updateQuotes) {
+        if (updateQuotes === void 0) { updateQuotes = true; }
         if (!options || !options.cid) {
             throw new Error("contract id cannot be null.");
         }
@@ -522,15 +523,17 @@ var ContractDAL = (function (_super) {
         var result = {
             id: id
         };
-        // update quote as well
-        var commonDAL = new CommonDAL();
-        var quotes = commonDAL.getQuotes({ contractId: id });
-        if (quotes && quotes.length) {
-            var lastQuote = quotes[quotes.length - 1];
-            var quoteRecord = {};
-            quoteRecord.id = lastQuote.id;
-            quoteRecord.custbody_f3mm_quote_status = options.status;
-            this.upsert(quoteRecord, null, "estimate");
+        if (updateQuotes === true) {
+            // update quote as well
+            var commonDAL = new CommonDAL();
+            var quotes = commonDAL.getQuotes({ contractId: id });
+            if (quotes && quotes.length) {
+                var lastQuote = quotes[quotes.length - 1];
+                var quoteRecord = {};
+                quoteRecord.id = lastQuote.id;
+                quoteRecord.custbody_f3mm_quote_status = options.status;
+                this.upsert(quoteRecord, null, "estimate");
+            }
         }
         return result;
     };

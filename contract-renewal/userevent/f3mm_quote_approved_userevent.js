@@ -40,15 +40,20 @@ var QuoteApproved = (function () {
                     var quoteId = newRecord.getId();
                     // make sure they are changed
                     if (newStatus !== oldStatus) {
+                        var contractsDAL = new ContractDAL();
+                        // update contract status if not already the same as quote
+                        var updateQuote = false;
+                        contractsDAL.changeStatus({
+                            cid: contractId,
+                            status: newStatus
+                        }, updateQuote);
                         // make sure it is pending customer approval
                         if (newStatus === "2") {
-                            var contractsDAL = new ContractDAL();
                             var contract = contractsDAL.getWithDetails(contractId);
                             EmailHelper.sendQuoteApprovalEmail(contract, quoteId);
                         }
                         else if (newStatus === "3") {
                             // send email to salesrep that customer has approved the contract/quote
-                            var contractsDAL = new ContractDAL();
                             var contract = contractsDAL.getWithDetails(contractId);
                             EmailHelper.sendQuoteApprovalByCustomerEmail(contract, quoteId);
                         }

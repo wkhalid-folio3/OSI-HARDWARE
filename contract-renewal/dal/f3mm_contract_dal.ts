@@ -581,7 +581,7 @@ class ContractDAL extends BaseDAL {
      * @param {object} contract json object containing data for contract
      * @returns {number} id of created / updated contract
      */
-    public changeStatus(options): {
+    public changeStatus(options, updateQuotes = true): {
         id: any
     } {
 
@@ -598,15 +598,17 @@ class ContractDAL extends BaseDAL {
             id: id
         };
 
-        // update quote as well
-        let commonDAL = new CommonDAL();
-        let quotes = commonDAL.getQuotes({contractId: id});
-        if (quotes && quotes.length) {
-            let lastQuote = quotes[quotes.length - 1];
-            let quoteRecord: any = {};
-            quoteRecord.id = lastQuote.id;
-            quoteRecord.custbody_f3mm_quote_status = options.status;
-            this.upsert(quoteRecord, null, "estimate");
+        if ( updateQuotes === true ) {
+            // update quote as well
+            let commonDAL = new CommonDAL();
+            let quotes = commonDAL.getQuotes({contractId: id});
+            if (quotes && quotes.length) {
+                let lastQuote = quotes[quotes.length - 1];
+                let quoteRecord:any = {};
+                quoteRecord.id = lastQuote.id;
+                quoteRecord.custbody_f3mm_quote_status = options.status;
+                this.upsert(quoteRecord, null, "estimate");
+            }
         }
 
         return result;
