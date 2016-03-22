@@ -75,18 +75,19 @@ var BaseDAL = (function () {
      * @param {boolean?} removeExistingLineItems default to false
      * @returns {number} id of the inserted or updated record
      */
-    BaseDAL.prototype.upsert = function (record, removeExistingLineItems) {
+    BaseDAL.prototype.upsert = function (record, removeExistingLineItems, type) {
         // F3.Util.Utility.logDebug("BaseDAL.upsert(); // item = ", JSON.stringify(record));
         var id = null;
         var dbRecord = null;
         try {
             if (!!record) {
+                type = type || this.internalId;
                 // either load or create record
                 if (F3.Util.Utility.isBlankOrNull(record.id)) {
-                    dbRecord = nlapiCreateRecord(this.internalId);
+                    dbRecord = nlapiCreateRecord(type);
                 }
                 else {
-                    dbRecord = nlapiLoadRecord(this.internalId, record.id);
+                    dbRecord = nlapiLoadRecord(type, record.id);
                 }
                 // we donot want to add id in the body fields
                 delete record.id;
@@ -139,7 +140,7 @@ var BaseDAL = (function () {
      */
     BaseDAL.prototype.upsertLineItems = function (dbRecord, itemData, removeExistingLineItems) {
         itemData.forEach(function (sublist) {
-            // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // sublist = ", JSON.stringify(sublist));
+            F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // sublist = ", JSON.stringify(sublist));
             if (removeExistingLineItems === true) {
                 var existingItemsCount = dbRecord.getLineItemCount(sublist.internalId);
                 for (var j = 1; j <= existingItemsCount; j++) {
@@ -147,15 +148,16 @@ var BaseDAL = (function () {
                 }
             }
             sublist.lineitems.forEach(function (lineitem, index) {
-                // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // lineitem = ", JSON.stringify(lineitem));
-                var linenum = dbRecord.findLineItemValue(sublist.internalId, sublist.keyField, lineitem[sublist.keyField]);
-                if (linenum > -1) {
+                F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // lineitem = ", JSON.stringify(lineitem));
+                var lineitemId = lineitem[sublist.keyField];
+                var linenum = dbRecord.findLineItemValue(sublist.internalId, sublist.keyField, lineitemId);
+                if (!!lineitemId && linenum > -1) {
                     dbRecord.selectLineItem(sublist.internalId, linenum);
                 }
                 else {
                     dbRecord.selectNewLineItem(sublist.internalId);
                 }
-                // F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // linenum = ", linenum);
+                F3.Util.Utility.logDebug("BaseDAL.upsertLineItems(); // linenum = ", linenum);
                 for (var lineitemIndex in lineitem) {
                     if (lineitem.hasOwnProperty(lineitemIndex)) {
                         // keyFields contains the id

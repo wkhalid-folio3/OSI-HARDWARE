@@ -106,7 +106,7 @@ class CreateContractAPISuitelet {
             status_code: 200
         };
 
-        //nlapiLogExecution("DEBUG", "title", null);
+        // nlapiLogExecution("DEBUG", "title", null);
 
         try {
 
@@ -176,6 +176,9 @@ class CreateContractAPISuitelet {
                     break;
                 case "submit":
                     executedActionResult = contractDAL.updateOrCreate(params);
+                    break;
+                case "update_notifications":
+                    executedActionResult = contractDAL.updateNotifications(params);
                     break;
                 default:
                     actionExecuted = false;

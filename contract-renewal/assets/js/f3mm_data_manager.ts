@@ -1,5 +1,6 @@
 /// <reference path="../../_typescript-refs/jquery.d.ts" />
 /// <reference path="../../_typescript-refs/es6-promise.d.ts" />
+
 /**
  * Created by zshaikh on 11/19/2015.
  * -
@@ -22,7 +23,7 @@ class DataManager {
     private _serverUrl: string = null;
     private _viewType: string;
     private _cacheTime: number = 0;
-    private _cachePrefix: string = "mm_cn_";
+    private _cachePrefix: string = "mm_cn_" + (window.userid || nlapiGetContext().company || new Date().getHours()) + "_";
 
     constructor(type: string) {
         this._viewType = type;
@@ -108,13 +109,15 @@ class DataManager {
      */
     private getDepartmentFromServer(callback) {
 
-        var data = {
-            'action': 'get_departments'
+        let data = {
+            "action": "get_departments"
         };
         return jQuery.get(this._serverUrl, data, (result) => {
-            console.log('getDepartmentFromServer(); // jquery complete: ', arguments);
+            console.log("getDepartmentFromServer(); // jquery complete: ", arguments);
 
-            callback && callback(result);
+            if (!!callback) {
+                callback(result);
+            }
 
         });
 
@@ -486,23 +489,52 @@ class DataManager {
      */
     public submit(data, callback) {
 
-        var options = {
-            'action': 'submit'
+        let options = {
+            "action": "submit"
         };
 
         $.extend(options, {
-            'params': JSON.stringify(data)
+            "params": JSON.stringify(data)
         });
 
         return jQuery.post(this._serverUrl, options, function(result) {
-            console.log('submit(); // jquery complete: ', arguments);
+            console.log("submit(); // jquery complete: ", arguments);
 
-            callback && callback(result);
+            if (!!callback) {
+                callback(result);
+            }
 
         });
 
     }
 
+
+    /**
+     * Submit contract information to server
+     * @param {object} data contract json object to pass to server
+     * @param {function} callback callback function to receive data in
+     * @returns {void}
+     */
+    public updateNotifications(data, callback) {
+
+        let options = {
+            "action": "update_notifications"
+        };
+
+        $.extend(options, {
+            "params": JSON.stringify(data)
+        });
+
+        return jQuery.post(this._serverUrl, options, function(result) {
+            console.log("submit(); // jquery complete: ", arguments);
+
+            if (!!callback) {
+                callback(result);
+            }
+
+        });
+
+    }
 
     /**
      * Delete contract

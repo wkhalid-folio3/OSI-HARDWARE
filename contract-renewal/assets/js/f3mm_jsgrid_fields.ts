@@ -24,7 +24,7 @@
  */
 ((jsGrid, $, undefined) => {
 
-    var TextField = jsGrid.TextField;
+    let TextField = jsGrid.TextField;
 
     function DecimalNumberField(config) {
         TextField.call(this, config);
@@ -32,8 +32,9 @@
 
     DecimalNumberField.prototype = new TextField({
 
-        sorter: "number",
         align: "right",
+        sorter: "number",
+
 
         filterValue: function() {
             return parseFloat(parseFloat(this.filterControl.val() || 0).toFixed(2));

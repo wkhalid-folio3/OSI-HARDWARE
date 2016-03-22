@@ -1,6 +1,9 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
-/// <reference path="./f3mm_base_dal.ts" />
+/// <reference path="../_typescript-refs/f3.common.d.ts" />
+/// <reference path="../helpers/f3mm_config.ts" />
 /// <reference path="../helpers/f3mm_contract_status_enum.ts" />
+/// <reference path="./f3mm_base_dal.ts" />
+
 
 /**
  * Created by zshaikh on 11/19/2015.
@@ -263,9 +266,7 @@ class CommonDAL extends BaseDAL {
             cols.push(new nlobjSearchColumn("salesdescription"));
             cols.push(new nlobjSearchColumn("itemid"));
 
-            if ( Config.IS_PROD === true) {
-                cols.push(new nlobjSearchColumn("custitem_long_name"));
-            }
+            cols.push(new nlobjSearchColumn("custitem_long_name"));
 
             let queryFilters = [];
             if (!!options) {
@@ -279,15 +280,14 @@ class CommonDAL extends BaseDAL {
                         queryToSearch = query.trim();
                     }
 
-                    if (Config.IS_PROD === true) {
-                        queryFilters.push(["custitem_long_name", "startswith", queryToSearch]);
-                    }
-
                     if (F3.Util.Utility.isBlankOrNull(queryToSearch) === false) {
+                        let wildcardKeyword = "%" + queryToSearch.replace(/ /gi, "%") + "%";
+                        queryFilters.push(["custitem_long_name", "contains", wildcardKeyword]);
+
                         if (queryFilters.length > 0) {
                             queryFilters.push("or");
                         }
-                        queryFilters.push(["displayname", "startswith", queryToSearch]);
+                        queryFilters.push(["displayname", "contains", wildcardKeyword]);
                         queryFilters.push("or");
                         queryFilters.push(["itemid", "contains", queryToSearch]);
                     }

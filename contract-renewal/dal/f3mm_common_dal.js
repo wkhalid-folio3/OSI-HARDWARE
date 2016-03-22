@@ -1,6 +1,8 @@
 /// <reference path="../_typescript-refs/SuiteScriptAPITS.d.ts" />
-/// <reference path="./f3mm_base_dal.ts" />
+/// <reference path="../_typescript-refs/f3.common.d.ts" />
+/// <reference path="../helpers/f3mm_config.ts" />
 /// <reference path="../helpers/f3mm_contract_status_enum.ts" />
+/// <reference path="./f3mm_base_dal.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -228,9 +230,7 @@ var CommonDAL = (function (_super) {
             cols.push(new nlobjSearchColumn("baseprice"));
             cols.push(new nlobjSearchColumn("salesdescription"));
             cols.push(new nlobjSearchColumn("itemid"));
-            if (Config.IS_PROD === true) {
-                cols.push(new nlobjSearchColumn("custitem_long_name"));
-            }
+            cols.push(new nlobjSearchColumn("custitem_long_name"));
             var queryFilters = [];
             if (!!options) {
                 if (!!options.query) {
@@ -243,14 +243,13 @@ var CommonDAL = (function (_super) {
                     else {
                         queryToSearch = query.trim();
                     }
-                    if (Config.IS_PROD === true) {
-                        queryFilters.push(["custitem_long_name", "startswith", queryToSearch]);
-                    }
                     if (F3.Util.Utility.isBlankOrNull(queryToSearch) === false) {
+                        var wildcardKeyword = "%" + queryToSearch.replace(/ /gi, "%") + "%";
+                        queryFilters.push(["custitem_long_name", "contains", wildcardKeyword]);
                         if (queryFilters.length > 0) {
                             queryFilters.push("or");
                         }
-                        queryFilters.push(["displayname", "startswith", queryToSearch]);
+                        queryFilters.push(["displayname", "contains", wildcardKeyword]);
                         queryFilters.push("or");
                         queryFilters.push(["itemid", "contains", queryToSearch]);
                     }

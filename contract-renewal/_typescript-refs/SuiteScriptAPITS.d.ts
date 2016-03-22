@@ -141,47 +141,25 @@ declare function editSubrecord(fldnam :string): void;
 declare function removeSubrecord(fldnam :string): void;
 declare function viewSubrecord(fldnam :string): void;
 
-/*
-function nlobjRecord(): void;
-function nlobjConfiguration(): void;
-function nlobjFile(): void;
-function nlobjSearchResult(): void;
-function nlobjContext(): void;
-function nlobjError(): void;
-function nlobjServerResponse(): void;
-function nlobjPortlet(): void;
-function nlobjList(): void;
-function nlobjForm(): void;
-function nlobjAssistant(): void;
-function nlobjField(): void;
-function nlobjSubList(): void;
-function nlobjColumn(): void;
-function nlobjTab(): void;
-function nlobjAssistantStep(): void;
-function nlobjFieldGroup(): void;
-function nlobjButton(): void;
-function nlobjSelectOption(): void;
-*/
+interface yieldResult {status: string; reason: string; size: number; information: string; }
+interface serverSubmitRecordFlags {disabletriggers: boolean; enablesourcing?: boolean; ignoremandatoryfields?: boolean; }
+interface serverSubmitFieldFlags {disabletriggers: boolean; enablesourcing?: boolean; }
+interface clientSubmitRecordFlags {disableTriggers: boolean; enableSourcing?: boolean; ignoreMandatoryfields?: boolean; }
+interface clientSubmitFieldFlags {disableTriggers: boolean; enableSourcing?: boolean;}
 
-interface yieldResult {status: string; reason : string; size : number; information : string; }
-interface serverSubmitRecordFlags {disabletriggers:boolean; enablesourcing?:boolean; ignoremandatoryfields?:boolean;}
-interface serverSubmitFieldFlags {disabletriggers:boolean; enablesourcing?:boolean;}
-interface clientSubmitRecordFlags {disableTriggers:boolean; enableSourcing?:boolean; ignoreMandatoryfields?:boolean;}
-interface clientSubmitFieldFlags {disableTriggers:boolean; enableSourcing?:boolean;}
+declare function nlapiYieldScript(): yieldResult;
+declare function nlapiSetRecoveryPoint(): yieldResult;
 
-declare function nlapiYieldScript() : yieldResult;
-declare function nlapiSetRecoveryPoint() : yieldResult;
+declare function nlapiCreateCSVImport(): nlobjCSVImport;
+declare function nlapiSubmitCSVImport(impt: nlobjCSVImport): string;
 
-declare function nlapiCreateCSVImport():nlobjCSVImport;
-declare function nlapiSubmitCSVImport(impt:nlobjCSVImport):string;
-
-interface  nlobjError{
-	getCode() : string;
-	getDetails() : string;
-	getId() : string;
-	getInternalId() : number;
-	getStackTrace() : string[];
-	getUserEvent() : string;
+interface nlobjError {
+	getCode(): string;
+	getDetails(): string;
+	getId(): string;
+	getInternalId(): number;
+	getStackTrace(): string[];
+	getUserEvent(): string;
 }
 
 interface nlobjFile{

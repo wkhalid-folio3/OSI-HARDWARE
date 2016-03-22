@@ -122,8 +122,9 @@ class CreateContractUIManager {
                 serializedData.items.push({
                     amount: item.amount,
                     id: item.id,
-                    item_id: item.itemid,
                     item_description: item.description,
+                    longname: item.longname,
+                    item_id: item.itemid,
                     price: item.price,
                     price_level: item.price_level,
                     quantity: item.quantity
@@ -132,17 +133,17 @@ class CreateContractUIManager {
 
 
             if (serializedData.items.length <= 0) {
-                alert('You must enter at least one line item for this transaction.');
+                alert("You must enter at least one line item for this transaction.");
                 return;
             }
 
-            console.log('serializedData: ', serializedData);
+            console.log("serializedData: ", serializedData);
 
             this.showLoading();
 
             this._dataManager.submit(serializedData, (result) => {
 
-                console.log('submit success:', result);
+                console.log("submit success:", result);
 
                 if (!!result.data) {
                     let uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
@@ -520,7 +521,7 @@ class CreateContractUIManager {
                 let select = document.getElementById("discount");
                 if (result.status_code === 200) {
 
-                    let discountItemId = this._contractInfo.custrecord_f3mm_discount_item_id;
+                    let discountItemId = this._contractInfo && this._contractInfo.custrecord_f3mm_discount_item_id || null;
 
                     // add each item on UI
                     $.each(result.data, (i, item) => {
@@ -654,6 +655,7 @@ class CreateContractUIManager {
                             id: contractItem.id,
                             item: contractItem.custrecord_f3mm_ci_item.itemid + " : "  + contractItem.custrecord_f3mm_ci_item.displayname,
                             itemid: contractItem.custrecord_f3mm_ci_item.value,
+                            longname: contractItem.custrecord_f3mm_ci_item_long_name,
                             price: contractItem.custrecord_f3mm_ci_price,
                             priceLevels: contractItem.custrecord_f3mm_ci_item.priceLevels, // used for dropdown
                             price_level: (priceLevel && priceLevel.value) || "0",
@@ -756,6 +758,7 @@ class CreateContractUIManager {
             data.item = suggestion.displaylabel;
             data.itemid = suggestion.id;
             data.description = suggestion.salesdescription;
+            data.longname = suggestion.custitem_long_name;
             data.baseprice = suggestion.baseprice;
         }
 
@@ -802,6 +805,7 @@ class CreateContractUIManager {
             args.item.itemid = suggestion.id;
             args.item.baseprice = suggestion.baseprice;
             args.item.description = suggestion.salesdescription;
+            args.item.longname = suggestion.custitem_long_name;
         }
 
         if (args.item.item === "") {
@@ -1353,14 +1357,14 @@ class CreateContractUIManager {
             this.bindEditScreen(contract);
         }
 
-
         $("#notification_days").val(contract.custrecord_f3mm_notif_days_prior);
         $(".notification-5-days").prop("checked", contract.custrecord_f3mm_notif_5days_prior === "T");
         $(".notification-3-days").prop("checked", contract.custrecord_f3mm_notif_3days_prior === "T");
         $(".notification-1-day").prop("checked", contract.custrecord_f3mm_notif_1day_prior === "T");
         $(".notification-expiration").prop("checked", contract.custrecord_f3mm_notif_on_expiration === "T");
-        $(".notification-renewal").prop("checked", contract.custrecord_f3mm_notif_on_quote_generate === "T");
-        $(".notification-quote-generation").prop("checked", contract.custrecord_f3mm_notif_on_renewal === "T");
+        $(".notification-renewal").prop("checked", contract.custrecord_f3mm_notif_on_renewal === "T");
+        $(".notification-quote-generation").prop("checked", contract.custrecord_f3mm_notif_on_quote_generate === "T");
+        $(".notification-quote-approval").prop("checked", contract.custrecord_f3mm_notif_on_quote_approval === "T");
     }
 
     /**
@@ -1374,12 +1378,6 @@ class CreateContractUIManager {
         let compiledTemplate = _.template(viewTemplate);
         let htmlMarkup = compiledTemplate(contract);
         $(".view-horizontal").html(htmlMarkup);
-
-        if (contract.custrecord_f3mm_status && contract.custrecord_f3mm_status.value === "1") {
-            $(".btn-generate-quote").attr("disabled", "disabled");
-        } else {
-            $(".btn-generate-quote").removeAttr("disabled");
-        }
     }
 
     /**

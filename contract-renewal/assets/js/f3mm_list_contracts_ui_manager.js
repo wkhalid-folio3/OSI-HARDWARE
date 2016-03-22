@@ -475,7 +475,7 @@ var ListContractsUIManager = (function () {
             }, {
                 editing: false,
                 name: "custrecord_f3mm_customer.text",
-                title: "Company Name",
+                title: "Customer",
                 type: "text",
                 width: 120
             }, {

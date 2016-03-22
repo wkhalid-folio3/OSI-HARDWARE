@@ -18,11 +18,15 @@ class EmailHelper {
         try {
             // TODO : need to fill email body with quote information
             // let quote = nlapiLoadRecord("estimate", quoteId);
-            let fields = this._contractDAL.fields;
-            let emailEnabled = contract[fields.notificationOnRenewal.id] === "T";
+            const fields = this._contractDAL.fields;
+            const emailEnabled = contract[fields.notificationOnRenewal.id] === "T";
+            const primaryContactId = contract[fields.primaryContact.id].value;
+            const salesRepId = contract[fields.salesRep.id].value;
 
             if (emailEnabled === true) {
-                this.sendEmail(contract, ContractNotificationType.CONTRACT_RENEWAL);
+                this.sendEmail(contract, ContractNotificationType.CONTRACT_RENEWAL, primaryContactId, null, {
+                    from: salesRepId
+                });
             }
 
         } catch (e) {
@@ -30,6 +34,51 @@ class EmailHelper {
         }
 
         F3.Util.Utility.logDebug("EmailHelper.sendRenewEmail(); // END", null);
+    }
+
+    public static sendQuoteApprovalEmail(contract: any, quoteId: string) {
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // START", null);
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // contract:", JSON.stringify(contract));
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // quoteId:", quoteId);
+
+        try {
+            const fields = this._contractDAL.fields;
+            const emailEnabled = contract[fields.notificationOnQuoteApproval.id] === "T";
+            const primaryContactId = contract[fields.primaryContact.id].value;
+            const salesRepId = contract[fields.salesRep.id].value;
+
+            if (emailEnabled === true) {
+                this.sendEmail(contract, ContractNotificationType.QUOTE_APPROVAL, primaryContactId, quoteId, {
+                    from: salesRepId
+                });
+            }
+
+        } catch (e) {
+            F3.Util.Utility.logException("EmailHelper.sendQuoteApprovalEmail();", e.toString());
+        }
+
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalEmail(); // END", null);
+    }
+
+    public static sendQuoteApprovalByCustomerEmail(contract: any, quoteId: string) {
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalByCustomerEmail(); // START", null);
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalByCustomerEmail(); // contract:", JSON.stringify(contract));
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalByCustomerEmail(); // quoteId:", quoteId);
+
+        try {
+            const fields = this._contractDAL.fields;
+            // let emailEnabled = contract[fields.notificationOnQuoteApproval.id] === "T";
+            const salesRepId = contract[fields.salesRep.id].value;
+
+            // if (emailEnabled === true) {
+                this.sendEmail(contract, ContractNotificationType.QUOTE_APPROVAL_BY_CUSTOMER, salesRepId, quoteId);
+            // }
+
+        } catch (e) {
+            F3.Util.Utility.logException("EmailHelper.sendQuoteApprovalByCustomerEmail();", e.toString());
+        }
+
+        F3.Util.Utility.logDebug("EmailHelper.sendQuoteApprovalByCustomerEmail(); // END", null);
     }
 
     public static sendQuoteGenerationEmail(contract: any, quoteId: string) {
@@ -40,9 +89,10 @@ class EmailHelper {
         try {
             let fields = this._contractDAL.fields;
             let emailEnabled = contract[fields.notificationOnQuoteGenerate.id] === "T";
+            let salesRepId = contract[fields.salesRep.id].value;
 
             if (emailEnabled === true) {
-                this.sendEmail(contract, ContractNotificationType.QUOTE_GENERATION, quoteId);
+                this.sendEmail(contract, ContractNotificationType.QUOTE_GENERATION, salesRepId, quoteId);
             }
 
         } catch (e) {
@@ -57,10 +107,15 @@ class EmailHelper {
         F3.Util.Utility.logDebug("EmailHelper.sendExpiredEmail(); // contract:", JSON.stringify(contract));
 
         try {
-            let fields = this._contractDAL.fields;
-            let emailEnabled = contract[fields.notificationOnExpiration.id] === "T";
+            const fields = this._contractDAL.fields;
+            const emailEnabled = contract[fields.notificationOnExpiration.id] === "T";
+            const primaryContactId = contract[fields.primaryContact.id].value;
+            const salesRepId = contract[fields.salesRep.id].value;
+
             if (emailEnabled === true) {
-                this.sendEmail(contract, ContractNotificationType.CONTRACT_EXPIRATION);
+                this.sendEmail(contract, ContractNotificationType.CONTRACT_EXPIRATION, primaryContactId, null, {
+                    from: salesRepId
+                });
             }
         } catch (e) {
             F3.Util.Utility.logException("EmailHelper.sendExpiredEmail();", e.toString());
@@ -69,12 +124,23 @@ class EmailHelper {
         F3.Util.Utility.logDebug("EmailHelper.sendExpiredEmail(); // END", null);
     }
 
-    public static sendReminderEmail(contract: any, daysRemaining: number) {
+    public static sendReminderEmail(contract: any, daysRemaining: number, isCustom?: boolean, quoteId?: any) {
         F3.Util.Utility.logDebug("EmailHelper.sendReminderEmail(); // START", null);
         F3.Util.Utility.logDebug("EmailHelper.sendReminderEmail(); // contract:", JSON.stringify(contract));
 
         try {
-            this.sendEmail(contract, ContractNotificationType.CONTRACT_REMINDER);
+            const fields = this._contractDAL.fields;
+            const salesRepId = contract[fields.salesRep.id].value;
+            const primaryContactId = contract[fields.primaryContact.id].value;
+
+            if (isCustom === true) {
+                this.sendEmail(contract, ContractNotificationType.CONTRACT_REMINDER, salesRepId, quoteId);
+            } else {
+                this.sendEmail(contract, ContractNotificationType.CONTRACT_REMINDER, primaryContactId, null, {
+                    from: salesRepId
+                });
+            }
+
         } catch (e) {
 
             F3.Util.Utility.logException("EmailHelper.sendReminderEmail();", e.toString());
@@ -83,12 +149,13 @@ class EmailHelper {
         F3.Util.Utility.logDebug("EmailHelper.sendReminderEmail(); // END", null);
     }
 
-    private static sendEmail(contract: any, type: ContractNotificationType, quoteId?) {
+    private static sendEmail(contract: any, type: ContractNotificationType, to: string, quoteId?: string, options?: any) {
         let fields = this._contractDAL.fields;
-        let customerId = contract[fields.customer.id].value;
         let vendorId = contract[fields.contractVendor.id].value;
+        options = options || {};
 
-        if (!!customerId) {
+        if (!!to) {
+            let quotePdf = null;
             let templateMapping = this._commonDAL.getEmailTemplate(type, vendorId)[0];
 
             if (!templateMapping) {
@@ -102,13 +169,14 @@ class EmailHelper {
             emailMerger.setCustomRecord("customrecord_f3mm_contract", contract.id);
             if (!!quoteId) {
                 emailMerger.setTransaction(quoteId);
+                quotePdf = nlapiPrintRecord("TRANSACTION", quoteId, "PDF");
             }
 
             let mergeResult = emailMerger.merge();
             let emailSubject = mergeResult.getSubject();
             let emailBody = mergeResult.getBody();
-            nlapiSendEmail(Config.FROM_EMAIL_ID, customerId, emailSubject, emailBody);
-            F3.Util.Utility.logDebug("Email sent", `Email sent to customer id: ${customerId}`);
+            nlapiSendEmail(options.from || Config.FROM_EMAIL_ID, to, emailSubject, emailBody, null, null, null, quotePdf);
+            F3.Util.Utility.logDebug("Email sent", `Email sent to customer id: ${to}`);
         }
     }
 }

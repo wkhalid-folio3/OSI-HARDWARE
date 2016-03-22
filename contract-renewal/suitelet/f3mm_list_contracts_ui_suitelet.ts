@@ -20,10 +20,12 @@
  */
 class ListContractsUISuitelet extends BaseUISuitelet {
 
-    private title: string = "Contracts";
+    protected title: string = "Contracts";
 
     constructor(request: nlobjRequest, response: nlobjResponse) {
         super(request, response);
+        this.title = "<i class=\"fa fa-file-text-o\"></i> List Contracts";
+        this.main(request, response);
     }
 
     /**
@@ -37,8 +39,6 @@ class ListContractsUISuitelet extends BaseUISuitelet {
             let standaloneParam = request.getParameter("standalone");
             let standalone = standaloneParam === "T" || standaloneParam === "1";
             let standaloneClass = (standalone ? "page-standalone" : "page-inline");
-
-            this.title = "<i class=\"fa fa-file-text-o\"></i> List Contracts";
             let templateName = "list_contracts.html";
             let htmlTemplate = this.getHtmlTemplate(templateName);
             let processedHtml = this.parseHtmlTemplate(htmlTemplate, {
@@ -73,7 +73,7 @@ class ListContractsUISuitelet extends BaseUISuitelet {
      * Parse HTML Template and replace variables with required data
      * @returns {string} returns processed html
      */
-    private parseHtmlTemplate(html: string, data) {
+    protected parseHtmlTemplate(html: string, data) {
         let files = this.getDependencyFiles();
         let suiteletScriptId = "customscript_f3mm_create_contract_api_st";
         let suiteletDeploymentId = "customdeploy_f3mm_create_contract_api_st";

@@ -23,10 +23,12 @@ var __extends = (this && this.__extends) || function (d, b) {
  */
 var CreateContractUISuitelet = (function (_super) {
     __extends(CreateContractUISuitelet, _super);
-    function CreateContractUISuitelet() {
-        _super.apply(this, arguments);
+    function CreateContractUISuitelet(request, response) {
+        _super.call(this, request, response);
         this.title = "Create Contract";
         this.type = "create";
+        this.title = "Create Contract";
+        this.main(request, response);
     }
     /**
      * Entry point for Request. Operations:
@@ -43,17 +45,17 @@ var CreateContractUISuitelet = (function (_super) {
             var uiSuiteletScriptId = "customscript_f3mm_create_contract_ui_st";
             var uiSuiteletDeploymentId = "customdeploy_f3mm_create_contract_ui_st";
             var uiSuiteletUrl = nlapiResolveURL("SUITELET", uiSuiteletScriptId, uiSuiteletDeploymentId, false);
-            var editMode = request.getParameter("e");
+            var editMode = request.getParameter("e") || request.getParameter("edit");
             var contractId = request.getParameter("cid");
             var contract = null;
             if (!!contractId) {
                 contract = this._contractDAL.getWithDetails(contractId);
                 F3.Util.Utility.logDebug("CreateContractUISuitelet.main() // contract: ", JSON.stringify(contract));
                 if (!contract) {
-                    throw new Error("that record does not exist.");
+                    throw new Error("That record does not exist.");
                 }
                 uiSuiteletUrl = uiSuiteletUrl + "&cid=" + contractId;
-                if (editMode === "t") {
+                if (editMode === "T" || editMode === "t") {
                     this.title = "Edit Contract";
                     this.type = "edit";
                 }

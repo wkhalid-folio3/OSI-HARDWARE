@@ -27,6 +27,8 @@ var ListContractsUISuitelet = (function (_super) {
     function ListContractsUISuitelet(request, response) {
         _super.call(this, request, response);
         this.title = "Contracts";
+        this.title = "<i class=\"fa fa-file-text-o\"></i> List Contracts";
+        this.main(request, response);
     }
     /**
      * main method
@@ -37,7 +39,6 @@ var ListContractsUISuitelet = (function (_super) {
             var standaloneParam = request.getParameter("standalone");
             var standalone = standaloneParam === "T" || standaloneParam === "1";
             var standaloneClass = (standalone ? "page-standalone" : "page-inline");
-            this.title = "<i class=\"fa fa-file-text-o\"></i> List Contracts";
             var templateName = "list_contracts.html";
             var htmlTemplate = this.getHtmlTemplate(templateName);
             var processedHtml = this.parseHtmlTemplate(htmlTemplate, {
