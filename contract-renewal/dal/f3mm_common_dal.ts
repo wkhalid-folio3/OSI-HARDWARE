@@ -135,7 +135,8 @@ class CommonDAL extends BaseDAL {
         if ( !!vendorId) {
             filters.push(new nlobjSearchFilter("custrecord_f3mm_vendor", null, "anyof", vendorId));
         } else {
-            filters.push(new nlobjSearchFilter("custrecord_f3mm_vendor", null, "isempty"));
+            // filters.push(new nlobjSearchFilter("custrecord_f3mm_vendor", null, "isempty"));
+            filters.push(new nlobjSearchFilter("custrecord_f3mm_vendor", null, "anyof", "@NONE@"));
         }
         filters.push(new nlobjSearchFilter("isinactive", null, "is", "F"));
 

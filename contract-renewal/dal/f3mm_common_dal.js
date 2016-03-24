@@ -121,7 +121,8 @@ var CommonDAL = (function (_super) {
             filters.push(new nlobjSearchFilter("custrecord_f3mm_vendor", null, "anyof", vendorId));
         }
         else {
-            filters.push(new nlobjSearchFilter("custrecord_f3mm_vendor", null, "isempty"));
+            // filters.push(new nlobjSearchFilter("custrecord_f3mm_vendor", null, "isempty"));
+            filters.push(new nlobjSearchFilter("custrecord_f3mm_vendor", null, "anyof", "@NONE@"));
         }
         filters.push(new nlobjSearchFilter("isinactive", null, "is", "F"));
         var result = this.getAll(filters, cols, "customrecord_f3mm_vendor_template_maping");
