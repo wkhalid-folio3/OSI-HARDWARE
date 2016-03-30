@@ -108,7 +108,7 @@ var EmailHelper = (function () {
             var salesRepId = contract[fields.salesRep.id].value;
             var primaryContactId = contract[fields.primaryContact.id].value;
             if (isCustom === true) {
-                this.sendEmail(contract, ContractNotificationType.CONTRACT_REMINDER, salesRepId, quoteId);
+                this.sendEmail(contract, ContractNotificationType.QUOTE_GENERATION, salesRepId, quoteId);
             }
             else {
                 this.sendEmail(contract, ContractNotificationType.CONTRACT_REMINDER, primaryContactId, null, {
