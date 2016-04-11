@@ -181,6 +181,19 @@
                                     </div>
                                 </div>
 
+                                <div class="form-group">
+                                    <label for="department" class="control-label">Department <span
+                                            class="mandatory">*</span></label>
+                                    <div class="">
+                                        <select class="form-control department-dropdown"
+                                                id="department"
+                                                name="department">
+                                            <option value="" selected="selected"></option>
+
+                                        </select>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -190,28 +203,6 @@
                         <div class="row">
                             <div class="col-sm-8">
 
-
-                                <div class="form-group">
-                                    <label for="system_id" class="control-label">System ID</label>
-
-                                    <div class="">
-                                        <input type="text" class="form-control system-id-text"
-                                               id="system_id"
-                                               name="system_id"
-                                                size="250" />
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="po_number" class="control-label">PO #</label>
-
-                                    <div class="">
-                                        <input type="text" class="form-control po-number-text"
-                                               id="po_number"
-                                               name="po_number"/>
-                                    </div>
-                                </div>
-
                                 <div class="form-group">
                                     <label for="vendor" class="control-label">Contract Vendor <span
                                             class="mandatory">*</span></label>
@@ -220,69 +211,6 @@
                                         <select class="form-control vendor-dropdown"
                                                 id="vendor"
                                                 name="vendor">
-                                            <option value="" selected="selected"></option>
-
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="status" class="control-label">Status <span
-                                            class="mandatory">*</span></label>
-
-                                    <div class="">
-                                        <select class="form-control status-dropdown"
-                                                id="status"
-                                                name="status">
-                                            <option value="1">Pending Rep Approval</option>
-                                            <option value="2">Pending Customer Approval</option>
-                                            <option value="3">Approved</option>
-                                            <option value="4">Expired</option>
-                                            <option value="5">Void</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="total_quantity_seats" class="control-label">Total Quantity Seats</label>
-
-                                    <div class="">
-                                        <input type="text" class="form-control total-quantity-seats-text"
-                                               id="total_quantity_seats"
-                                               name="total_quantity_seats"
-                                               readonly="readonly"/>
-                                    </div>
-                                </div>
-
-
-                                <div class="form-group">
-                                    <label for="status" class="control-label">Discount</label>
-
-                                    <div class="">
-                                        <select class="form-control discount-dropdown"
-                                                id="discount"
-                                                name="discount">
-                                            <option value="" selected="selected"></option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- third column in primary information section -->
-                    <div class="col-sm-4">
-                        <div class="row">
-                            <div class="col-sm-8">
-
-                                <div class="form-group">
-                                    <label for="department" class="control-label">Department <span
-                                            class="mandatory">*</span></label>
-                                    <div class="">
-                                        <select class="form-control department-dropdown"
-                                                id="department"
-                                                name="department">
                                             <option value="" selected="selected"></option>
 
                                         </select>
@@ -300,6 +228,8 @@
                                             <option value="1">Monthly</option>
                                             <option value="2">Quarterly</option>
                                             <option value="3">Annual</option>
+                                            <option value="4">2 Years</option>
+                                            <option value="5">3 Years</option>
                                         </select>
                                     </div>
                                 </div>
@@ -332,6 +262,24 @@
                                     </div>
                                 </div>
 
+
+                                <div class="form-group">
+                                    <label for="status" class="control-label">Status <span
+                                            class="mandatory">*</span></label>
+
+                                    <div class="">
+                                        <select class="form-control status-dropdown"
+                                                id="status"
+                                                name="status">
+                                            <option value="1">Pending Rep Approval</option>
+                                            <option value="2">Pending Customer Approval</option>
+                                            <option value="3">Approved</option>
+                                            <option value="4">Expired</option>
+                                            <option value="5">Void</option>
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <div class="form-group form-group-is-renew" style="display: none;">
                                     <label for="is_renew" class="control-label">Is Renew?</label>
                                     <div class="">
@@ -340,6 +288,61 @@
                                                name="is_renew"/>
                                     </div>
                                 </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- third column in primary information section -->
+                    <div class="col-sm-4">
+                        <div class="row">
+                            <div class="col-sm-8">
+
+                                <div class="form-group">
+                                    <label for="system_id" class="control-label">System ID</label>
+
+                                    <div class="">
+                                        <input type="text" class="form-control system-id-text"
+                                               id="system_id"
+                                               name="system_id"
+                                               size="250" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="po_number" class="control-label">PO #</label>
+
+                                    <div class="">
+                                        <input type="text" class="form-control po-number-text"
+                                               id="po_number"
+                                               name="po_number"/>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="total_quantity_seats" class="control-label">Total Quantity Seats</label>
+
+                                    <div class="">
+                                        <input type="text" class="form-control total-quantity-seats-text"
+                                               id="total_quantity_seats"
+                                               name="total_quantity_seats"
+                                               readonly="readonly"/>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="status" class="control-label">Discount</label>
+
+                                    <div class="">
+                                        <select class="form-control discount-dropdown"
+                                                id="discount"
+                                                name="discount">
+                                            <option value="" selected="selected"></option>
+                                        </select>
+                                    </div>
+                                </div>
+
 
                                 <div class="form-group">
                                     <label for="memo" class="control-label">Memo</label>
@@ -577,12 +580,77 @@
                             </div>
                         </div>
 
+                        <div class="form-group">
+                            <label for="department" class="control-label">Department</label>
+
+                            <div class="">
+                                {{ if ( !!custrecord_f3mm_department) { }}
+                                <a href="/app/common/otherlists/departmenttype.nl?id={{= custrecord_f3mm_department.value }}">{{= custrecord_f3mm_department.text }}</a>
+                                {{ } }}
+                            </div>
+                        </div>
+
+
                     </div>
                 </div>
             </div>
             <div class="col-sm-4">
                 <div class="row">
                     <div class="col-sm-8">
+
+
+                        <div class="form-group">
+                            <label for="vendor" class="control-label">Contract Vendor</label>
+
+                            <div class="">
+                                {{ if ( !!custrecord_f3mm_contract_vendor) { }}
+                                <a href="/app/common/entity/vendor.nl?id={{= custrecord_f3mm_contract_vendor.value }}">{{= custrecord_f3mm_contract_vendor.text }}</a>
+                                {{ } }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="department" class="control-label">Contract Duration</label>
+
+                            <div class="">
+                                {{ if ( !!custrecord_f3mm_contract_duration) { }}
+                                {{= custrecord_f3mm_contract_duration.text }}
+                                {{ } }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="start_date" class="control-label">Start Date</label>
+
+                            <div class="">
+                                {{= custrecord_f3mm_start_date }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="end_date" class="control-label">End Date</label>
+
+                            <div class="">
+                                {{= custrecord_f3mm_end_date }}
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label for="status" class="control-label">Status</label>
+
+                            <div class="">
+                                {{= custrecord_f3mm_status && custrecord_f3mm_status.text || '' }}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="row">
+                    <div class="col-sm-8">
+
 
                         <div class="form-group">
                             <label for="po_number" class="control-label">System ID</label>
@@ -600,23 +668,6 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="vendor" class="control-label">Contract Vendor</label>
-
-                            <div class="">
-                                {{ if ( !!custrecord_f3mm_contract_vendor) { }}
-                                <a href="/app/common/entity/vendor.nl?id={{= custrecord_f3mm_contract_vendor.value }}">{{= custrecord_f3mm_contract_vendor.text }}</a>
-                                {{ } }}
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="status" class="control-label">Status</label>
-
-                            <div class="">
-                                {{= custrecord_f3mm_status && custrecord_f3mm_status.text || '' }}
-                            </div>
-                        </div>
 
                         <div class="form-group">
                             <label for="total_quantity_seats" class="control-label">Total Quantity Seats</label>
@@ -634,49 +685,8 @@
                             </div>
                         </div>
 
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="row">
-                    <div class="col-sm-8">
-
-                        <div class="form-group">
-                            <label for="department" class="control-label">Department</label>
-
-                            <div class="">
-                                {{ if ( !!custrecord_f3mm_department) { }}
-                                <a href="/app/common/otherlists/departmenttype.nl?id={{= custrecord_f3mm_department.value }}">{{= custrecord_f3mm_department.text }}</a>
-                                {{ } }}
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="department" class="control-label">Contract Duration</label>
-
-                            <div class="">
-                                {{ if ( !!custrecord_f3mm_contract_duration) { }}
-                                    {{= custrecord_f3mm_contract_duration.text }}
-                                {{ } }}
-                            </div>
-                        </div>
 
 
-                        <div class="form-group">
-                            <label for="start_date" class="control-label">Start Date</label>
-
-                            <div class="">
-                                {{= custrecord_f3mm_start_date }}
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="end_date" class="control-label">End Date</label>
-
-                            <div class="">
-                                {{= custrecord_f3mm_end_date }}
-                            </div>
-                        </div>
 
                         <div class="form-group">
                             <label for="memo" class="control-label">Memo</label>
