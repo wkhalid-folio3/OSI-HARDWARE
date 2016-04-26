@@ -369,6 +369,9 @@ textarea:disabled,
     height: auto;
 }
 
+.contract-number {
+    word-wrap: break-word;
+}
 
 .contracts-listing-page .toolbar {
     background-color: #E0E6EF;
