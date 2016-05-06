@@ -1198,6 +1198,17 @@ class CreateContractUIManager {
                 endDate.setMonth(startDate.getMonth() + 12);
                 endDate.setDate(endDate.getDate() - 1); // substract one day
             }
+
+            else if (selected === "4") {
+                endDate = startDate;
+                endDate.setMonth(startDate.getMonth() + 24);
+                endDate.setDate(endDate.getDate() - 1); // substract one day
+            }
+            else if (selected === "5") {
+                endDate = startDate;
+                endDate.setMonth(startDate.getMonth() + 36);
+                endDate.setDate(endDate.getDate() - 1); // substract one day
+            }
         }
 
         if (!!endDate) {

@@ -471,7 +471,7 @@ var ListContractsUIManager = (function () {
                 name: "custrecord_f3mm_contract_number",
                 title: "Contract #",
                 type: "text",
-                width: 75
+                width: 110
             }, {
                 editing: false,
                 name: "custrecord_f3mm_customer.text",
@@ -489,7 +489,7 @@ var ListContractsUIManager = (function () {
                 name: "custrecord_f3mm_primary_contact_email",
                 title: "Primary Contact Email",
                 type: "text",
-                width: 150
+                width: 190
             }, {
                 editing: false,
                 name: "custrecord_f3mm_contract_vendor.text",
