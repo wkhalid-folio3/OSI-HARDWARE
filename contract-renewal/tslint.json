@@ -45,16 +45,15 @@
       "check-open-brace",
       "check-catch",
       "check-else",
-      "check-finally",
       "check-whitespace"
     ],
     "quotemark": [true, "double", "avoid-escape"],
     "radix": true,
     "semicolon": true,
-    "trailing-comma": [true, {
+    "trailing-comma": {
       "singleline": "never",
       "multiline": "always"
-    }],
+    },
     "triple-equals": [true, "allow-null-check"],
     "typedef-whitespace": [true, {
       "call-signature": "nospace",
