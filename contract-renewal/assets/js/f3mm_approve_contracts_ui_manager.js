@@ -275,7 +275,7 @@ var ApproveContractsUIManager = (function (_super) {
                 name: "custrecord_f3mm_contract_number",
                 title: "Contract #",
                 type: "text",
-                width: 75
+                width: 150
             }, {
                 editing: false,
                 name: "custrecord_f3mm_customer.text",
