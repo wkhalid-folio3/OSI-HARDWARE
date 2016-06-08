@@ -51,6 +51,9 @@ var ListContractsUIManager = (function () {
         var _this = this;
         var promise = $.Deferred();
         var options = this.getFilters(filter);
+        if (jQuery.isEmptyObject(options.sortFields)) {
+            options.sortFields["custrecord_f3mm_end_date"] = "asc";
+        }
         this._dataManager.searchContracts(options, function (result) {
             var data = _this.prepareGridData(result.data.records);
             var label = "1 record";
@@ -690,5 +693,5 @@ var ListContractsUIManager = (function () {
         }
     };
     return ListContractsUIManager;
-})();
+}());
 //# sourceMappingURL=f3mm_list_contracts_ui_manager.js.map

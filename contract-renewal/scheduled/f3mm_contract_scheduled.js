@@ -80,7 +80,7 @@ var ContractScheduled = (function () {
         return contracts;
     };
     return ContractScheduled;
-})();
+}());
 function ContractScheduledMain(args) {
     return new ContractScheduled(args);
 }

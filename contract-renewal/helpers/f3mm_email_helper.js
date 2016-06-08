@@ -149,5 +149,5 @@ var EmailHelper = (function () {
     EmailHelper._contractDAL = new ContractDAL();
     EmailHelper._commonDAL = new CommonDAL();
     return EmailHelper;
-})();
+}());
 //# sourceMappingURL=f3mm_email_helper.js.map

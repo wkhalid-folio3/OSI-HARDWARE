@@ -10,6 +10,8 @@
     <link rel="stylesheet" type="text/css" media="screen" href="{{ jsgrid.min.css }}"/>
     <link rel="stylesheet" type="text/css" media="screen" href="{{ jsgrid-theme.min.css }}"/>
     <link rel="stylesheet" type="text/css" media="screen" href="{{ styles.css }}"/>
+    <div id="success">
+    </div>
 
     <title>{{ title }}</title>
 </head>
@@ -236,6 +238,17 @@
     <script type="text/javascript" src="{{ f3mm_data_manager.js }}"></script>
     <script type="text/javascript" src="{{ f3mm_list_contracts_ui_manager.js }}"></script>
     <script type="text/javascript" src="{{ f3mm_init.js }}"></script>
+    <script type="text/javascript" src="{{ arrive.min.js }}"></script>
+    <script> $(document).ready(function () {
+        var alertMsg = decodeURIComponent(window.location.href.match(/alert-msg=([^&]*)/)[1]);
+        var alertClass = decodeURIComponent(window.location.href.match(/alert-class=([^&]*)/)[1]);
+        window.location.hash="";
+        if (alertMsg) {
+        jQuery("#success").html('<div id="success2" class="alert '+ alertClass+'"><a href="#" onclick="jQuery(this).parent().slideUp(500)" class="close" aria-label="close">&times;</a><strong>'+ alertMsg+'</strong></div><br>');
 
+        }
+
+    })
+    </script>
 </body>
 </html>

@@ -365,5 +365,5 @@ var ApproveContractsUIManager = (function (_super) {
         return gridFields;
     };
     return ApproveContractsUIManager;
-})(ListContractsUIManager);
+}(ListContractsUIManager));
 //# sourceMappingURL=f3mm_approve_contracts_ui_manager.js.map

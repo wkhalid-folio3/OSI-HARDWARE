@@ -661,6 +661,24 @@ class ContractDAL extends BaseDAL {
 
         let removeExistingLineItems = true;
         let record = this.prepareDataToUpsert(contract, false, removeExistingLineItems);
+        
+        if(!!contract.id) {
+            let oldRecord = this.get(contract.id);
+            let oldStatus = oldRecord.custrecord_f3mm_status;
+            let newStatus = contract.status;
+            let quoteId = null;
+            if (newStatus !== oldStatus.value) {
+                // make sure it is pending customer approval
+                if (parseInt(newStatus) === ContractStatus.PENDING_CUSTOMER_APPROVAL) {
+                    let newRecord = this.getWithDetails(contract.id);
+                    if (newRecord.sublists.quotes.length > 0) {
+                        let quote = newRecord.sublists.quotes[newRecord.sublists.quotes.length - 1];
+                        quoteId = quote.id;
+                    }
+                    EmailHelper.sendQuoteApprovalEmail(newRecord, quoteId);
+                }
+            }
+        }
         let id = this.upsert(record, removeExistingLineItems);
 
         if (contract.is_renew === "on") {

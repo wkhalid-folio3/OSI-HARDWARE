@@ -13,7 +13,7 @@ var SalesRepPortlet = (function () {
         portlet.setHtml(html);
     }
     return SalesRepPortlet;
-})();
+}());
 function SalesRepPortletInit(portletObj, column) {
     return new SalesRepPortlet(portletObj, column);
 }

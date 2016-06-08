@@ -12,7 +12,7 @@ var CustomerPortlet = (function () {
         portlet.setHtml(html);
     }
     return CustomerPortlet;
-})();
+}());
 function CustomerPortletInit(portletObj, column) {
     return new CustomerPortlet(portletObj, column);
 }

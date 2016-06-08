@@ -467,5 +467,5 @@ var DataManager = (function () {
         });
     };
     return DataManager;
-})();
+}());
 //# sourceMappingURL=f3mm_data_manager.js.map

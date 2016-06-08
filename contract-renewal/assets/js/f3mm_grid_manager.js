@@ -5,5 +5,5 @@ var ContractItemsGridManager = (function () {
     function ContractItemsGridManager() {
     }
     return ContractItemsGridManager;
-})();
+}());
 //# sourceMappingURL=f3mm_grid_manager.js.map

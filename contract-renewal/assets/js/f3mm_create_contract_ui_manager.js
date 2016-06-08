@@ -52,6 +52,7 @@ var CreateContractUIManager = (function () {
         $("#contact_popup_new").on("click", this.openNewContactWindow.bind(this));
         $(".duration-dropdown").on("change", this.durationDropdownChanged.bind(this));
         $(".start-date-text").parent().on("changeDate", this.durationDropdownChanged.bind(this));
+        $("#delete-btn").on("click", this.deleteContract.bind(this));
         // whenever tab is switched, refresh the grid
         $("a[data-toggle='tab']").click(function (e) {
             e.preventDefault();
@@ -66,6 +67,43 @@ var CreateContractUIManager = (function () {
         });
     }
     /**
+     * Invoked by JSGrid whenever any item is updating in the grid
+     * @param {object} args contains json object of item and html element of grid row
+     * @returns {void}
+     */
+    CreateContractUIManager.prototype.deleteContract = function (args) {
+        var _this = this;
+        if (confirm("Are you sure you want to delete this record?") == true) {
+            var promise_1 = $.Deferred();
+            var item = {
+                id: this._contractInfo.id
+            };
+            this.showLoading();
+            this._dataManager.deleteContract(item, function (result) {
+                console.log("deleted: // ", result);
+                if (result.message == "success") {
+                    var uiSuiteletScriptId = 'customscript_f3mm_list_contracts_ui_st';
+                    var uiSuiteletDeploymentId = 'customdeploy_f3mm_list_contracts_ui_st';
+                    var uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
+                    //uiSuiteletUrl = uiSuiteletUrl + '&cid=' + result.data.id;
+                    var alertMessage = "The record has been deleted successfully";
+                    var alertClass = "alert-success";
+                    window.location.href = uiSuiteletUrl + "#/?alert-msg=" + alertMessage + "&alert-class=" + alertClass;
+                    console.log("uiSuiteletUrl: // ", uiSuiteletUrl);
+                }
+                else {
+                    alert(result.message);
+                    _this.hideLoading();
+                }
+                promise_1.resolve();
+                _this.hideLoading();
+            });
+            return promise_1.promise();
+        }
+        else {
+        }
+    };
+    /**
      * Submits contract information (extracted from ui elements) to server
      * @returns {void}
      */
@@ -77,20 +115,20 @@ var CreateContractUIManager = (function () {
             if (validated === false) {
                 return;
             }
-            var serializedData = $(".form-horizontal :input").serializeObject();
+            var serializedData_1 = $(".form-horizontal :input").serializeObject();
             if (!!this._contractInfo) {
-                serializedData.id = this._contractInfo.id;
+                serializedData_1.id = this._contractInfo.id;
             }
             if (!!validated.customerId) {
-                serializedData.customer = validated.customerId;
+                serializedData_1.customer = validated.customerId;
             }
             if (!!validated.primaryContactId) {
-                serializedData.primary_contact = validated.primaryContactId;
+                serializedData_1.primary_contact = validated.primaryContactId;
             }
-            serializedData.items = [];
+            serializedData_1.items = [];
             var items = $("#jsGrid").data().JSGrid.data;
             $.each(items, function (index, item) {
-                serializedData.items.push({
+                serializedData_1.items.push({
                     amount: item.amount,
                     id: item.id,
                     item_description: item.description,
@@ -101,13 +139,13 @@ var CreateContractUIManager = (function () {
                     quantity: item.quantity
                 });
             });
-            if (serializedData.items.length <= 0) {
+            if (serializedData_1.items.length <= 0) {
                 alert("You must enter at least one line item for this transaction.");
                 return;
             }
-            console.log("serializedData: ", serializedData);
+            console.log("serializedData: ", serializedData_1);
             this.showLoading();
-            this._dataManager.submit(serializedData, function (result) {
+            this._dataManager.submit(serializedData_1, function (result) {
                 console.log("submit success:", result);
                 if (!!result.data) {
                     var uiSuiteletScriptId = 'customscript_f3mm_create_contract_ui_st';
@@ -439,10 +477,10 @@ var CreateContractUIManager = (function () {
             setTimeout(function () {
                 var select = document.getElementById("discount");
                 if (result.status_code === 200) {
-                    var discountItemId = _this._contractInfo && _this._contractInfo.custrecord_f3mm_discount_item_id || null;
+                    var discountItemId_1 = _this._contractInfo && _this._contractInfo.custrecord_f3mm_discount_item_id || null;
                     // add each item on UI
                     $.each(result.data, function (i, item) {
-                        if (item.id === discountItemId) {
+                        if (item.id === discountItemId_1) {
                             _this._contractInfo.custrecord_f3mm_discount_item_text = item.itemid;
                         }
                         select.options[select.options.length] = new Option(item.itemid, item.id);
@@ -1295,5 +1333,5 @@ var CreateContractUIManager = (function () {
         };
     };
     return CreateContractUIManager;
-})();
+}());
 //# sourceMappingURL=f3mm_create_contract_ui_manager.js.map

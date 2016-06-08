@@ -172,5 +172,5 @@ var BaseDAL = (function () {
         });
     };
     return BaseDAL;
-})();
+}());
 //# sourceMappingURL=f3mm_base_dal.js.map

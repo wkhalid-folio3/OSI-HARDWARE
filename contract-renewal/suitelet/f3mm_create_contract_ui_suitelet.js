@@ -127,7 +127,7 @@ var CreateContractUISuitelet = (function (_super) {
         return html;
     };
     return CreateContractUISuitelet;
-})(BaseUISuitelet);
+}(BaseUISuitelet));
 /**
  * This is the main entry point for CreateContractUI suitelet
  * NetSuite must only know about this function.

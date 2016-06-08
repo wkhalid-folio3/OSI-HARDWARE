@@ -178,7 +178,7 @@ var ContractDAL = (function (_super) {
     ContractDAL.prototype.getWithDetails = function (id) {
         var contract = null;
         try {
-            var commonDAL = new CommonDAL();
+            var commonDAL_1 = new CommonDAL();
             contract = this.get(id);
             if (contract[this.fields.deleted.id] === "T") {
                 var err = new Error("the record is deleted");
@@ -187,35 +187,35 @@ var ContractDAL = (function (_super) {
             }
             var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
             F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // contractItems ", JSON.stringify(contractItems));
-            var items = [];
+            var items_1 = [];
             var contractItemIds = contractItems.map(function (ci) { return ci.id; });
             var itemIds = contractItems
                 .filter(function (ci) { return !!ci.custrecord_f3mm_ci_item; })
                 .map(function (ci) { return parseInt(ci.custrecord_f3mm_ci_item.value, 10); });
             F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // itemIds ", JSON.stringify(itemIds));
             if (itemIds && itemIds.length) {
-                items = commonDAL.getItems({
+                items_1 = commonDAL_1.getItems({
                     itemIds: itemIds
                 });
-                items.forEach(function (item) {
-                    item.priceLevels = commonDAL.getPriceLevels({
+                items_1.forEach(function (item) {
+                    item.priceLevels = commonDAL_1.getPriceLevels({
                         itemId: item.id,
                         recordType: item.recordType
                     });
                 });
             }
             // attach quotes
-            contract.sublists.quotes = commonDAL.getQuotes({
+            contract.sublists.quotes = commonDAL_1.getQuotes({
                 contractId: id
             });
             F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // contract.sublists.quotes", JSON.stringify(contract.sublists.quotes));
             // attach history
             var contractHistory = this.getHistory(id) || [];
-            var historyFieldsToExclude = ["Inactive", "Deleted?", "Owner"];
+            var historyFieldsToExclude_1 = ["Inactive", "Deleted?", "Owner"];
             var contractItemsHistory = this.getHistory(contractItemIds, "customrecord_f3mm_contract_item");
             if (!!contractItemsHistory) {
                 contractItemsHistory = contractItemsHistory.filter(function (cih) { return cih.field.text === "Item"; });
-                contractHistory = contractHistory.filter(function (ch) { return historyFieldsToExclude.indexOf(ch.field.text) <= 0; });
+                contractHistory = contractHistory.filter(function (ch) { return historyFieldsToExclude_1.indexOf(ch.field.text) <= 0; });
                 contractHistory = contractHistory.concat(contractItemsHistory);
                 contractHistory.sort(function (item1, item2) {
                     var date1 = new Date(item1.date);
@@ -227,8 +227,8 @@ var ContractDAL = (function (_super) {
             F3.Util.Utility.logDebug("ContractDAL.getWithDetails(id); // contractItemsHistory", JSON.stringify(contractItemsHistory));
             contractItems.forEach(function (contractItem) {
                 if (!!contractItem.custrecord_f3mm_ci_item) {
-                    var itemId = contractItem.custrecord_f3mm_ci_item.value;
-                    var foundItem = items.filter(function (item) { return item.id === itemId; })[0];
+                    var itemId_1 = contractItem.custrecord_f3mm_ci_item.value;
+                    var foundItem = items_1.filter(function (item) { return item.id === itemId_1; })[0];
                     if (!!foundItem) {
                         contractItem.custrecord_f3mm_ci_item.baseprice = foundItem.baseprice;
                         contractItem.custrecord_f3mm_ci_item.displayname = foundItem.displayname;
@@ -312,15 +312,15 @@ var ContractDAL = (function (_super) {
         result.records = _super.prototype.getAll.call(this, filters, null, null, params);
         // fetch contract items
         if (result.records && result.records.length) {
-            var commonDAL = new CommonDAL();
+            var commonDAL_2 = new CommonDAL();
             var contractIds = result.records.map(function (record) { return record.id; });
-            var contractItems = this.searchContractItems({ contractIds: contractIds });
+            var contractItems_1 = this.searchContractItems({ contractIds: contractIds });
             result.records.forEach(function (record) {
                 record.sublists = record.sublists || {};
-                var filtered = contractItems.filter(function (ci) { return ci.custrecord_f3mm_ci_contract.value === record.id; });
+                var filtered = contractItems_1.filter(function (ci) { return ci.custrecord_f3mm_ci_contract.value === record.id; });
                 record.sublists.recmachcustrecord_f3mm_ci_contract = filtered;
                 // attach quotes
-                record.sublists.quotes = commonDAL.getQuotes({
+                record.sublists.quotes = commonDAL_2.getQuotes({
                     contractId: record.id
                 });
             });
@@ -342,7 +342,7 @@ var ContractDAL = (function (_super) {
         try {
             var contractId = params.contractId;
             var contract = this.getWithDetails(contractId);
-            var quote = nlapiCreateRecord("estimate");
+            var quote_1 = nlapiCreateRecord("estimate");
             var tranDate = new Date();
             // let expectedClosingDate = new Date();
             // expectedClosingDate.setDate(expectedClosingDate.getDate() + 30); // add 7 days
@@ -354,33 +354,33 @@ var ContractDAL = (function (_super) {
                 dueDate = nlapiDateToString(dueDate); // add 30 days
             }
             var expectedClosingDate = dueDate;
-            quote.setFieldValue("trandate", nlapiDateToString(tranDate)); // mandatory field
-            quote.setFieldValue("expectedclosedate", expectedClosingDate); // mandatory field
-            quote.setFieldValue("duedate", dueDate); // mandatory field
+            quote_1.setFieldValue("trandate", nlapiDateToString(tranDate)); // mandatory field
+            quote_1.setFieldValue("expectedclosedate", expectedClosingDate); // mandatory field
+            quote_1.setFieldValue("duedate", dueDate); // mandatory field
             // entityStatuses for references
             var proposalStatusId = "10";
-            quote.setFieldValue("entitystatus", proposalStatusId); // proposal
-            quote.setFieldValue("salesrep", contract[this.fields.salesRep.id].value);
-            quote.setFieldValue("entity", contract[this.fields.customer.id].value);
-            quote.setFieldValue("custbody_f3mm_quote_contract", contractId); // attach contract record
-            quote.setFieldValue("department", contract[this.fields.department.id].value);
-            quote.setFieldValue("custbody_estimate_end_user", contract[this.fields.primaryContact.id].value);
-            quote.setFieldValue("custbody_end_user_email", contract[this.fields.primaryContactEmail.id]);
-            quote.setFieldValue("custbody_f3mm_quote_status", ContractStatus.PENDING_REP_APPROVAL + "");
-            quote.setFieldValue("memo", contract[this.fields.memo.id]);
-            quote.setFieldValue("discountitem", contract[this.fields.discountItemId.id]);
+            quote_1.setFieldValue("entitystatus", proposalStatusId); // proposal
+            quote_1.setFieldValue("salesrep", contract[this.fields.salesRep.id].value);
+            quote_1.setFieldValue("entity", contract[this.fields.customer.id].value);
+            quote_1.setFieldValue("custbody_f3mm_quote_contract", contractId); // attach contract record
+            quote_1.setFieldValue("department", contract[this.fields.department.id].value);
+            quote_1.setFieldValue("custbody_estimate_end_user", contract[this.fields.primaryContact.id].value);
+            quote_1.setFieldValue("custbody_end_user_email", contract[this.fields.primaryContactEmail.id]);
+            quote_1.setFieldValue("custbody_f3mm_quote_status", ContractStatus.PENDING_REP_APPROVAL + "");
+            quote_1.setFieldValue("memo", contract[this.fields.memo.id]);
+            quote_1.setFieldValue("discountitem", contract[this.fields.discountItemId.id]);
             var contractItems = contract.sublists.recmachcustrecord_f3mm_ci_contract;
             if (!!contractItems) {
                 contractItems.forEach(function (contractItem) {
-                    quote.selectNewLineItem("item");
-                    quote.setCurrentLineItemValue("item", "item", contractItem.custrecord_f3mm_ci_item.value);
-                    quote.setCurrentLineItemValue("item", "quantity", contractItem.custrecord_f3mm_ci_quantity);
-                    quote.setCurrentLineItemValue("item", "price", contractItem.custrecord_f3mm_ci_price_level.value);
-                    quote.setCurrentLineItemValue("item", "rate", contractItem.custrecord_f3mm_ci_price);
-                    quote.commitLineItem("item");
+                    quote_1.selectNewLineItem("item");
+                    quote_1.setCurrentLineItemValue("item", "item", contractItem.custrecord_f3mm_ci_item.value);
+                    quote_1.setCurrentLineItemValue("item", "quantity", contractItem.custrecord_f3mm_ci_quantity);
+                    quote_1.setCurrentLineItemValue("item", "price", contractItem.custrecord_f3mm_ci_price_level.value);
+                    quote_1.setCurrentLineItemValue("item", "rate", contractItem.custrecord_f3mm_ci_price);
+                    quote_1.commitLineItem("item");
                 });
             }
-            var quoteId = nlapiSubmitRecord(quote);
+            var quoteId = nlapiSubmitRecord(quote_1);
             if (sendNotification === true) {
                 EmailHelper.sendQuoteGenerationEmail(contract, quoteId);
             }
@@ -572,6 +572,23 @@ var ContractDAL = (function (_super) {
         }
         var removeExistingLineItems = true;
         var record = this.prepareDataToUpsert(contract, false, removeExistingLineItems);
+        if (!!contract.id) {
+            var oldRecord = this.get(contract.id);
+            var oldStatus = oldRecord.custrecord_f3mm_status;
+            var newStatus = contract.status;
+            var quoteId = null;
+            if (newStatus !== oldStatus.value) {
+                // make sure it is pending customer approval
+                if (parseInt(newStatus) === ContractStatus.PENDING_CUSTOMER_APPROVAL) {
+                    var newRecord = this.getWithDetails(contract.id);
+                    if (newRecord.sublists.quotes.length > 0) {
+                        var quote = newRecord.sublists.quotes[newRecord.sublists.quotes.length - 1];
+                        quoteId = quote.id;
+                    }
+                    EmailHelper.sendQuoteApprovalEmail(newRecord, quoteId);
+                }
+            }
+        }
         var id = this.upsert(record, removeExistingLineItems);
         if (contract.is_renew === "on") {
             var updatedRecord = this.getWithDetails(id);
@@ -642,7 +659,7 @@ var ContractDAL = (function (_super) {
         record[this.fields.notificationOnQuoteApproval.id] = contract.notification_quote_approval === "on" ? "T" : "F";
         if (onlyUpdateNotifications !== true) {
             if (!!contract.items) {
-                var contractItemsSublist = {
+                var contractItemsSublist_1 = {
                     internalId: "recmachcustrecord_f3mm_ci_contract",
                     keyField: "id",
                     lineitems: []
@@ -658,14 +675,14 @@ var ContractDAL = (function (_super) {
                         custrecord_f3mm_ci_quantity: item.quantity,
                         id: removeExistingLineItems === true ? null : (item.id || null)
                     };
-                    contractItemsSublist.lineitems.push(lineitem);
+                    contractItemsSublist_1.lineitems.push(lineitem);
                 });
                 record.sublists = [];
-                record.sublists.push(contractItemsSublist);
+                record.sublists.push(contractItemsSublist_1);
             }
         }
         return record;
     };
     return ContractDAL;
-})(BaseDAL);
+}(BaseDAL));
 //# sourceMappingURL=f3mm_contract_dal.js.map
