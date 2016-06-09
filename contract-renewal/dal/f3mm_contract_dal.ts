@@ -671,8 +671,9 @@ class ContractDAL extends BaseDAL {
                 // make sure it is pending customer approval
                 if (parseInt(newStatus) === ContractStatus.PENDING_CUSTOMER_APPROVAL) {
                     let newRecord = this.getWithDetails(contract.id);
-                    if (newRecord.sublists.quotes.length > 0) {
-                        let quote = newRecord.sublists.quotes[newRecord.sublists.quotes.length - 1];
+                    let quotesLength = newRecord.sublists.quotes.length;
+                    if (quotesLength > 0) {
+                        let quote = newRecord.sublists.quotes[quotesLength - 1];
                         quoteId = quote.id;
                     }
                     EmailHelper.sendQuoteApprovalEmail(newRecord, quoteId);

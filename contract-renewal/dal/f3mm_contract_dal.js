@@ -581,8 +581,9 @@ var ContractDAL = (function (_super) {
                 // make sure it is pending customer approval
                 if (parseInt(newStatus) === ContractStatus.PENDING_CUSTOMER_APPROVAL) {
                     var newRecord = this.getWithDetails(contract.id);
-                    if (newRecord.sublists.quotes.length > 0) {
-                        var quote = newRecord.sublists.quotes[newRecord.sublists.quotes.length - 1];
+                    var quotesLength = newRecord.sublists.quotes.length;
+                    if (quotesLength > 0) {
+                        var quote = newRecord.sublists.quotes[quotesLength - 1];
                         quoteId = quote.id;
                     }
                     EmailHelper.sendQuoteApprovalEmail(newRecord, quoteId);
