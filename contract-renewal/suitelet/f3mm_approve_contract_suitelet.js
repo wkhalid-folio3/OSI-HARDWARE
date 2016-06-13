@@ -60,7 +60,7 @@ var ApproveContractSuitelet = (function (_super) {
         F3.Util.Utility.logDebug("ApproveContractSuitelet.main()", "End");
     };
     return ApproveContractSuitelet;
-})(ListContractsUISuitelet);
+}(ListContractsUISuitelet));
 /**
  * This is the main entry point for ListContractsUISuitelet suitelet
  * NetSuite must only know about this function.

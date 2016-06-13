@@ -138,7 +138,7 @@ var JsonHelper = (function () {
                 id: row.getId(),
                 recordType: row.getRecordType()
             };
-            var nm = null, item, val, text;
+            var nm = null, item = void 0, val = void 0, text = void 0;
             if (!!cols) {
                 for (var x = 0; x < cols.length; x++) {
                     item = cols[x];
@@ -161,5 +161,5 @@ var JsonHelper = (function () {
         return obj;
     };
     return JsonHelper;
-})();
+}());
 //# sourceMappingURL=f3mm_json_helper.js.map

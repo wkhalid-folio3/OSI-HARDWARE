@@ -92,7 +92,7 @@ var ListContractsUISuitelet = (function (_super) {
         return html;
     };
     return ListContractsUISuitelet;
-})(BaseUISuitelet);
+}(BaseUISuitelet));
 /**
  * This is the main entry point for ListContractsUISuitelet suitelet
  * NetSuite must only know about this function.

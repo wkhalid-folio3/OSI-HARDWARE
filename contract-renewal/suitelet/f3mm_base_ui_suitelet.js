@@ -64,5 +64,5 @@ var BaseUISuitelet = (function () {
         return files.concat(externalLibs);
     };
     return BaseUISuitelet;
-})();
+}());
 //# sourceMappingURL=f3mm_base_ui_suitelet.js.map

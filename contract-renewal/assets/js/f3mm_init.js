@@ -33,5 +33,11 @@ $(function () {
         // HACK : store it in global variable for debugging purpose
         window.listContractsUIManager = new ListContractsUIManager();
     }
+    var alertMsg = decodeURIComponent(window.location.href.match(/alert-msg=([^&]*)/)[1]);
+    var alertClass = decodeURIComponent(window.location.href.match(/alert-class=([^&]*)/)[1]);
+    window.location.hash = "";
+    if (alertMsg) {
+        jQuery("#success").html('<div id="success2" class="alert ' + alertClass + '"><a href="#" onclick="jQuery(this).parent().slideUp(500)" class="close" aria-label="close">&times;</a><strong>' + alertMsg + '</strong></div><br>');
+    }
 });
 //# sourceMappingURL=f3mm_init.js.map

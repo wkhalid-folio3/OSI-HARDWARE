@@ -71,6 +71,7 @@ class CreateContractUIManager {
         $("#contact_popup_new").on("click", this.openNewContactWindow.bind(this));
         $(".duration-dropdown").on("change", this.durationDropdownChanged.bind(this));
         $(".start-date-text").parent().on("changeDate", this.durationDropdownChanged.bind(this));
+        $("#delete-btn").on("click", this.deleteContract.bind(this));
 
         // whenever tab is switched, refresh the grid
         $("a[data-toggle='tab']").click(function (e) {
@@ -86,6 +87,48 @@ class CreateContractUIManager {
             html: true
         });
     }
+
+
+    /**
+     * Invoked by JSGrid whenever any item is updating in the grid
+     * @param {object} args contains json object of item and html element of grid row
+     * @returns {void}
+     */
+    private deleteContract(args) {
+        if (confirm("Are you sure you want to delete this record?") == true) {
+            let promise = $.Deferred();
+            let item = {
+                id: this._contractInfo.id
+            };
+
+            this.showLoading();
+            this._dataManager.deleteContract(item, result => {
+                console.log("deleted: // ", result);
+                if (result.message == "success") {
+                    let uiSuiteletScriptId = 'customscript_f3mm_list_contracts_ui_st';
+                    let uiSuiteletDeploymentId = 'customdeploy_f3mm_list_contracts_ui_st';
+                    let uiSuiteletUrl = nlapiResolveURL('SUITELET', uiSuiteletScriptId, uiSuiteletDeploymentId, false);
+                    //uiSuiteletUrl = uiSuiteletUrl + '&cid=' + result.data.id;
+
+                    var alertMessage = "The record has been deleted successfully";
+                    var alertClass = "alert-success";
+                    window.location.href = uiSuiteletUrl+"#/?alert-msg="+alertMessage+"&alert-class="+alertClass;
+                    console.log("uiSuiteletUrl: // ", uiSuiteletUrl);
+                } else {
+                    alert(result.message);
+                    this.hideLoading();
+                }
+
+                promise.resolve();
+                this.hideLoading();
+            });
+
+            return promise.promise();
+        } else {
+        }
+
+    }
+
 
     /**
      * Submits contract information (extracted from ui elements) to server
@@ -1220,7 +1263,7 @@ class CreateContractUIManager {
     /**
      * Show Loading Indicator
      */
-    private showLoading() {
+    protected showLoading() {
         let $loading = $(".contract-loading-backdrop,.contract-loading");
         $loading.addClass("in").show();
     }
@@ -1228,7 +1271,7 @@ class CreateContractUIManager {
     /**
      * Hide Loading Indicator
      */
-    private hideLoading() {
+    protected hideLoading() {
         let $loading = $(".contract-loading-backdrop,.contract-loading");
         $loading.removeClass("in").hide();
     }

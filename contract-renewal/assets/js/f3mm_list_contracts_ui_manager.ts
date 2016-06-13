@@ -68,7 +68,9 @@ class ListContractsUIManager {
         let promise = $.Deferred();
 
         let options = this.getFilters(filter);
-
+        if(jQuery.isEmptyObject(options.sortFields)){
+            options.sortFields["custrecord_f3mm_end_date"] = "asc";
+        }
         this._dataManager.searchContracts(options, result => {
             let data = this.prepareGridData(result.data.records);
 

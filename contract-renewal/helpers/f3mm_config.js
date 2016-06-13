@@ -20,5 +20,5 @@ var Config = (function () {
     Config.LIBS_FOLDER_ID = 20230;
     Config.IS_PROD = true;
     return Config;
-})();
+}());
 //# sourceMappingURL=f3mm_config.js.map

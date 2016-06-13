@@ -67,5 +67,5 @@ var FoldersDAL = (function (_super) {
         return result;
     };
     return FoldersDAL;
-})(BaseDAL);
+}(BaseDAL));
 //# sourceMappingURL=f3mm_folders_dal.js.map

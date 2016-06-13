@@ -167,7 +167,7 @@ var CreateContractAPISuitelet = (function () {
         return result;
     };
     return CreateContractAPISuitelet;
-})();
+}());
 /**
  * This is the main entry point for CreateContractAPI suitelet
  * NetSuite must only know about this function.
