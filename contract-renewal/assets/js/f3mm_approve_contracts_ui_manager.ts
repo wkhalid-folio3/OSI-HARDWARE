@@ -97,6 +97,13 @@ class ApproveContractsUIManager extends ListContractsUIManager {
         let promise = $.Deferred();
 
         let options = this.getFilters(filter);
+        console.log('User Type: ', options.userType);
+
+        if (options.userType === "salesrep" || options.userType === "customer") {
+            if (jQuery.isEmptyObject(options.sortFields)) {
+                options.sortFields["custrecord_f3mm_end_date"] = "asc";
+            }
+        }
 
         this._dataManager.searchContracts(options, result => {
             let data = this.prepareGridData(result.data.records);
