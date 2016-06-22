@@ -89,6 +89,12 @@ var ApproveContractsUIManager = (function (_super) {
         var _this = this;
         var promise = $.Deferred();
         var options = this.getFilters(filter);
+        console.log('User Type: ', options.userType);
+        if (options.userType === "salesrep" || options.userType === "customer") {
+            if (jQuery.isEmptyObject(options.sortFields)) {
+                options.sortFields["custrecord_f3mm_end_date"] = "asc";
+            }
+        }
         this._dataManager.searchContracts(options, function (result) {
             var data = _this.prepareGridData(result.data.records);
             _this.data = data;
