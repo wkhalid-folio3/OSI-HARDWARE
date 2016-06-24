@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
+          integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ=="
+          crossorigin="anonymous"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ bootstrap-datepicker3.min.css }}"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ jsgrid.min.css }}"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ jsgrid-theme.min.css }}"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ styles.css }}"/>
+    <div id="success">
+    </div>
+
+    <title>{{ title }}</title>
+</head>
+<body class="{{ standaloneClass }}">
+
+    <!-- we need following class on both elements. body is used for standalone, below div is used for inline in netsuite -->
+    <div class="{{ standaloneClass }}">
+        <div class="f3mm-contract-renewal container-fluid contracts-listing-page">
+
+            <!-- Action buttons -->
+            <div class="form-actions">
+                <a href="{{ createSuiteletUrl }}" class="btn btn-primary">New Contract</a>
+            </div>
+            <br/>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            Filters
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- div for create / edit screen -->
+            <div class="form-horizontal">
+
+                <div class="row">
+                    <!-- first column in primary information section -->
+                    <div class="col-sm-4">
+                        <div class="row">
+                            <div class="col-sm-8">
+
+                                <div class="form-group">
+                                    <label for="contract_number" class="control-label">Contract #</label>
+
+                                    <div class="">
+                                        <input type="text" class="form-control contract-number-text"
+                                               id="contract_number"
+                                               name="contract_number"/>
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group">
+                                    <label for="customer" class="control-label">Customer</label>
+                                    <div class="">
+                                        <input class="typeahead form-control customer-dropdown"
+                                               id="customer"
+                                               name="customer"
+                                               type="text"/>
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group">
+                                    <label for="vendor" class="control-label">Contract Vendor <span
+                                            class="mandatory">*</span></label>
+
+                                    <div class="">
+                                        <select class="form-control vendor-dropdown"
+                                                id="vendor"
+                                                name="vendor">
+                                            <option value="" selected="selected"></option>
+
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="row">
+                            <div class="col-sm-8">
+
+
+                                <div class="form-group">
+                                    <label for="start_date" class="control-label">Start Date</label>
+                                    <div class="">
+                                        <div class="input-group date">
+                                            <input type="text" class="form-control start-date-text"
+                                                   id="start_date"
+                                                   name="start_date"/>
+                                            <span class="input-group-addon"><i
+                                                    class="glyphicon glyphicon-calendar"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="end_date" class="control-label">End Date</label>
+                                    <div class="">
+                                        <div class="input-group date">
+                                            <input type="text" class="form-control end-date-text"
+                                                   id="end_date"
+                                                   name="end_date"/>
+                                            <span class="input-group-addon"><i
+                                                    class="glyphicon glyphicon-calendar"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="row">
+                            <div class="col-sm-8">
+
+                                <div class="form-group">
+                                    <label for="status" class="control-label">Status</label>
+
+                                    <div class="">
+                                        <select class="form-control status-dropdown"
+                                                id="status"
+                                                name="status"
+                                                multiple="multiple">
+                                            <option value="1" selected="selected">Pending Rep Approval</option>
+                                            <option value="2" selected="selected">Pending Customer Approval</option>
+                                            <option value="3" selected="selected">Approved</option>
+                                            <option value="4">Expired</option>
+                                            <option value="5">Void</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="form-actions">
+                    <br/>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <button type="button" class="btn btn-apply-filter btn-primary">Apply Filters</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+
+            <div class="contracts-container">
+                <div class="toolbar">
+
+                    <div class="form-inline">
+                        <button type="button" class="btn btn-default btn-void">Void Selected Contracts</button>
+
+                        &nbsp;
+                        <span class="uir-controlbar-separator"><img src="/images/separator.png" alt=""></span>
+
+                        &nbsp;
+                        <span>
+                            <a href="javascript:;" class="export-to-csv-link"><i class="uir-list-icon-button uir-list-export-csv" role="button" tabindex="0" data-button-code="export" title="Export - CSV" aria-label="Export - CSV"></i></a>
+                        </span>
+
+                        &nbsp;
+                        <span class="uir-controlbar-separator"><img src="/images/separator.png" alt=""></span>
+
+                        &nbsp;
+                        <label class="edit-control-label">
+                            EDIT
+                            <input type="checkbox" class="ios-switch edit-grid-checkbox" />
+                            <div class="switch"></div>
+                        </label>
+                        <!--&nbsp;-->
+                        <!--<label><input class="" type="checkbox"> Edit</label>-->
+
+                        <span class="pull-right">
+                            <span class="total_records_label"></span>
+                        </span>
+                    </div>
+
+                    <!--<div class="form-inline pull-left">-->
+                        <!--<span class="uir-controlbar-separator"><img src="/images/separator.png" alt=""></span>-->
+                        <!--<div class="checkbox">-->
+                            <!--<label>-->
+                                <!--<input type="checkbox" id="isinactive" name="isinactive"> SHOW INACTIVES-->
+                            <!--</label>-->
+                        <!--</div>-->
+                        <!--<span class="uir-controlbar-separator"><img src="/images/separator.png" alt=""></span>-->
+                    <!--</div>-->
+
+                </div>
+                <div id="jsGrid"></div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- Loading Div -->
+    <div class="contract-loading-backdrop modal-backdrop fade in"></div>
+    <div class="contract-loading in">
+        <div class="contract-loading-text"><img src="{{ loading.gif }}"/></div>
+    </div>
+
+
+    <!-- All Scripts should go below -->
+    <script>
+        document.title = '{{ title }}'.replace('<i class="fa fa-file-text-o"></i>', '');
+        window.$ = (window.NS && window.NS.jQuery) || window.jQuery;
+        window.pageType = '{{ type }}';
+        window.apiSuiteletUrl = '{{ apiSuiteletUrl }}';
+        window.createSuiteletUrl = '{{ createSuiteletUrl }}';
+    </script>
+    <script type="text/javascript"> window.$ || document.write('<script src="{{ jquery-1.11.0.min.js }}">\x3C/script>')</script>
+    <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"
+            integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ=="
+            crossorigin="anonymous"></script>
+    <script type="text/javascript" src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+    <script type="text/javascript" src="{{ jstorage.js }}"></script>
+    <script type="text/javascript" src="{{ typeahead.jquery.min.js }}"></script>
+    <script type="text/javascript" src="{{ bootstrap-datepicker.min.js }}"></script>
+    <script type="text/javascript" src="{{ underscore-min.js }}"></script>
+    <script type="text/javascript" src="{{ jsgrid_customized.js }}"></script>
+    <script type="text/javascript" src="{{ f3mm_jquery_validation.js }}"></script>
+    <script type="text/javascript" src="{{ f3mm_jquery_plugins.js }}"></script>
+    <script type="text/javascript" src="{{ f3mm_jsgrid_fields.js }}"></script>
+    <script type="text/javascript" src="{{ f3mm_data_manager.js }}"></script>
+    <script type="text/javascript" src="{{ f3mm_list_contracts_ui_manager.js }}"></script>
+    <script type="text/javascript" src="{{ f3mm_init.js }}"></script>
+    <script type="text/javascript" src="{{ arrive.min.js }}"></script>
+
+</body>
+</html>
