@@ -8,6 +8,8 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 /**
  * Created by zshaikh on 11/18/2015.
+ * Edited by snawaz on 20/6/2016
+ * Edited by nzahid on 22/6/2016
  * -
  * Referenced By:
  * - f3mm-init
@@ -252,7 +254,7 @@ var ApproveContractsUIManager = (function (_super) {
         }
         else if (options.userType === "customer") {
             options.customer = window.userid;
-            options.status = [2, 3];
+            options.status = [1, 2, 3, 4, 5];
         }
         return options;
     };
