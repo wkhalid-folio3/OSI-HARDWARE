@@ -7,10 +7,18 @@
  * -
  * -
  */
+
+/**
+ * customizations added by Waleed B Khalid 12/1/2018
+ * function added: getCustomMaxCountAllowedForSalesRep() to override default preferences for cust count
+ * additional handling in getSalesRepCount
+ */
+
 /**
  * SalesRepChecker class that has the actual functionality of client script.
  * All business logic will be encapsulated in this class.
  */
+
 var SalesRepChecker = (function() {
     return {
         config: {
@@ -31,6 +39,29 @@ var SalesRepChecker = (function() {
 
         },
 
+
+        /**
+         * Get the custom_max_count for the employee
+         * @argument employeeinternalid
+         * @return max_allowed_count for customers
+         */
+
+        getCustomMaxCountAllowedForSalesRep: function(internalid, salesRepArray) {
+            var count = 0;
+            var ctx = nlapiGetContext();
+            var specifiedCustomersLimit = ctx.getSetting('SCRIPT', 'custscript_f3_max_customer_sale_rep');
+            salesRepObj = _.find(salesRepArray, function(num) {
+                return num.salesRep == internalid;
+            });
+
+            if (!!salesRepObj && !!salesRepObj.MaxCount) {
+                //get maxcount and check against it
+                count = salesRepObj.MaxCount;
+            }
+
+            return (!!count && count > 0) ? count : ((!specifiedCustomersLimit) ? this.config.customerLimit : specifiedCustomersLimit);
+        },
+
         /**
          * The recordType (internal id) corresponds to the "Applied To" record in your script deployment.
          * @appliedtorecord recordType
@@ -41,19 +72,23 @@ var SalesRepChecker = (function() {
             var count = 0;
             var salesRepObj = {};
             var isSave = true;
-            var ctx = nlapiGetContext();
-            var specifiedCustomersLimit = ctx.getSetting('SCRIPT', 'custscript_f3_max_customer_sale_rep');
-            if(!specifiedCustomersLimit){
-                specifiedCustomersLimit = this.config.customerLimit;
-            }
+            // var ctx = nlapiGetContext();
+            // var specifiedCustomersLimit = ctx.getSetting('SCRIPT', 'custscript_f3_max_customer_sale_rep');
+            // if (!specifiedCustomersLimit) {
+            //     specifiedCustomersLimit = this.config.customerLimit;
+            // }
+
             var lineNumber = nlapiFindLineItemValue('salesteam', 'isprimary', 'T');
             try {
                 if (lineNumber > -1) {
                     var salesRep = nlapiGetLineItemValue('salesteam', 'employee', lineNumber);
+                    var salesRepArray = this.getSalesReps();
+                    var specifiedCustomersLimit = this.getCustomMaxCountAllowedForSalesRep(salesRep, salesRepArray);
                     var salesRepName = nlapiGetLineItemText('salesteam', 'employee', lineNumber);
-                    count = this.getSalesRepCountFromCustomers(salesRep);
+
+                    count = this.getSalesRepCountFromCustomers(salesRep, salesRepArray);
                     if (parseInt(count) > parseInt(specifiedCustomersLimit)) {
-                        alert('This salesperson (' + salesRepName  +') has reached the '+ specifiedCustomersLimit +' max customer limit');
+                        alert('This salesperson (' + salesRepName + ') has reached the ' + specifiedCustomersLimit + ' max customer limit');
                         isSave = false;
                     }
                 }
@@ -124,20 +159,18 @@ var SalesRepChecker = (function() {
             nlapiLogExecution("DEBUG", "type", type);
             var isLineAdded = true;
             if (type == 'salesteam') {
-                var ctx = nlapiGetContext();
-                var specifiedCustomersLimit = ctx.getSetting('SCRIPT', 'custscript_f3_max_customer_sale_rep');
-                if(!specifiedCustomersLimit){
-                    specifiedCustomersLimit = this.config.customerLimit;
-                }
-                var count = nlapiGetCurrentLineItemValue('salesteam');
+
+                var salesRepArray = this.getSalesReps();
                 var isPrimary = nlapiGetCurrentLineItemValue('salesteam', 'isprimary');
                 nlapiLogExecution("DEBUG", "isPrimary", isPrimary);
                 if (isPrimary == 'T') {
                     var salesRep = nlapiGetCurrentLineItemValue('salesteam', 'employee');
+                    var specifiedCustomersLimit = this.getCustomMaxCountAllowedForSalesRep(salesRep, salesRepArray);
                     var salesRepName = nlapiGetCurrentLineItemText('salesteam', 'employee');
-                    count = this.getSalesRepCountFromCustomers(salesRep);
-                    if (parseInt(count) > parseInt(specifiedCustomersLimit)) {
-                        alert('This salesperson (' + salesRepName  +') has reached the '+ specifiedCustomersLimit +' max customer limit');
+
+                    var _count = this.getSalesRepCountFromCustomers(salesRep, salesRepArray);
+                    if (parseInt(_count) > parseInt(specifiedCustomersLimit)) {
+                        alert('This salesperson (' + salesRepName + ') has reached the ' + specifiedCustomersLimit + ' max customer limit');
                         isLineAdded = false;
                     }
                 }
@@ -181,14 +214,16 @@ var SalesRepChecker = (function() {
             return true;
         },
 
-        getSalesRepCountFromCustomers: function(salesRep) {
+        getSalesRepCountFromCustomers: function(salesRep, salesRepArray) {
             var count = 0;
-            var salesRepArray = this.getSalesReps();
+            nlapiLogExecution("DEBUG", "new salesRepObj", JSON.stringify(salesRepArray));
+
             salesRepObj = _.find(salesRepArray, function(num) {
                 return num.salesRep == salesRep;
             });
             nlapiLogExecution("DEBUG", "salesRepObj", JSON.stringify(salesRepObj));
-            if (!!salesRepObj.count) {
+            //additional handling done if object undefined and count returned
+            if (!!salesRepObj && !!salesRepObj.count) {
                 count = salesRepObj.count;
             }
             return count;
@@ -196,26 +231,22 @@ var SalesRepChecker = (function() {
 
         getSalesReps: function() {
             nlapiLogExecution("DEBUG", "config", this.config.SaveSearchId.internalId);
-            // var savedSearch = nlapiLoadSearch(null, this.config.SaveSearchId.internalId);
-            // var runSearch = savedSearch.runSearch();
-
-            // var start = 0,
-            //     end = 1000;
-            // var page = 1;
-
-            // var search = runSearch.getResults(start, end);
 
             var columns = [];
-            columns.push(new nlobjSearchColumn("salesrep",null, "group"));
-            columns.push(new nlobjSearchColumn("internalid",null, "count"));
+            columns.push(new nlobjSearchColumn("salesrep", null, "group"));
+            columns.push(new nlobjSearchColumn("internalid", null, "count"));
+            columns.push(new nlobjSearchColumn("custentity_f3_max_no_of_customers", "salesRep", "GROUP"));
             var search = nlapiSearchRecord('customer', null, [], columns);
 
             var salesRepArray = search.map(function(e) {
                 return {
                     salesRep: e.getValue('salesrep', null, 'group'),
-                    count: e.getValue('internalid', null, 'count')
+                    count: e.getValue('internalid', null, 'count'),
+                    MaxCount: e.getValue("custentity_f3_max_no_of_customers", "salesRep", "GROUP")
                 };
             });
+            nlapiLogExecution("DEBUG", "salesRepObj----2", JSON.stringify(salesRepArray));
+            debugger;
             return salesRepArray;
         },
 
